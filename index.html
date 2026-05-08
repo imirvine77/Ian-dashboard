@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ian Irvine — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@200;300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #080c14;
+  --bg2:       #0d1320;
+  --bg3:       #111827;
+  --panel:     #0f1825;
+  --panel2:    #141f2e;
+  --border:    rgba(56, 139, 253, 0.15);
+  --border2:   rgba(56, 139, 253, 0.08);
+  --accent:    #388bfd;
+  --accent2:   #58a6ff;
+  --accent3:   #1f6feb;
+  --gold:      #e3b341;
+  --green:     #3fb950;
+  --red:       #f85149;
+  --muted:     rgba(139, 165, 196, 0.55);
+  --text:      #cdd9e5;
+  --text2:     #8b9eb5;
+  --text3:     #506070;
+  --glow:      rgba(56, 139, 253, 0.12);
+  --font-head: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-body: 'Exo 2', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── SCANLINE OVERLAY ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ─── HEADER ─── */
+.header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  position: relative;
+}
+
+.logo-mark svg { width: 100%; height: 100%; }
+
+.header-title {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+
+.header-title span {
+  color: var(--text3);
+  font-weight: 300;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-clock {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text2);
+  letter-spacing: 0.05em;
+}
+
+.header-zulu {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  background: rgba(56,139,253,0.08);
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+/* ─── NAV TABS ─── */
+.nav {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 24px;
+  display: flex;
+  gap: 0;
+}
+
+.nav-tab {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.nav-tab:hover { color: var(--text2); }
+
+.nav-tab.active {
+  color: var(--accent2);
+  border-bottom-color: var(--accent);
+}
+
+/* ─── MAIN CONTENT ─── */
+.main {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ─── SECTION LABEL ─── */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--border), transparent);
+}
+
+/* ─── TRIPS GRID ─── */
+.trips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+  .trips-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── TRIP CARD ─── */
+.trip-card {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s;
+  animation: fadeIn 0.5s ease both;
+}
+
+.trip-card:hover { border-color: var(--border); }
+
+.trip-card.current {
+  border-color: rgba(56,139,253,0.3);
+  box-shadow: 0 0 30px rgba(56,139,253,0.06);
+}
+
+.trip-card.next {
+  border-color: rgba(227,179,65,0.2);
+}
+
+.trip-card-header {
+  padding: 10px 14px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trip-card-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.trip-card.last .trip-card-label  { color: var(--text3); }
+.trip-card.current .trip-card-label { color: var(--accent2); }
+.trip-card.next .trip-card-label { color: var(--gold); }
+
+.trip-status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.trip-card.last .trip-status-dot    { background: var(--text3); }
+.trip-card.current .trip-status-dot { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+.trip-card.next .trip-status-dot    { background: var(--gold); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.trip-card-body { padding: 14px; }
+
+/* Route display */
+.route-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.route-airport {
+  font-family: var(--font-head);
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: #fff;
+}
+
+.route-mid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.route-line {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, var(--border), var(--accent3), var(--border));
+  position: relative;
+}
+
+.route-plane {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: -2px;
+}
+
+.route-flight {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.05em;
+}
+
+/* Flight meta */
+.flight-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.meta-item {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 7px 10px;
+}
+
+.meta-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 3px;
+}
+
+.meta-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+/* Weather block */
+.weather-block {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.weather-icon { font-size: 28px; line-height: 1; }
+
+.weather-info { flex: 1; }
+
+.weather-desc {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 300;
+  margin-bottom: 3px;
+}
+
+.weather-temps {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text2);
+  letter-spacing: 0.05em;
+}
+
+.weather-temps .high { color: var(--gold); }
+.weather-temps .low  { color: var(--accent2); }
+
+.weather-loading {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Activities accordion */
+.activities-section { margin-top: 4px; }
+
+.activities-toggle {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 4px;
+}
+
+.activities-toggle:hover {
+  border-color: var(--border);
+  background: var(--bg2);
+}
+
+.toggle-arrow {
+  transition: transform 0.3s;
+  font-size: 8px;
+  color: var(--accent);
+}
+
+.activities-toggle.open .toggle-arrow { transform: rotate(180deg); }
+
+.activities-panel {
+  display: none;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 4px;
+  animation: slideDown 0.25s ease;
+}
+
+.activities-panel.open { display: block; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.activities-list {
+  list-style: none;
+}
+
+.activities-list li {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text2);
+  font-weight: 300;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.activities-list li:last-child { border-bottom: none; }
+
+.activity-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  min-width: 16px;
+  margin-top: 1px;
+}
+
+.activity-loading {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-align: center;
+  padding: 12px 0;
+  animation: blink 1.2s infinite;
+}
+
+/* ─── EDIT MODAL ─── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 480px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-title {
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group.full { grid-column: 1 / -1; }
+
+.form-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.form-input {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--text3); }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 9px 20px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--accent3);
+  color: #fff;
+  border: 1px solid var(--accent);
+}
+
+.btn-primary:hover { background: var(--accent); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+
+/* ─── EDIT BUTTON ─── */
+.edit-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.edit-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+}
+
+.empty-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.3; }
+
+.empty-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ─── PLACEHOLDER TABS ─── */
+.placeholder-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border: 1px dashed var(--border2);
+  border-radius: 6px;
+  margin-top: 24px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  .main { padding: 12px; }
+  .route-airport { font-size: 28px; }
+  .header-title { font-size: 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+  /* .header-zulu always visible */
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M4 20 L16 8 L28 20" stroke="#388bfd" stroke-width="1.5" fill="none"/>
+        <path d="M10 20 L16 14 L22 20" stroke="#388bfd" stroke-width="1" fill="none" opacity="0.5"/>
+        <line x1="16" y1="8" x2="16" y2="26" stroke="#388bfd" stroke-width="1" opacity="0.3"/>
+        <circle cx="16" cy="8" r="2" fill="#58a6ff"/>
+      </svg>
+    </div>
+    <span class="header-title">Ian Irvine <span>/ DASHBOARD</span></span>
+  </div>
+  <div class="header-right">
+    <span class="header-clock" id="localClock">--:--:-- PDT</span>
+    <span class="header-zulu" id="zuluClock">----Z</span>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-tab active" onclick="switchTab('trips', this)">TRIPS</button>
+  <button class="nav-tab" onclick="switchTab('triplog', this)">TRIP LOG</button>
+  <button class="nav-tab" onclick="switchTab('crew', this)">CREW NOTES</button>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ── TAB 1: TRIPS ── -->
+  <div class="tab-content active" id="tab-trips">
+
+    <div class="section-label">FLIGHT STATUS</div>
+
+    <div class="trips-grid">
+
+      <!-- LAST TRIP -->
+      <div class="trip-card last" id="card-last">
+        <div class="trip-card-header">
+          <span class="trip-card-label">Last Trip</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="trip-status-dot"></div>
+            <button class="edit-btn" onclick="openModal('last')">EDIT</button>
+          </div>
+        </div>
+        <div class="trip-card-body" id="body-last">
+          <div class="empty-state">
+            <div class="empty-icon">✈</div>
+            <div class="empty-text">No data entered</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CURRENT TRIP -->
+      <div class="trip-card current" id="card-current">
+        <div class="trip-card-header">
+          <span class="trip-card-label">Current Trip</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="trip-status-dot"></div>
+            <button class="edit-btn" onclick="openModal('current')">EDIT</button>
+          </div>
+        </div>
+        <div class="trip-card-body" id="body-current">
+          <div class="empty-state">
+            <div class="empty-icon">✈</div>
+            <div class="empty-text">No data entered</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEXT TRIP -->
+      <div class="trip-card next" id="card-next">
+        <div class="trip-card-header">
+          <span class="trip-card-label">Next Trip</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="trip-status-dot"></div>
+            <button class="edit-btn" onclick="openModal('next')">EDIT</button>
+          </div>
+        </div>
+        <div class="trip-card-body" id="body-next">
+          <div class="empty-state">
+            <div class="empty-icon">✈</div>
+            <div class="empty-text">No data entered</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── TAB 2: TRIP LOG ── -->
+  <div class="tab-content" id="tab-triplog">
+    <div class="placeholder-tab">TRIP LOG — COMING SOON</div>
+  </div>
+
+  <!-- ── TAB 3: CREW NOTES ── -->
+  <div class="tab-content" id="tab-crew">
+    <div class="placeholder-tab">CREW NOTES — COMING SOON</div>
+  </div>
+
+</main>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">
+      <span>✈</span>
+      <span id="modalTitle">EDIT TRIP</span>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" id="f-date" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Flight #</label>
+        <input class="form-input" id="f-flight" type="text" placeholder="UA771">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Departure (IATA)</label>
+        <input class="form-input" id="f-dep" type="text" placeholder="LAX" maxlength="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Destination (IATA)</label>
+        <input class="form-input" id="f-arr" type="text" placeholder="HKG" maxlength="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Departure Time</label>
+        <input class="form-input" id="f-deptime" type="text" placeholder="HH:MM (e.g. 22:30)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duration (hrs)</label>
+        <input class="form-input" id="f-duration" type="text" placeholder="14.6">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">CANCEL</button>
+      <button class="btn btn-primary" onclick="saveTrip()">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───
+const OWM_KEY = '59d80e3a19a2a82d107c31548d776f3c';
+const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+
+// Airport → city/country map for weather + activities
+const AIRPORT_CITY = {
+  // USA
+  LAX:'Los Angeles,US', SFO:'San Francisco,US', SAN:'San Diego,US',
+  ORD:'Chicago,US', EWR:'Newark,US', JFK:'New York,US', BOS:'Boston,US',
+  IAH:'Houston,US', DEN:'Denver,US', LAS:'Las Vegas,US', MCO:'Orlando,US',
+  SNA:'Orange County,US', ONT:'Ontario,US', SEA:'Seattle,US', ATL:'Atlanta,US',
+  DFW:'Dallas,US', MIA:'Miami,US', TPA:'Tampa,US', MSP:'Minneapolis,US',
+  PDX:'Portland,US', PHX:'Phoenix,US', SLC:'Salt Lake City,US',
+  // Hawaii
+  HNL:'Honolulu,US', OGG:'Maui,US', KOA:'Kona,US', LIH:'Kauai,US', ITO:'Hilo,US',
+  // Asia
+  HKG:'Hong Kong,HK', NRT:'Tokyo,JP', HND:'Tokyo,JP', KIX:'Osaka,JP', NGO:'Nagoya,JP',
+  PEK:'Beijing,CN', PVG:'Shanghai,CN', CAN:'Guangzhou,CN', CTU:'Chengdu,CN',
+  ICN:'Seoul,KR', PUS:'Busan,KR', BKK:'Bangkok,TH', DMK:'Bangkok,TH',
+  SGN:'Ho Chi Minh City,VN', HAN:'Hanoi,VN', SIN:'Singapore,SG',
+  KUL:'Kuala Lumpur,MY', MNL:'Manila,PH', CGK:'Jakarta,ID', TPE:'Taipei,TW',
+  DEL:'Delhi,IN', BOM:'Mumbai,IN', DXB:'Dubai,AE', AUH:'Abu Dhabi,AE',
+  // Oceania
+  SYD:'Sydney,AU', MEL:'Melbourne,AU', BNE:'Brisbane,AU', PER:'Perth,AU',
+  AKL:'Auckland,NZ', CHC:'Christchurch,NZ',
+  // Europe
+  LHR:'London,GB', LGW:'London,GB', MAN:'Manchester,GB', EDI:'Edinburgh,GB',
+  CDG:'Paris,FR', ORY:'Paris,FR', AMS:'Amsterdam,NL', BRU:'Brussels,BE',
+  FRA:'Frankfurt,DE', MUC:'Munich,DE', DUS:'Dusseldorf,DE', TXL:'Berlin,DE',
+  MAD:'Madrid,ES', BCN:'Barcelona,ES', FCO:'Rome,IT', MXP:'Milan,IT',
+  ZRH:'Zurich,CH', VIE:'Vienna,AT', CPH:'Copenhagen,DK', ARN:'Stockholm,SE',
+  OSL:'Oslo,NO', HEL:'Helsinki,FI', DUB:'Dublin,IE', LIS:'Lisbon,PT',
+  // Americas
+  YYZ:'Toronto,CA', YVR:'Vancouver,CA', YUL:'Montreal,CA', YYC:'Calgary,CA',
+  MEX:'Mexico City,MX', CUN:'Cancun,MX', GDL:'Guadalajara,MX',
+  GRU:'Sao Paulo,BR', GIG:'Rio de Janeiro,BR', BOG:'Bogota,CO',
+  SCL:'Santiago,CL', LIM:'Lima,PE', EZE:'Buenos Aires,AR',
+  PTY:'Panama City,PA', SJO:'San Jose,CR', SAL:'San Salvador,SV',
+  SAP:'San Pedro Sula,HN', LIR:'Liberia,CR',
+  // Africa & Middle East
+  JNB:'Johannesburg,ZA', CPT:'Cape Town,ZA', CAI:'Cairo,EG',
+  TLV:'Tel Aviv,IL', AMM:'Amman,JO', DOH:'Doha,QA', KWI:'Kuwait City,KW',
+};
+
+const WEATHER_ICONS = {
+  '01d':'☀️','01n':'🌙','02d':'🌤','02n':'🌤',
+  '03d':'🌥','03n':'🌥','04d':'☁️','04n':'☁️',
+  '09d':'🌧','09n':'🌧','10d':'🌦','10n':'🌦',
+  '11d':'⛈','11n':'⛈','13d':'🌨','13n':'🌨',
+  '50d':'🌫','50n':'🌫',
+};
+
+// ─── STATE ───
+let tripData = JSON.parse(localStorage.getItem('tripData') || '{}');
+let currentModal = null;
+
+// ─── CLOCK ───
+function getTZAbbr() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short', timeZone: tz })
+      .formatToParts(new Date());
+    return parts.find(p => p.type === 'timeZoneName')?.value || '';
+  } catch(e) { return ''; }
+}
+
+function updateClock() {
+  const now = new Date();
+  const local = now.toLocaleTimeString('en-US', {
+    hour12: false, hour:'2-digit', minute:'2-digit', second:'2-digit'
+  });
+  const tzAbbr = getTZAbbr();
+  const zulu = now.toLocaleTimeString('en-US', {
+    timeZone: 'UTC', hour12: false, hour:'2-digit', minute:'2-digit'
+  }).replace(':','') + 'Z';
+  document.getElementById('localClock').textContent = local + (tzAbbr ? ' ' + tzAbbr : '');
+  document.getElementById('zuluClock').textContent = zulu;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── TABS ───
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── MODAL ───
+function openModal(type) {
+  currentModal = type;
+  const labels = { last:'LAST TRIP', current:'CURRENT TRIP', next:'NEXT TRIP' };
+  document.getElementById('modalTitle').textContent = 'EDIT — ' + labels[type];
+  const d = tripData[type] || {};
+  document.getElementById('f-date').value     = d.date     || '';
+  document.getElementById('f-flight').value   = d.flight   || '';
+  document.getElementById('f-dep').value      = (d.dep     || '').toUpperCase();
+  document.getElementById('f-arr').value      = (d.arr     || '').toUpperCase();
+  document.getElementById('f-deptime').value  = d.deptime  || '';
+  document.getElementById('f-duration').value = d.duration || '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  currentModal = null;
+}
+
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function formatTime(val) {
+  if (!val) return '';
+  // Already has colon
+  if (val.includes(':')) return val;
+  // Strip non-digits
+  const digits = val.replace(/\D/g, '');
+  if (digits.length <= 2) return digits + ':00';
+  const mins = digits.slice(-2);
+  const hrs  = digits.slice(0, digits.length - 2);
+  return hrs.padStart(2,'0') + ':' + mins;
+}
+
+async function saveTrip() {
+  const data = {
+    date:     document.getElementById('f-date').value,
+    flight:   document.getElementById('f-flight').value.toUpperCase(),
+    dep:      document.getElementById('f-dep').value.toUpperCase(),
+    arr:      document.getElementById('f-arr').value.toUpperCase(),
+    deptime:  formatTime(document.getElementById('f-deptime').value),
+    duration: document.getElementById('f-duration').value,
+  };
+  console.log('Saving trip data:', currentModal, data);
+  tripData[currentModal] = data;
+  localStorage.setItem('tripData', JSON.stringify(tripData));
+  console.log('localStorage saved. Calling renderCard...');
+  closeModal();
+  try {
+    await renderCard(currentModal);
+    console.log('renderCard completed');
+  } catch(e) {
+    console.error('renderCard error:', e);
+  }
+}
+
+// ─── RENDER CARD ───
+async function renderCard(type) {
+  const d = tripData[type];
+  const body = document.getElementById('body-' + type);
+
+  if (!d || !d.dep) {
+    body.innerHTML = `<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-text">No data entered</div></div>`;
+    return;
+  }
+
+  const fmtDate = d.date ? new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'2-digit' }) : '—';
+
+  let html = `
+    <div class="route-display">
+      <span class="route-airport">${d.dep}</span>
+      <div class="route-mid">
+        <div class="route-line"></div>
+        <span class="route-plane">✈</span>
+        <span class="route-flight">${d.flight || '—'}</span>
+      </div>
+      <span class="route-airport">${d.arr}</span>
+    </div>
+    <div class="flight-meta">
+      <div class="meta-item">
+        <div class="meta-label">Date</div>
+        <div class="meta-value">${fmtDate}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Departs</div>
+        <div class="meta-value">${d.deptime || '—'}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Block</div>
+        <div class="meta-value">${d.duration ? d.duration + ' hrs' : '—'}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Dest IATA</div>
+        <div class="meta-value">${d.arr}</div>
+      </div>
+    </div>`;
+
+  // Weather for current + next
+  if (type === 'current' || type === 'next') {
+    html += `<div class="weather-block" id="wx-${type}">
+      <span class="weather-icon">🌐</span>
+      <div class="weather-info">
+        <div class="weather-loading">FETCHING WX...</div>
+      </div>
+    </div>`;
+
+    html += `
+    <button class="activities-toggle" onclick="toggleActivities('${type}-eat')" id="toggle-${type}-eat">
+      <span>▸ TOP 10 RESTAURANTS</span><span class="toggle-arrow">▾</span>
+    </button>
+    <div class="activities-panel" id="panel-${type}-eat">
+      <div class="activity-loading">LOADING...</div>
+    </div>
+    <button class="activities-toggle" onclick="toggleActivities('${type}-do')" id="toggle-${type}-do">
+      <span>▸ TOP 10 THINGS TO DO</span><span class="toggle-arrow">▾</span>
+    </button>
+    <div class="activities-panel" id="panel-${type}-do">
+      <div class="activity-loading">LOADING...</div>
+    </div>`;
+  }
+
+  body.innerHTML = html;
+
+  // Fetch weather async
+  if (type === 'current' || type === 'next') {
+    fetchWeather(d.arr, type);
+    fetchActivities(d.arr, type);
+  }
+}
+
+// ─── WEATHER ───
+async function fetchWeather(iata, type) {
+  const city = AIRPORT_CITY[iata];
+  if (!city) {
+    updateWeather(type, '🌐', 'Unknown station', '—', '—');
+    return;
+  }
+  try {
+    const endpoint = type === 'current'
+      ? `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${OWM_KEY}&units=imperial`
+      : `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${OWM_KEY}&units=imperial&cnt=8`;
+
+    const res = await fetch(endpoint);
+    const data = await res.json();
+
+    if (type === 'current') {
+      const icon = WEATHER_ICONS[data.weather[0].icon] || '🌡';
+      const desc = data.weather[0].description;
+      const high = Math.round(data.main.temp_max) + '°F';
+      const low  = Math.round(data.main.temp_min) + '°F';
+      updateWeather(type, icon, desc.charAt(0).toUpperCase() + desc.slice(1), high, low);
+    } else {
+      // Forecast: use midday entry
+      const entry = data.list.find(e => e.dt_txt.includes('12:00')) || data.list[4] || data.list[0];
+      const icon = WEATHER_ICONS[entry.weather[0].icon] || '🌡';
+      const desc = entry.weather[0].description;
+      const high = Math.round(entry.main.temp_max) + '°F';
+      const low  = Math.round(entry.main.temp_min) + '°F';
+      updateWeather(type, icon, desc.charAt(0).toUpperCase() + desc.slice(1), high, low);
+    }
+  } catch(e) {
+    updateWeather(type, '⚠️', 'Weather unavailable', '—', '—');
+  }
+}
+
+function updateWeather(type, icon, desc, high, low) {
+  const el = document.getElementById('wx-' + type);
+  if (!el) return;
+  el.innerHTML = `
+    <span class="weather-icon">${icon}</span>
+    <div class="weather-info">
+      <div class="weather-desc">${desc}</div>
+      <div class="weather-temps">
+        <span class="high">H: ${high}</span>&nbsp;&nbsp;
+        <span class="low">L: ${low}</span>
+      </div>
+    </div>`;
+}
+
+// ─── ACTIVITIES (Claude API) ───
+async function fetchActivities(iata, type) {
+  const city = AIRPORT_CITY[iata];
+  const cityName = city ? city.split(',')[0] : iata;
+
+  try {
+    // Restaurants
+    const eatRes = await fetch(CLAUDE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `List the top 10 restaurants in ${cityName} for a visiting airline pilot on a layover. Format as a JSON array of strings, each string being: "Restaurant Name — one sentence description". Return ONLY the JSON array, no other text.`
+        }]
+      })
+    });
+    const eatData = await eatRes.json();
+    const eatText = eatData.content?.map(b => b.text || '').join('') || '[]';
+    const eatList = JSON.parse(eatText.replace(/```json|```/g, '').trim());
+    renderList(`panel-${type}-eat`, eatList);
+
+    // Things to do
+    const doRes = await fetch(CLAUDE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `List the top 10 things to do in ${cityName} for a visiting airline pilot on a layover. Format as a JSON array of strings, each string being: "Activity Name — one sentence description". Return ONLY the JSON array, no other text.`
+        }]
+      })
+    });
+    const doData = await doRes.json();
+    const doText = doData.content?.map(b => b.text || '').join('') || '[]';
+    const doList = JSON.parse(doText.replace(/```json|```/g, '').trim());
+    renderList(`panel-${type}-do`, doList);
+
+  } catch(e) {
+    const eatPanel = document.getElementById(`panel-${type}-eat`);
+    const doPanel  = document.getElementById(`panel-${type}-do`);
+    if (eatPanel) eatPanel.innerHTML = `<div class="activity-loading">UNAVAILABLE</div>`;
+    if (doPanel)  doPanel.innerHTML  = `<div class="activity-loading">UNAVAILABLE</div>`;
+  }
+}
+
+function renderList(panelId, items) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  const html = items.map((item, i) => `
+    <li>
+      <span class="activity-num">${String(i+1).padStart(2,'0')}</span>
+      <span>${item}</span>
+    </li>`).join('');
+  panel.innerHTML = `<ul class="activities-list">${html}</ul>`;
+}
+
+function toggleActivities(id) {
+  const panel  = document.getElementById('panel-' + id);
+  const toggle = document.getElementById('toggle-' + id);
+  panel.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+// ─── INIT ───
+async function init() {
+  for (const type of ['last', 'current', 'next']) {
+    if (tripData[type]) await renderCard(type);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
