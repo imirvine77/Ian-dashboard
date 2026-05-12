@@ -110,66 +110,49 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .metrics-tbl tr:first-child td{color:var(--gold)}
 .metrics-two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}
 @media(max-width:480px){.metrics-two-col{grid-template-columns:1fr;gap:16px}}
-.trips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
-@media(max-width:900px){.trips-grid{grid-template-columns:1fr}}
-.tcard{background:var(--panel);border-radius:6px;overflow:hidden;transition:border-color 0.3s}
-.tcard.last{border:1px solid rgba(80,96,112,0.4)}
-.tcard.current{border:1px solid rgba(39,116,174,0.35)}
-.tcard.next{border:1px solid rgba(227,179,65,0.25)}
-.tcard-hdr{background:var(--bg2);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border2)}
-.tcard-lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase}
-.last-lbl{color:var(--text3)}.current-lbl{color:var(--accent2)}.next-lbl{color:var(--gold)}
-.tdot{width:6px;height:6px;border-radius:50%}
-.last-dot{background:var(--text3)}
-.current-dot{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
-.next-dot{background:var(--gold)}
-.tcard-body{padding:14px}
-.t-route{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.t-iata{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;color:#fff;line-height:1}
-.t-mid{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.t-line{width:100%;height:1px;background:linear-gradient(to right,var(--border),var(--accent),var(--border))}
-.t-fltno{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:0.05em}
-.t-legs{margin-bottom:10px}
-.t-leg-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border2);font-family:var(--font-mono);font-size:10px;color:var(--text2)}
-.t-leg-row:last-child{border-bottom:none}
-.t-glance{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:0.05em;line-height:1.2;margin-bottom:12px;flex-wrap:wrap;display:flex;align-items:center;gap:2px}
-.t-glance-sep{color:var(--accent2);font-size:18px;font-weight:400;margin:0 2px}
-.t-leg-dep{color:#fff;font-size:11px;font-weight:600;min-width:32px}
-.t-leg-arr{color:#fff;font-size:11px;font-weight:600;min-width:32px}
-.t-leg-arrow{color:var(--text3);font-size:10px;margin:0 1px}
-.t-leg-date{color:var(--text2);font-size:11px;min-width:70px}
-.t-leg-flt{color:var(--accent2);min-width:52px;font-size:11px}
-.t-leg-blk{color:var(--gold);font-size:11px;white-space:nowrap;margin-left:auto}
+.t-section{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+.t-leg-card{background:var(--panel);border-radius:6px;overflow:hidden;min-width:200px;flex:1}
+.t-leg-card.last-card{border:1px solid rgba(80,96,112,0.4)}
+.t-leg-card.current-card{border:1px solid rgba(39,116,174,0.35)}
+.t-leg-card.next-card{border:1px solid rgba(227,179,65,0.25)}
+.t-leg-card-hdr{background:var(--bg2);padding:8px 12px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.t-leg-route{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:0.06em;line-height:1}
+.t-leg-route-sep{color:var(--accent2);font-size:16px;margin:0 2px}
+.t-leg-fltno{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.05em}
+.t-leg-card-body{padding:12px}
 .t-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .t-mi{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:5px 8px}
 .t-ml{font-family:var(--font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:2px}
 .t-mv{font-family:var(--font-mono);font-size:13px;color:var(--text)}
-.t-crew{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-.t-crew-pill{background:rgba(39,116,174,0.06);border:1px solid var(--border2);border-radius:3px;padding:2px 8px;font-family:var(--font-mono);font-size:9px}
-.t-crew-role{color:var(--text3)}.t-crew-name{color:var(--text)}
-.t-wx{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:8px 10px;margin-bottom:8px}
-.t-wx-hdr{font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.t-crew{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.t-crew-pill{background:rgba(39,116,174,0.06);border:1px solid var(--border2);border-radius:3px;padding:5px 11px;font-family:var(--font-mono);font-size:13px}
+.t-crew-role{color:var(--text3)}.t-crew-name{color:var(--text);font-weight:500}
+.t-wx-section{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;width:100%}
+.t-wx{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;flex:1;min-width:180px}
+.t-wx-hdr{font-family:var(--font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
 .t-wx-main{display:flex;align-items:center;gap:10px}
 .t-wx-icon{font-size:24px;line-height:1}
-.t-wx-desc{font-family:var(--font-body);font-size:14px;color:var(--text);margin-bottom:3px}
+.t-wx-desc{font-family:var(--font-body);font-size:13px;color:var(--text);margin-bottom:3px}
 .t-wx-temps{font-family:var(--font-mono);font-size:13px}
 .t-wx-hi{color:var(--gold)}.t-wx-lo{color:var(--accent2)}
 .t-fc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}
-.t-fc-day{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:4px 2px;text-align:center}
-.t-fc-date{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:0.05em;margin-bottom:2px}
-.t-fc-icon{font-size:13px;line-height:1;margin-bottom:2px}
+.t-fc-day{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:5px 3px;text-align:center}
+.t-fc-date{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:3px}
+.t-fc-icon{font-size:14px;line-height:1;margin-bottom:2px}
 .t-fc-hi{font-family:var(--font-mono);font-size:11px;color:var(--gold)}
 .t-fc-lo{font-family:var(--font-mono);font-size:11px;color:var(--accent2)}
-.t-days{font-family:var(--font-head);font-size:28px;font-weight:700;color:var(--gold);letter-spacing:0.05em;margin-bottom:2px}
+.t-days-block{background:var(--bg2);border:1px solid rgba(227,179,65,0.2);border-radius:4px;padding:8px 12px;margin-bottom:12px;text-align:center}
+.t-days{font-family:var(--font-head);font-size:32px;font-weight:700;color:var(--gold);letter-spacing:0.05em;margin-bottom:2px}
 .t-days-lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3)}
-.t-days-block{background:var(--bg2);border:1px solid rgba(227,179,65,0.2);border-radius:4px;padding:8px 12px;margin-bottom:10px;text-align:center}
 .t-wx-loading{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;animation:blink 1.2s infinite}
-.t-empty{text-align:center;padding:32px 12px;font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);opacity:0.5}
+.t-empty{text-align:center;padding:32px 12px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);opacity:0.5}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 @media(max-width:480px){
-  .trips-grid{grid-template-columns:1fr}
-  .t-iata{font-size:26px}
+  .t-section{flex-direction:column}
+  .t-leg-card{min-width:0;width:100%}
+  .t-wx-section{flex-direction:column}
   .t-fc-grid{grid-template-columns:repeat(5,1fr)}
+  .t-crew-pill{font-size:12px}
 }
 @media(max-width:800px){.main{padding:12px}.header-title{font-size:16px}}
 @media(max-width:480px){
@@ -259,7 +242,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">12 May 2026 · 18:21 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">12 May 2026 · 18:46 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -384,21 +367,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 
   <div class="tab-content" id="tab-trips">
-    <div class="section-label">FLIGHT STATUS</div>
-    <div class="trips-grid" id="trips-grid">
-      <div class="tcard last" id="tc-last">
-        <div class="tcard-hdr"><span class="tcard-lbl last-lbl">Last Trip</span><div class="tdot last-dot"></div></div>
-        <div class="tcard-body" id="tb-last"><div class="t-empty">No logbook data</div></div>
-      </div>
-      <div class="tcard current" id="tc-current">
-        <div class="tcard-hdr"><span class="tcard-lbl current-lbl">Current Trip</span><div class="tdot current-dot"></div></div>
-        <div class="tcard-body" id="tb-current"><div class="t-empty">No logbook data</div></div>
-      </div>
-      <div class="tcard next" id="tc-next">
-        <div class="tcard-hdr"><span class="tcard-lbl next-lbl">Next Trip</span><div class="tdot next-dot"></div></div>
-        <div class="tcard-body" id="tb-next"><div class="t-empty">No logbook data</div></div>
-      </div>
-    </div>
+    <div class="section-label">LAST TRIP</div>
+    <div class="t-section" id="ts-last"><div class="t-empty">No logbook data</div></div>
+
+    <div class="section-label" style="margin-top:24px">CURRENT TRIP</div>
+    <div class="t-section" id="ts-current"><div class="t-empty">No logbook data</div></div>
+
+    <div class="section-label" style="margin-top:24px">NEXT TRIP</div>
+    <div class="t-section" id="ts-next"><div class="t-empty">No logbook data</div></div>
   </div>
 
   <div class="tab-content" id="tab-crew">
@@ -985,7 +961,9 @@ async function fetchCurrentWx(iata){
   const c=getCoords(iata);if(!c)return null;
   try{
     const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`);
+    if(!r.ok)return null;
     const d=await r.json();
+    if(!d.daily)return null;
     return{hi:Math.round(d.daily.temperature_2m_max[0]),lo:Math.round(d.daily.temperature_2m_min[0]),code:d.daily.weathercode[0],icon:WMO_ICONS[d.daily.weathercode[0]]||'🌡',desc:WMO_DESC[d.daily.weathercode[0]]||'Unknown'};
   }catch(e){return null;}
 }
@@ -994,20 +972,14 @@ async function fetchForecastWx(iata,days){
   const c=getCoords(iata);if(!c)return null;
   try{
     const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,time&temperature_unit=fahrenheit&timezone=auto&forecast_days=${days}`);
+    if(!r.ok)return null;
     const d=await r.json();
+    if(!d.daily)return null;
     return d.daily.time.map((t,i)=>({date:t,hi:Math.round(d.daily.temperature_2m_max[i]),lo:Math.round(d.daily.temperature_2m_min[i]),icon:WMO_ICONS[d.daily.weathercode[i]]||'🌡'}));
   }catch(e){return null;}
 }
 
 function fmtTripDate(d){if(!d)return'—';return new Date(parseDate(d)).toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'});}
-
-// Chained glance: LAX · PEK · LAX
-function buildGlance(p){
-  const legs=p.legs||[];
-  if(!legs.length)return'<span class="t-glance">—</span>';
-  const stops=[legs[0].dep,...legs.map(l=>l.arr)].filter(Boolean);
-  return`<div class="t-glance">${stops.join('<span class="t-glance-sep"> · </span>')}</div>`;
-}
 
 function buildCrewPills(p){
   return[
@@ -1019,57 +991,57 @@ function buildCrewPills(p){
   ].filter(Boolean).join('');
 }
 
-function buildLegRows(p){
-  return(p.legs||[]).map(l=>`
-    <div class="t-leg-row">
-      <span class="t-leg-date">${fmtTripDate(l.date)}</span>
-      <span class="t-leg-flt">${l.fltno||''}</span>
-      <span class="t-leg-dep">${l.dep||'—'}</span>
-      <span class="t-leg-arrow">→</span>
-      <span class="t-leg-arr">${l.arr||'—'}</span>
-      <span class="t-leg-blk">${l.block?toDecimal(parseMins(l.block))+' hrs':''}</span>
-    </div>`).join('');
+function buildLegCard(l,p,type){
+  const mi=(x,lbl,val)=>val?`<div class="t-mi"><div class="t-ml">${lbl}</div><div class="t-mv">${val}</div></div>`:'';
+  const blockHrs=l.block?toDecimal(parseMins(l.block))+' hrs':'—';
+  const miles=l.miles?parseInt(l.miles).toLocaleString():'';
+  const pax=l.sob||'';
+  const aircraft=l.aircraft||'';
+  const crew=type!=='next'?buildCrewPills(p):'';
+
+  let meta='';
+  if(type==='last'||type==='current'){
+    meta=`
+      ${mi('','Date',fmtTripDate(l.date))}
+      ${mi('','Aircraft',aircraft)}
+      ${mi('','Block',blockHrs)}
+      ${miles?mi('','Miles',miles):''}
+      ${pax?mi('','PAX',pax):''}
+    `;
+  } else {
+    // next — date only, no crew/pax
+    meta=`
+      ${mi('','Date',fmtTripDate(l.date))}
+      ${aircraft?mi('','Aircraft',aircraft):''}
+      ${mi('','Block',blockHrs)}
+    `;
+  }
+
+  return `
+    <div class="t-leg-card ${type}-card">
+      <div class="t-leg-card-hdr">
+        <span class="t-leg-route">${l.dep||'—'}<span class="t-leg-route-sep">-</span>${l.arr||'—'}</span>
+        <span class="t-leg-fltno">${l.fltno||''}</span>
+      </div>
+      <div class="t-leg-card-body">
+        <div class="t-meta">${meta}</div>
+        ${crew?`<div class="t-crew">${crew}</div>`:''}
+      </div>
+    </div>`;
 }
 
-function getDateRange(p){
-  const fl=p.legs&&p.legs[0];const ll=p.legs&&p.legs[p.legs.length-1];
-  if(!fl)return'—';
-  return fl.date===ll.date?fmtTripDate(fl.date):fmtTripDate(fl.date)+' – '+fmtTripDate(ll.date);
-}
-function getAircraft(p){return[...new Set((p.legs||[]).map(l=>l.aircraft).filter(Boolean))].join(', ')||'—';}
-function getTotalMiles(p){const m=p.legs&&p.legs.reduce((a,l)=>a+(parseInt(l.miles)||0),0);return m||null;}
-
-function buildMetaLast(p){
-  return`
-    <div class="t-mi"><div class="t-ml">Dates</div><div class="t-mv">${getDateRange(p)}</div></div>
-    <div class="t-mi"><div class="t-ml">Aircraft</div><div class="t-mv">${getAircraft(p)}</div></div>
-    <div class="t-mi"><div class="t-ml">Block</div><div class="t-mv">${toDecimal(p.totalMins)} hrs</div></div>
-    <div class="t-mi"><div class="t-ml">Miles</div><div class="t-mv">${p.totalMiles?p.totalMiles.toLocaleString():'—'}</div></div>`;
-}
-
-function buildMetaCurrent(p){
-  const miles=getTotalMiles(p);
-  return`
-    <div class="t-mi"><div class="t-ml">Dates</div><div class="t-mv">${getDateRange(p)}</div></div>
-    <div class="t-mi"><div class="t-ml">Aircraft</div><div class="t-mv">${getAircraft(p)}</div></div>
-    <div class="t-mi"><div class="t-ml">Block</div><div class="t-mv">${toDecimal(p.totalMins)} hrs</div></div>
-    <div class="t-mi"><div class="t-ml">Miles</div><div class="t-mv">${miles?miles.toLocaleString():''}</div></div>`;
-}
-
-function buildMetaNext(p){
-  return`
-    <div class="t-mi"><div class="t-ml">Dates</div><div class="t-mv">${getDateRange(p)}</div></div>`;
-}
-
-function getDestIATA(p){
-  // Find the furthest non-base destination — prefer hotel-mapped airports
+function getUniqueHotelDests(p){
   const base=new Set(['LAX','SNA','ONT']);
-  const legs=p.legs||[];
-  // First check for hotel-mapped airports
-  for(const l of legs){if(l.arr&&HOTEL_COORDS[l.arr])return l.arr;}
-  // Then any non-base arrival
-  for(const l of legs){if(l.arr&&!base.has(l.arr))return l.arr;}
-  return legs[legs.length-1]?.arr||'LAX';
+  const seen=new Set();
+  const result=[];
+  for(const l of(p.legs||[])){
+    const arr=(l.arr||'').toUpperCase();
+    if(arr&&!base.has(arr)&&!seen.has(arr)){
+      seen.add(arr);
+      result.push(arr);
+    }
+  }
+  return result;
 }
 
 function daysUntil(p){
@@ -1079,10 +1051,28 @@ function daysUntil(p){
   return Math.round((trip-today)/(1000*60*60*24));
 }
 
+function buildWxTile(iata,idSuffix){
+  const locName=getLocationName(iata);
+  const wxLink=getWxLink(iata);
+  return`<div class="t-wx" id="wx-${idSuffix}">
+    <div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
+    <div class="t-wx-loading">FETCHING...</div>
+  </div>`;
+}
+
+function buildFcTile(iata,idSuffix){
+  const locName=getLocationName(iata);
+  const wxLink=getWxLink(iata);
+  return`<div class="t-wx" id="fc-${idSuffix}">
+    <div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
+    <div class="t-wx-loading">FETCHING...</div>
+  </div>`;
+}
+
 async function renderTripsTab(){
   const all=load();
   if(!all.length){
-    ['last','current','next'].forEach(t=>{document.getElementById('tb-'+t).innerHTML='<div class="t-empty">No logbook data</div>';});
+    ['last','current','next'].forEach(t=>{document.getElementById('ts-'+t).innerHTML='<div class="t-empty">No logbook data</div>';});
     return;
   }
   const today=new Date();today.setHours(0,0,0,0);
@@ -1094,95 +1084,66 @@ async function renderTripsTab(){
     const e=lld(p);e.setHours(0,0,0,0);
     return today>=s&&today<=e;
   });
-  const past=all.filter(p=>{
-    const e=lld(p);e.setHours(0,0,0,0);
-    return e<today&&p!==currentP;
-  }).sort((a,b)=>lld(b)-lld(a));
-  const future=all.filter(p=>{
-    const s=fld(p);s.setHours(0,0,0,0);
-    return s>today&&p!==currentP;
-  }).sort((a,b)=>fld(a)-fld(b));
-
+  const past=all.filter(p=>{const e=lld(p);e.setHours(0,0,0,0);return e<today&&p!==currentP;}).sort((a,b)=>lld(b)-lld(a));
+  const future=all.filter(p=>{const s=fld(p);s.setHours(0,0,0,0);return s>today&&p!==currentP;}).sort((a,b)=>fld(a)-fld(b));
   const lastP=past[0]||null;
   const nextP=future[0]||null;
 
   // ── LAST TRIP ──
   if(lastP){
-    const crew=buildCrewPills(lastP);
-    document.getElementById('tb-last').innerHTML=`
-      ${buildGlance(lastP)}
-      <div class="t-legs">${buildLegRows(lastP)}</div>
-      <div class="t-meta">${buildMetaLast(lastP)}</div>
-      ${crew?`<div class="t-crew">${crew}</div>`:''}`;
+    const cards=(lastP.legs||[]).map(l=>buildLegCard(l,lastP,'last')).join('');
+    document.getElementById('ts-last').innerHTML=cards||'<div class="t-empty">No legs</div>';
   }else{
-    document.getElementById('tb-last').innerHTML='<div class="t-empty">No completed trips</div>';
+    document.getElementById('ts-last').innerHTML='<div class="t-empty">No completed trips</div>';
   }
 
   // ── CURRENT TRIP ──
   if(currentP){
-    const p=currentP;
-    const destIATA=getDestIATA(p);
-    const locName=getLocationName(destIATA);
-    const wxLink=getWxLink(destIATA);
-    const crew=buildCrewPills(p);
-    document.getElementById('tb-current').innerHTML=`
-      ${buildGlance(p)}
-      <div class="t-legs">${buildLegRows(p)}</div>
-      <div class="t-meta">${buildMetaCurrent(p)}</div>
-      ${crew?`<div class="t-crew">${crew}</div>`:''}
-      <div class="t-wx" id="wx-current">
-        <div class="t-wx-hdr">WX TODAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
-        <div class="t-wx-loading">FETCHING WX...</div>
-      </div>`;
-    fetchCurrentWx(destIATA).then(wx=>{
-      const el=document.getElementById('wx-current');if(!el)return;
-      if(!wx){el.innerHTML=`<div class="t-wx-hdr">WX TODAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div><div class="t-wx-loading">UNAVAILABLE</div>`;return;}
-      el.innerHTML=`
-        <div class="t-wx-hdr">WX TODAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
-        <div class="t-wx-main">
-          <div class="t-wx-icon">${wx.icon}</div>
-          <div>
-            <div class="t-wx-desc">${wx.desc}</div>
-            <div class="t-wx-temps"><span class="t-wx-hi">H: ${wx.hi}°F</span>&nbsp;&nbsp;<span class="t-wx-lo">L: ${wx.lo}°F</span></div>
-          </div>
-        </div>`;
+    const cards=(currentP.legs||[]).map(l=>buildLegCard(l,currentP,'current')).join('');
+    const dests=getUniqueHotelDests(currentP);
+    const wxTiles=dests.map((iata,i)=>buildWxTile(iata,`cur_${i}`)).join('');
+    document.getElementById('ts-current').innerHTML=
+      cards+
+      (dests.length?`<div class="t-wx-section">${wxTiles}</div>`:'');
+    dests.forEach((iata,i)=>{
+      fetchCurrentWx(iata).then(wx=>{
+        const el=document.getElementById(`wx-cur_${i}`);if(!el)return;
+        const locName=getLocationName(iata);const wxLink=getWxLink(iata);
+        if(!wx){el.innerHTML=`<div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div><div class="t-wx-loading">UNAVAILABLE</div>`;return;}
+        el.innerHTML=`
+          <div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
+          <div class="t-wx-main"><div class="t-wx-icon">${wx.icon}</div><div><div class="t-wx-desc">${wx.desc}</div><div class="t-wx-temps"><span class="t-wx-hi">H: ${wx.hi}°F</span>&nbsp;&nbsp;<span class="t-wx-lo">L: ${wx.lo}°F</span></div></div></div>`;
+      });
     });
   }else{
-    document.getElementById('tb-current').innerHTML='<div class="t-empty" style="padding:40px 20px"><div style="font-size:28px;margin-bottom:8px;opacity:0.3">🏠</div>OFF DUTY</div>';
+    document.getElementById('ts-current').innerHTML='<div class="t-empty" style="padding:40px 20px"><div style="font-size:28px;margin-bottom:8px;opacity:0.3">🏠</div>OFF DUTY</div>';
   }
 
   // ── NEXT TRIP ──
   if(nextP){
-    const destIATA=getDestIATA(nextP);
-    const locName=getLocationName(destIATA);
-    const wxLink=getWxLink(destIATA);
     const daysAway=daysUntil(nextP);
-    const crew=buildCrewPills(nextP);
-    document.getElementById('tb-next').innerHTML=`
-      ${buildGlance(nextP)}
-      ${daysAway!==null?`<div class="t-days-block"><div class="t-days">${daysAway}</div><div class="t-days-lbl">Days until departure</div></div>`:''}
-      <div class="t-legs">${buildLegRows(nextP)}</div>
-      <div class="t-meta">${buildMetaNext(nextP)}</div>
-      ${crew?`<div class="t-crew">${crew}</div>`:''}
-      <div class="t-wx" id="wx-next">
-        <div class="t-wx-hdr">10-DAY FORECAST · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
-        <div class="t-wx-loading">FETCHING FORECAST...</div>
-      </div>`;
-    fetchForecastWx(destIATA,10).then(fc=>{
-      const el=document.getElementById('wx-next');if(!el)return;
-      if(!fc){el.innerHTML=`<div class="t-wx-hdr">10-DAY FORECAST · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div><div class="t-wx-loading">UNAVAILABLE</div>`;return;}
-      const mkDay=d=>{
-        const dt=new Date(d.date+'T12:00:00');
-        const lbl=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-        return`<div class="t-fc-day"><div class="t-fc-date">${lbl}</div><div class="t-fc-icon">${d.icon}</div><div class="t-fc-hi">${d.hi}°</div><div class="t-fc-lo">${d.lo}°</div></div>`;
-      };
-      el.innerHTML=`
-        <div class="t-wx-hdr">10-DAY FORECAST · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
-        <div class="t-fc-grid">${fc.slice(0,5).map(mkDay).join('')}</div>
-        <div class="t-fc-grid" style="margin-top:4px">${fc.slice(5,10).map(mkDay).join('')}</div>`;
+    const daysBlock=daysAway!==null?`<div class="t-days-block" style="width:100%"><div class="t-days">${daysAway}</div><div class="t-days-lbl">Days until departure</div></div>`:'';
+    const cards=(nextP.legs||[]).map(l=>buildLegCard(l,nextP,'next')).join('');
+    const dests=getUniqueHotelDests(nextP);
+    const fcTiles=dests.map((iata,i)=>buildFcTile(iata,`nxt_${i}`)).join('');
+    document.getElementById('ts-next').innerHTML=
+      daysBlock+
+      cards+
+      (dests.length?`<div class="t-wx-section">${fcTiles}</div>`:'');
+    dests.forEach((iata,i)=>{
+      fetchForecastWx(iata,10).then(fc=>{
+        const el=document.getElementById(`fc-nxt_${i}`);if(!el)return;
+        const locName=getLocationName(iata);const wxLink=getWxLink(iata);
+        if(!fc){el.innerHTML=`<div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div><div class="t-wx-loading">UNAVAILABLE</div>`;return;}
+        const mkDay=d=>{const dt=new Date(d.date+'T12:00:00');const lbl=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});return`<div class="t-fc-day"><div class="t-fc-date">${lbl}</div><div class="t-fc-icon">${d.icon}</div><div class="t-fc-hi">${d.hi}°</div><div class="t-fc-lo">${d.lo}°</div></div>`;};
+        el.innerHTML=`
+          <div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
+          <div class="t-fc-grid">${fc.slice(0,5).map(mkDay).join('')}</div>
+          <div class="t-fc-grid" style="margin-top:4px">${fc.slice(5,10).map(mkDay).join('')}</div>`;
+      });
     });
   }else{
-    document.getElementById('tb-next').innerHTML='<div class="t-empty">No upcoming trips in logbook</div>';
+    document.getElementById('ts-next').innerHTML='<div class="t-empty">No upcoming trips in logbook</div>';
   }
 }
 
