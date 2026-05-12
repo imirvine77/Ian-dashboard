@@ -242,7 +242,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">12 May 2026 · 18:46 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">12 May 2026 · 18:52 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -751,9 +751,9 @@ function importXLSX(input){
         if(r.every(c=>String(c).trim()===''))continue;
         const pairingNum=String(r[idx.pairing]||'').trim()||('imported_'+i);
         const legDate=fmtDate(r[idx.date]);
-        // Use pairing#+date as a staging key so same pairing# in diff weeks stays separate.
-        // Once all legs are grouped, we'll finalize the composite key using the first leg date.
-        const pKey=pairingNum+'||'+legDate;
+        // Stage by pairing# only so all legs of same pairing group together.
+        // Dedup against existing data uses pairing# + first leg date (applied below).
+        const pKey=pairingNum;
         if(!pairingMap[pKey]){
           pairingMap[pKey]={
             id:'p_imp_'+Date.now()+'_'+i,
