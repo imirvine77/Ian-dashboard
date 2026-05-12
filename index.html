@@ -1057,14 +1057,18 @@ function buildMetaCurrent(p){
 
 function buildMetaNext(p){
   return`
-    <div class="t-mi"><div class="t-ml">Dates</div><div class="t-mv">${getDateRange(p)}</div></div>
-    <div class="t-mi"><div class="t-ml">Block</div><div class="t-mv">${toDecimal(p.totalMins)} hrs</div></div>`;
+    <div class="t-mi"><div class="t-ml">Dates</div><div class="t-mv">${getDateRange(p)}</div></div>`;
 }
 
 function getDestIATA(p){
+  // Find the furthest non-base destination — prefer hotel-mapped airports
   const base=new Set(['LAX','SNA','ONT']);
-  for(const l of(p.legs||[])){if(l.arr&&!base.has(l.arr))return l.arr;}
-  return(p.legs&&p.legs[p.legs.length-1]?.arr)||'LAX';
+  const legs=p.legs||[];
+  // First check for hotel-mapped airports
+  for(const l of legs){if(l.arr&&HOTEL_COORDS[l.arr])return l.arr;}
+  // Then any non-base arrival
+  for(const l of legs){if(l.arr&&!base.has(l.arr))return l.arr;}
+  return legs[legs.length-1]?.arr||'LAX';
 }
 
 function daysUntil(p){
@@ -1099,7 +1103,6 @@ async function renderTripsTab(){
   }).sort((a,b)=>fld(a)-fld(b));
 
   const lastP=past[0]||null;
-  const showCurrent=currentP||lastP;
   const nextP=future[0]||null;
 
   // ── LAST TRIP ──
@@ -1115,8 +1118,8 @@ async function renderTripsTab(){
   }
 
   // ── CURRENT TRIP ──
-  if(showCurrent){
-    const p=showCurrent;
+  if(currentP){
+    const p=currentP;
     const destIATA=getDestIATA(p);
     const locName=getLocationName(destIATA);
     const wxLink=getWxLink(destIATA);
@@ -1144,7 +1147,7 @@ async function renderTripsTab(){
         </div>`;
     });
   }else{
-    document.getElementById('tb-current').innerHTML='<div class="t-empty">No active trip</div>';
+    document.getElementById('tb-current').innerHTML='<div class="t-empty" style="padding:40px 20px"><div style="font-size:28px;margin-bottom:8px;opacity:0.3">🏠</div>OFF DUTY</div>';
   }
 
   // ── NEXT TRIP ──
