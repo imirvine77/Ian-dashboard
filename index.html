@@ -263,7 +263,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 00:32 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 00:41 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -1212,49 +1212,61 @@ function setCnRole(role){
 }
 
 function containsAvoid(text){
-  return /avoid/i.test(text.replace(/[^a-zA-Z0-9\s]/g,' '));
+  // Strip ALL non-alpha characters and check for 'avoid' as a word
+  const clean=text.replace(/[^a-zA-Z ]/g,' ').replace(/\s+/g,' ');
+  return /\bavoid\b/i.test(clean);
 }
 
 function renderCrewNotes(){
   const all=load();
   const search=(document.getElementById('cn-search')?.value||'').toLowerCase();
+  const MY_NAME='ian irvine'; // excluded from crew list
 
-  // Build crew map: key = "ROLE|Name", value = {role, name, notes[], airports[], trips, lastDate}
+  // Build crew map: key = "ROLE|Name"
+  // Each entry stores individual trip notes with date, not merged
   const crewMap={};
 
   all.forEach(p=>{
     const legs=p.legs||[];
     const airports=[...new Set(legs.map(l=>l.arr).filter(Boolean))];
     const dates=legs.map(l=>l.date).filter(Boolean);
+    const firstDate=dates.length?dates.reduce((a,b)=>parseDate(a)<parseDate(b)?a:b):'';
     const lastDate=dates.length?dates.reduce((a,b)=>parseDate(a)>parseDate(b)?a:b):'';
 
     const addCrew=(role,name,note)=>{
       if(!name)return;
+      if(name.trim().toLowerCase()===MY_NAME)return; // exclude self
       const key=role+'|'+name.trim();
       if(!crewMap[key]){
-        crewMap[key]={role,name:name.trim(),notes:[],airports:new Set(),trips:0,lastDate:''};
+        crewMap[key]={role,name:name.trim(),entries:[],airports:new Set(),trips:0,lastDate:''};
       }
       const entry=crewMap[key];
-      if(note&&note.trim())entry.notes.push(note.trim());
+      // Store each trip's note individually with its date
+      entry.entries.push({date:firstDate,note:(note||'').trim()});
       airports.forEach(a=>entry.airports.add(a));
       entry.trips++;
       if(!entry.lastDate||parseDate(lastDate)>parseDate(entry.lastDate))entry.lastDate=lastDate;
     };
 
     if(p.ca){
-      // CA notes come from legs (imported from CA Notes column)
-      const caNote=legs.map(l=>l.caNotes).filter(Boolean).join(' ');
-      addCrew('CA',p.ca,caNote||p.caNotes||'');
+      const caNote=p.caNotes||legs.map(l=>l.caNotes).filter(Boolean).join(' ');
+      addCrew('CA',p.ca,caNote);
     }
     if(p.fo){
-      const foNote=legs.map(l=>l.foNotes).filter(Boolean).join(' ');
-      addCrew('FO',p.fo,foNote||p.foNotes||'');
+      const foNote=p.foNotes||legs.map(l=>l.foNotes).filter(Boolean).join(' ');
+      addCrew('FO',p.fo,foNote);
     }
   });
 
+  // Sort each person's entries newest first
+  Object.values(crewMap).forEach(e=>{
+    e.entries.sort((a,b)=>parseDate(b.date)-parseDate(a.date));
+  });
+
+  // Sort people by most recent trip, newest first
   const entries=Object.values(crewMap).sort((a,b)=>parseDate(b.lastDate)-parseDate(a.lastDate));
 
-  // Count unique CA/FO
+  // Count unique CA/FO (excluding self)
   const cas=entries.filter(e=>e.role==='CA').length;
   const fos=entries.filter(e=>e.role==='FO').length;
   const caEl=document.getElementById('cn-ca-count');
@@ -1264,13 +1276,13 @@ function renderCrewNotes(){
 
   // Filter
   const filtered=entries.filter(e=>{
-    const allNotes=e.notes.join(' ').toLowerCase();
+    const allNotesText=e.entries.map(n=>n.note).join(' ');
     const nameMatch=e.name.toLowerCase().includes(search);
-    const noteMatch=allNotes.includes(search);
+    const noteMatch=allNotesText.toLowerCase().includes(search);
     if(search&&!nameMatch&&!noteMatch)return false;
     if(cnRole==='ca'&&e.role!=='CA')return false;
     if(cnRole==='fo'&&e.role!=='FO')return false;
-    if(cnRole==='avoid'&&!containsAvoid(allNotes))return false;
+    if(cnRole==='avoid'&&!containsAvoid(allNotesText))return false;
     return true;
   });
 
@@ -1282,16 +1294,17 @@ function renderCrewNotes(){
   }
 
   list.innerHTML=filtered.map(e=>{
-    const allNotes=e.notes.join(' ');
-    const isAvoid=containsAvoid(allNotes);
+    const allNotesText=e.entries.map(n=>n.note).join(' ');
+    const isAvoid=containsAvoid(allNotesText);
     const roleClass=e.role==='CA'?'ca-card':'fo-card';
     const cardClass=isAvoid?'avoid-card':roleClass;
     const rolePill=`<span class="cn-role-pill ${e.role.toLowerCase()}">${e.role}</span>`;
     const avoidBadge=isAvoid?'<span class="cn-avoid-badge">⚠ AVOID</span>':'';
     const lastFmt=e.lastDate?fmtTripDate(e.lastDate):'';
     const tags=[...e.airports].slice(0,8).map(a=>`<span class="cn-tag">${a}</span>`).join('');
-    const notesHtml=e.notes.length
-      ?e.notes.map(n=>`<div style="margin-bottom:4px">${n}</div>`).join('')
+    // Show each trip's note individually, newest first, with date
+    const notesHtml=e.entries.length
+      ?e.entries.map(n=>`<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border2);last-child:border-none"><span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-right:8px">${fmtTripDate(n.date)}</span>${n.note||'<span style="color:var(--text3);font-style:italic">No notes</span>'}</div>`).join('')
       :'<span style="color:var(--text3);font-style:italic">No notes recorded</span>';
     return`
       <div class="cn-card ${cardClass}">
