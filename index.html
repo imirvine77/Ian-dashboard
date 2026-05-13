@@ -208,6 +208,27 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   .t-days{font-size:32px}
   .t-days-lbl{font-size:12px}
 }
+.cn-role-btn{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;padding:7px 16px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);transition:all 0.2s}
+.cn-role-btn.active{background:rgba(39,116,174,0.15);color:var(--accent2);border-color:var(--accent)}
+.cn-role-btn[data-role="ca"].active{background:rgba(227,179,65,0.1);color:var(--gold);border-color:rgba(227,179,65,0.4)}
+.cn-role-btn[data-role="fo"].active{background:rgba(63,185,80,0.1);color:var(--green);border-color:rgba(63,185,80,0.3)}
+.cn-role-btn.avoid{color:var(--red);border-color:rgba(248,81,73,0.3)}
+.cn-role-btn.avoid.active{background:rgba(248,81,73,0.1);color:var(--red);border-color:var(--red)}
+.cn-card{background:var(--panel);border-radius:6px;overflow:hidden}
+.cn-card.ca-card{border-top:1px solid var(--border2);border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);border-left:3px solid var(--gold)}
+.cn-card.fo-card{border-top:1px solid var(--border2);border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);border-left:3px solid var(--green)}
+.cn-card.avoid-card{border-top:1px solid var(--border2);border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);border-left:3px solid var(--red)}
+.cn-hdr{background:var(--bg2);padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border2);flex-wrap:wrap}
+.cn-role-pill{font-family:var(--font-mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;padding:2px 8px;border-radius:3px}
+.cn-role-pill.ca{background:rgba(227,179,65,0.1);color:var(--gold);border:1px solid rgba(227,179,65,0.3)}
+.cn-role-pill.fo{background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
+.cn-avoid-badge{font-family:var(--font-mono);font-size:9px;letter-spacing:0.15em;text-transform:uppercase;padding:2px 8px;border-radius:3px;background:rgba(248,81,73,0.1);color:var(--red);border:1px solid rgba(248,81,73,0.3)}
+.cn-name{font-family:var(--font-head);font-size:17px;font-weight:600;color:#fff;letter-spacing:0.05em}
+.cn-meta{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-left:auto;white-space:nowrap}
+.cn-body{padding:10px 14px;font-family:var(--font-body);font-size:13px;color:var(--text2);line-height:1.6}
+.cn-tags{padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap}
+.cn-tag{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.05em}
+
 </style>
 </head>
 <body>
@@ -234,7 +255,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <button class="nav-tab active" onclick="switchTab('metrics',this)">METRICS</button>
   <button class="nav-tab" onclick="switchTab('logbook',this)">TRIP LOG</button>
   <button class="nav-tab" onclick="switchTab('trips',this);renderTripsTab()">TRIPS</button>
-  <button class="nav-tab" onclick="switchTab('crew',this)">CREW NOTES</button>
+  <button class="nav-tab" onclick="switchTab('crew',this);renderCrewNotes()">CREW NOTES</button>
 </nav>
 
 <main class="main">
@@ -242,7 +263,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">12 May 2026 · 18:52 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 00:08 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -378,7 +399,33 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 
   <div class="tab-content" id="tab-crew">
-    <div class="placeholder-tab">CREW NOTES — COMING SOON</div>
+
+    <div class="section-label">CREW STATISTICS</div>
+    <div class="stats-grid" style="margin-bottom:24px">
+      <div class="stat-card">
+        <div class="stat-val accent" id="cn-ca-count">0</div>
+        <div class="stat-lbl">Unique Captains</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="cn-fo-count">0</div>
+        <div class="stat-lbl">Unique First Officers</div>
+      </div>
+    </div>
+
+    <div class="section-label">CREW NOTES</div>
+
+    <div class="filter-bar" style="margin-bottom:12px">
+      <input class="filter-input" id="cn-search" placeholder="Search by name or keyword…" style="min-width:220px;flex:1" oninput="renderCrewNotes()"/>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="cn-role-btn active" data-role="all" onclick="setCnRole('all')">ALL</button>
+      <button class="cn-role-btn" data-role="ca" onclick="setCnRole('ca')">CA</button>
+      <button class="cn-role-btn" data-role="fo" onclick="setCnRole('fo')">FO</button>
+      <button class="cn-role-btn avoid" data-role="avoid" onclick="setCnRole('avoid')">AVOID</button>
+    </div>
+
+    <div id="cn-list" style="display:flex;flex-direction:column;gap:10px"></div>
   </div>
 
 </main>
@@ -733,7 +780,9 @@ function importXLSX(input){
         block:   findCol(header,['total']),
         pairing: findCol(header,['pairing']),
         ca:      findCol(header,['ca']),
+        caNotes: findCol(header,['ca notes']),
         fo:      findCol(header,['fo']),
+        foNotes: findCol(header,['fo notes']),
         iro1:    findCol(header,['iro 1']),
         iro2:    findCol(header,['iro 2']),
         lcp:     findCol(header,['check airman']),
@@ -760,7 +809,9 @@ function importXLSX(input){
             pairing:pairingNum,
             notes:String(r[idx.notes]||'').trim(),
             ca:String(r[idx.ca]||'').trim(),
+            caNotes:String(r[idx.caNotes]||'').trim(),
             fo:String(r[idx.fo]||'').trim(),
+            foNotes:String(r[idx.foNotes]||'').trim(),
             iro1:String(r[idx.iro1]||'').trim(),
             iro2:String(r[idx.iro2]||'').trim(),
             lcp:String(r[idx.lcp]||'').trim(),
@@ -1146,6 +1197,112 @@ async function renderTripsTab(){
     document.getElementById('ts-next').innerHTML='<div class="t-empty">No upcoming trips in logbook</div>';
   }
 }
+
+
+// ── CREW NOTES ──
+let cnRole='all';
+
+function setCnRole(role){
+  cnRole=role;
+  document.querySelectorAll('.cn-role-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.role===role);
+  });
+  renderCrewNotes();
+}
+
+function renderCrewNotes(){
+  const all=load();
+  const search=(document.getElementById('cn-search')?.value||'').toLowerCase();
+
+  // Build crew map: key = "ROLE|Name", value = {role, name, notes[], airports[], trips, lastDate}
+  const crewMap={};
+
+  all.forEach(p=>{
+    const legs=p.legs||[];
+    const airports=[...new Set(legs.map(l=>l.arr).filter(Boolean))];
+    const dates=legs.map(l=>l.date).filter(Boolean);
+    const lastDate=dates.length?dates.reduce((a,b)=>parseDate(a)>parseDate(b)?a:b):'';
+
+    const addCrew=(role,name,note)=>{
+      if(!name)return;
+      const key=role+'|'+name.trim();
+      if(!crewMap[key]){
+        crewMap[key]={role,name:name.trim(),notes:[],airports:new Set(),trips:0,lastDate:''};
+      }
+      const entry=crewMap[key];
+      if(note&&note.trim())entry.notes.push(note.trim());
+      airports.forEach(a=>entry.airports.add(a));
+      entry.trips++;
+      if(!entry.lastDate||parseDate(lastDate)>parseDate(entry.lastDate))entry.lastDate=lastDate;
+    };
+
+    if(p.ca){
+      // CA notes come from legs (imported from CA Notes column)
+      const caNote=legs.map(l=>l.caNotes).filter(Boolean).join(' ');
+      addCrew('CA',p.ca,caNote||p.caNotes||'');
+    }
+    if(p.fo){
+      const foNote=legs.map(l=>l.foNotes).filter(Boolean).join(' ');
+      addCrew('FO',p.fo,foNote||p.foNotes||'');
+    }
+  });
+
+  const entries=Object.values(crewMap).sort((a,b)=>a.name.localeCompare(b.name));
+
+  // Count unique CA/FO
+  const cas=entries.filter(e=>e.role==='CA').length;
+  const fos=entries.filter(e=>e.role==='FO').length;
+  const caEl=document.getElementById('cn-ca-count');
+  const foEl=document.getElementById('cn-fo-count');
+  if(caEl)caEl.textContent=cas;
+  if(foEl)foEl.textContent=fos;
+
+  // Filter
+  const filtered=entries.filter(e=>{
+    const allNotes=e.notes.join(' ').toLowerCase();
+    const nameMatch=e.name.toLowerCase().includes(search);
+    const noteMatch=allNotes.includes(search);
+    if(search&&!nameMatch&&!noteMatch)return false;
+    if(cnRole==='ca'&&e.role!=='CA')return false;
+    if(cnRole==='fo'&&e.role!=='FO')return false;
+    if(cnRole==='avoid'&&!allNotes.includes('avoid'))return false;
+    return true;
+  });
+
+  const list=document.getElementById('cn-list');
+  if(!list)return;
+  if(!filtered.length){
+    list.innerHTML='<div class="t-empty">No crew notes found</div>';
+    return;
+  }
+
+  list.innerHTML=filtered.map(e=>{
+    const allNotes=e.notes.join(' ');
+    const isAvoid=allNotes.toLowerCase().includes('avoid');
+    const roleClass=e.role==='CA'?'ca-card':'fo-card';
+    const cardClass=isAvoid?'avoid-card':roleClass;
+    const rolePill=`<span class="cn-role-pill ${e.role.toLowerCase()}">${e.role}</span>`;
+    const avoidBadge=isAvoid?'<span class="cn-avoid-badge">⚠ AVOID</span>':'';
+    const lastFmt=e.lastDate?fmtTripDate(e.lastDate):'';
+    const tags=[...e.airports].slice(0,8).map(a=>`<span class="cn-tag">${a}</span>`).join('');
+    const notesHtml=e.notes.length
+      ?e.notes.map(n=>`<div style="margin-bottom:4px">${n}</div>`).join('')
+      :'<span style="color:var(--text3);font-style:italic">No notes recorded</span>';
+    return`
+      <div class="cn-card ${cardClass}">
+        <div class="cn-hdr">
+          ${rolePill}
+          ${avoidBadge}
+          <span class="cn-name">${e.name}</span>
+          <span class="cn-meta">${e.trips} trip${e.trips!==1?'s':''} together${lastFmt?' · Last: '+lastFmt:''}</span>
+        </div>
+        <div class="cn-body">${notesHtml}</div>
+        ${tags?`<div class="cn-tags">${tags}</div>`:''}
+      </div>`;
+  }).join('');
+}
+
+// renderCrewNotes called directly from nav button
 
 renderAll();
 </script>
