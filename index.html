@@ -263,7 +263,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 00:15 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 00:21 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -1005,33 +1005,30 @@ function getLocationName(iata){
 function getWxLink(iata){
   const c=getCoords(iata);
   if(!c)return'https://open-meteo.com';
-  return`https://open-meteo.com/en/docs#latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&temperature_unit=fahrenheit`;
+  return`https://open-meteo.com/en/docs#latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit`;
 }
 
 async function fetchCurrentWx(iata){
   const c=getCoords(iata);if(!c)return null;
   try{
-    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`);
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`);
     if(!r.ok)return null;
     const d=await r.json();
     if(!d.daily)return null;
-    return{hi:Math.round(d.daily.temperature_2m_max[0]),lo:Math.round(d.daily.temperature_2m_min[0]),code:d.daily.weathercode[0],icon:WMO_ICONS[d.daily.weathercode[0]]||'🌡',desc:WMO_DESC[d.daily.weathercode[0]]||'Unknown'};
+    return{hi:Math.round(d.daily.temperature_2m_max[0]),lo:Math.round(d.daily.temperature_2m_min[0]),code:d.daily.weather_code[0],icon:WMO_ICONS[d.daily.weather_code[0]]||'🌡',desc:WMO_DESC[d.daily.weather_code[0]]||'Unknown'};
   }catch(e){return null;}
 }
 
 async function fetchForecastWx(iata,days){
-  const c=getCoords(iata);if(!c){console.log('WX: no coords for',iata);return null;}
+  const c=getCoords(iata);if(!c)return null;
   try{
-    const url=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,time&temperature_unit=fahrenheit&timezone=auto&forecast_days=${days}`;
-    console.log('WX fetch:',url);
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code,time&temperature_unit=fahrenheit&timezone=auto&forecast_days=${days}`;
     const r=await fetch(url);
-    console.log('WX status:',r.status,r.ok);
     if(!r.ok)return null;
     const d=await r.json();
-    console.log('WX data:',d);
     if(!d.daily)return null;
-    return d.daily.time.map((t,i)=>({date:t,hi:Math.round(d.daily.temperature_2m_max[i]),lo:Math.round(d.daily.temperature_2m_min[i]),icon:WMO_ICONS[d.daily.weathercode[i]]||'🌡'}));
-  }catch(e){console.log('WX error:',e);return null;}
+    return d.daily.time.map((t,i)=>({date:t,hi:Math.round(d.daily.temperature_2m_max[i]),lo:Math.round(d.daily.temperature_2m_min[i]),icon:WMO_ICONS[d.daily.weather_code[i]]||'🌡'}));
+  }catch(e){return null;}
 }
 
 function fmtTripDate(d){if(!d)return'—';return new Date(parseDate(d)).toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'});}
