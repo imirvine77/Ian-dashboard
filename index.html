@@ -270,7 +270,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 00:58 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 01:20 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -793,7 +793,9 @@ function importXLSX(input){
         fo:      findCol(header,['fo']),
         foNotes: findCol(header,['fo notes']),
         iro1:    findCol(header,['iro 1']),
+        iro1Notes:findCol(header,['iro 1 notes']),
         iro2:    findCol(header,['iro 2']),
+        iro2Notes:findCol(header,['iro 2 notes']),
         lcp:     findCol(header,['check airman']),
         miles:   findCol(header,['miles']),
         aircraft:findCol(header,['aircraft']),
@@ -822,7 +824,9 @@ function importXLSX(input){
             fo:String(r[idx.fo]||'').trim(),
             foNotes:String(r[idx.foNotes]||'').trim(),
             iro1:String(r[idx.iro1]||'').trim(),
+            iro1Notes:String(r[idx.iro1Notes]||'').trim(),
             iro2:String(r[idx.iro2]||'').trim(),
+            iro2Notes:String(r[idx.iro2Notes]||'').trim(),
             lcp:String(r[idx.lcp]||'').trim(),
             legs:[],totalMins:0,totalMiles:0
           };
@@ -845,7 +849,32 @@ function importXLSX(input){
         pairingMap[pKey].totalMiles+=parseInt(leg.miles)||0;
       }
 
-      const imported=pairingOrder.map(k=>pairingMap[k]);
+      // Split any pairing where consecutive legs are more than 6 days apart
+      // — same pairing# used across multiple bid periods
+      const MAX_GAP_DAYS=6;
+      const splitPairings=[];
+      pairingOrder.forEach(pKey=>{
+        const p=pairingMap[pKey];
+        const legs=p.legs;
+        if(legs.length<=1){splitPairings.push(p);return;}
+        let current={...p,legs:[legs[0]],totalMins:parseMins(legs[0].block),totalMiles:parseInt(legs[0].miles)||0,id:'p_imp_'+Date.now()+'_'+Math.random()};
+        for(let j=1;j<legs.length;j++){
+          const prev=legs[j-1];const curr=legs[j];
+          const prevTs=parseDate(prev.date);const currTs=parseDate(curr.date);
+          const gapDays=prevTs&&currTs?(currTs-prevTs)/(1000*60*60*24):0;
+          if(gapDays>MAX_GAP_DAYS){
+            splitPairings.push(current);
+            current={...p,legs:[curr],totalMins:parseMins(curr.block),totalMiles:parseInt(curr.miles)||0,id:'p_imp_'+Date.now()+'_'+Math.random()};
+          }else{
+            current.legs.push(curr);
+            current.totalMins+=parseMins(curr.block);
+            current.totalMiles+=parseInt(curr.miles)||0;
+          }
+        }
+        splitPairings.push(current);
+      });
+
+      const imported=splitPairings;
       const existing=load();
       // Composite key: pairing# + first leg date — same pairing# in different weeks is a different trip
       const existingKeys=new Set(existing.map(p=>p.pairing+'||'+(p.legs[0]?.date||'')));
@@ -1259,8 +1288,8 @@ function renderCrewNotes(){
 
     if(p.ca)  addPerson(p.ca,  'CA',   caNote);
     if(p.fo)  addPerson(p.fo,  'FO',   foNote);
-    if(p.iro1)addPerson(p.iro1,'IRO1', '');
-    if(p.iro2)addPerson(p.iro2,'IRO2', '');
+    if(p.iro1)addPerson(p.iro1,'IRO1', p.iro1Notes||'');
+    if(p.iro2)addPerson(p.iro2,'IRO2', p.iro2Notes||'');
     if(p.lcp) addPerson(p.lcp, 'LCP',  '');
   });
 
