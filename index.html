@@ -229,6 +229,10 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .cn-body{padding:10px 14px}
 .cn-note-entry{padding:8px 0;border-bottom:1px solid var(--border2)}
 .cn-note-entry:last-child{border-bottom:none}
+.cn-entry-top{display:flex;gap:10px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
+.cn-entry-date{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+.cn-entry-role{font-family:var(--font-mono);font-size:10px;color:var(--accent2)}
+.cn-entry-route{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
 .cn-note-date{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:3px}
 .cn-note-role{font-family:var(--font-mono);font-size:10px;color:var(--accent2);margin-bottom:4px}
 .cn-note-text{font-family:var(--font-body);font-size:13px;color:var(--text2);line-height:1.5}
@@ -270,7 +274,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 01:20 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 02:39 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -601,8 +605,12 @@ function renderAll(){
   const filtered=all.filter(p=>{
     let ok=true;
     if(search){
-      const hay=[p.pairing,p.ca,p.fo,p.iro1,p.iro2,p.lcp,p.notes,
-        ...(p.legs||[]).map(l=>l.dep+' '+l.arr+' '+l.fltno+' '+l.aircraft)].join(' ').toLowerCase();
+      // Search across all leg-level crew fields and route info
+      const hay=(p.legs||[]).map(l=>[
+        l.dep,l.arr,l.fltno,l.aircraft,
+        l.ca,l.fo,l.iro1,l.iro2,l.lcp,
+        l.caNotes,l.foNotes,l.iro1Notes,l.iro2Notes,l.notes
+      ].join(' ')).join(' ').toLowerCase();
       ok=ok&&hay.includes(search);
     }
     if(month&&p.legs&&p.legs.length){
@@ -702,13 +710,18 @@ function renderAll(){
   }));
 
   list.innerHTML=filtered.map(p=>{
-    const crewPills=[
-      p.ca?'<span class="crew-pill"><span class="crew-pill-role">CA </span><span class="crew-pill-name">'+p.ca+'</span></span>':'',
-      p.fo?'<span class="crew-pill"><span class="crew-pill-role">FO </span><span class="crew-pill-name">'+p.fo+'</span></span>':'',
-      p.iro1?'<span class="crew-pill"><span class="crew-pill-role">IRO1 </span><span class="crew-pill-name">'+p.iro1+'</span></span>':'',
-      p.iro2?'<span class="crew-pill"><span class="crew-pill-role">IRO2 </span><span class="crew-pill-name">'+p.iro2+'</span></span>':'',
-      p.lcp?'<span class="crew-pill"><span class="crew-pill-role">LCP </span><span class="crew-pill-name">'+p.lcp+'</span></span>':''
-    ].filter(Boolean).join('');
+    // Aggregate unique crew across all legs
+    const crewRoles={CA:new Set(),FO:new Set(),IRO1:new Set(),IRO2:new Set(),LCP:new Set()};
+    (p.legs||[]).forEach(l=>{
+      if(l.ca)crewRoles.CA.add(l.ca);
+      if(l.fo)crewRoles.FO.add(l.fo);
+      if(l.iro1)crewRoles.IRO1.add(l.iro1);
+      if(l.iro2)crewRoles.IRO2.add(l.iro2);
+      if(l.lcp)crewRoles.LCP.add(l.lcp);
+    });
+    const crewPills=Object.entries(crewRoles).flatMap(([role,names])=>
+      [...names].map(n=>'<span class="crew-pill"><span class="crew-pill-role">'+role+' </span><span class="crew-pill-name">'+n+'</span></span>')
+    ).join('');
 
     const legRows=(p.legs||[]).map(l=>{
       const bMins=parseMins(l.block);
@@ -803,38 +816,20 @@ function importXLSX(input){
         notes:   findCol(header,['notes'])
       };
 
-      // Group data rows by pairing — data starts at row index 2
-      const pairingMap={};
-      const pairingOrder=[];
+      // Process row by row. Each row is one leg.
+      // Store ALL crew fields per leg. Group into trips by pairing# + base-departure split.
+      const BASE_APTS=new Set(['LAX','SNA','ONT']);
+      const trips=[]; // final list of trip objects
+      let currentTrip=null;
+
       for(let i=2;i<rows.length;i++){
         const r=rows[i];
         if(r.every(c=>String(c).trim()===''))continue;
         const pairingNum=String(r[idx.pairing]||'').trim()||('imported_'+i);
-        const legDate=fmtDate(r[idx.date]);
-        // Stage by pairing# only so all legs of same pairing group together.
-        // Dedup against existing data uses pairing# + first leg date (applied below).
-        const pKey=pairingNum;
-        if(!pairingMap[pKey]){
-          pairingMap[pKey]={
-            id:'p_imp_'+Date.now()+'_'+i,
-            pairing:pairingNum,
-            notes:String(r[idx.notes]||'').trim(),
-            ca:String(r[idx.ca]||'').trim(),
-            caNotes:String(r[idx.caNotes]||'').trim(),
-            fo:String(r[idx.fo]||'').trim(),
-            foNotes:String(r[idx.foNotes]||'').trim(),
-            iro1:String(r[idx.iro1]||'').trim(),
-            iro1Notes:String(r[idx.iro1Notes]||'').trim(),
-            iro2:String(r[idx.iro2]||'').trim(),
-            iro2Notes:String(r[idx.iro2Notes]||'').trim(),
-            lcp:String(r[idx.lcp]||'').trim(),
-            legs:[],totalMins:0,totalMiles:0
-          };
-          pairingOrder.push(pKey);
-        }
+        const dep=String(r[idx.dep]||'').trim().toUpperCase();
         const leg={
           date:fmtDate(r[idx.date]),
-          dep:String(r[idx.dep]||'').trim().toUpperCase(),
+          dep:dep,
           arr:String(r[idx.arr]||'').trim().toUpperCase(),
           fltno:String(r[idx.fltno]||'').trim(),
           to:String(r[idx.to]||'').trim(),
@@ -842,39 +837,36 @@ function importXLSX(input){
           block:String(r[idx.block]||'').trim(),
           miles:String(r[idx.miles]||'').trim(),
           sob:String(r[idx.sob]||'').trim(),
-          aircraft:String(r[idx.aircraft]||'').trim()
+          aircraft:String(r[idx.aircraft]||'').trim(),
+          ca:String(r[idx.ca]||'').trim(),
+          caNotes:String(r[idx.caNotes]||'').trim(),
+          fo:String(r[idx.fo]||'').trim(),
+          foNotes:String(r[idx.foNotes]||'').trim(),
+          iro1:String(r[idx.iro1]||'').trim(),
+          iro1Notes:String(r[idx.iro1Notes]||'').trim(),
+          iro2:String(r[idx.iro2]||'').trim(),
+          iro2Notes:String(r[idx.iro2Notes]||'').trim(),
+          lcp:String(r[idx.lcp]||'').trim(),
+          notes:String(r[idx.notes]||'').trim()
         };
-        pairingMap[pKey].legs.push(leg);
-        pairingMap[pKey].totalMins+=parseMins(leg.block);
-        pairingMap[pKey].totalMiles+=parseInt(leg.miles)||0;
+        // Start new trip if: no current trip, OR pairing# changed, OR dep is a base airport (new trip starting)
+        const isNewTrip=!currentTrip
+          || currentTrip.pairing!==pairingNum
+          || (currentTrip.legs.length>0 && BASE_APTS.has(dep));
+        if(isNewTrip){
+          currentTrip={
+            id:'p_imp_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2),
+            pairing:pairingNum,
+            legs:[],totalMins:0,totalMiles:0
+          };
+          trips.push(currentTrip);
+        }
+        currentTrip.legs.push(leg);
+        currentTrip.totalMins+=parseMins(leg.block);
+        currentTrip.totalMiles+=parseInt(leg.miles)||0;
       }
 
-      // Split any pairing where consecutive legs are more than 6 days apart
-      // — same pairing# used across multiple bid periods
-      const MAX_GAP_DAYS=6;
-      const splitPairings=[];
-      pairingOrder.forEach(pKey=>{
-        const p=pairingMap[pKey];
-        const legs=p.legs;
-        if(legs.length<=1){splitPairings.push(p);return;}
-        let current={...p,legs:[legs[0]],totalMins:parseMins(legs[0].block),totalMiles:parseInt(legs[0].miles)||0,id:'p_imp_'+Date.now()+'_'+Math.random()};
-        for(let j=1;j<legs.length;j++){
-          const prev=legs[j-1];const curr=legs[j];
-          const prevTs=parseDate(prev.date);const currTs=parseDate(curr.date);
-          const gapDays=prevTs&&currTs?(currTs-prevTs)/(1000*60*60*24):0;
-          if(gapDays>MAX_GAP_DAYS){
-            splitPairings.push(current);
-            current={...p,legs:[curr],totalMins:parseMins(curr.block),totalMiles:parseInt(curr.miles)||0,id:'p_imp_'+Date.now()+'_'+Math.random()};
-          }else{
-            current.legs.push(curr);
-            current.totalMins+=parseMins(curr.block);
-            current.totalMiles+=parseInt(curr.miles)||0;
-          }
-        }
-        splitPairings.push(current);
-      });
-
-      const imported=splitPairings;
+      const imported=trips;
       const existing=load();
       // Composite key: pairing# + first leg date — same pairing# in different weeks is a different trip
       const existingKeys=new Set(existing.map(p=>p.pairing+'||'+(p.legs[0]?.date||'')));
@@ -1256,41 +1248,44 @@ function containsAvoid(text){
 function renderCrewNotes(){
   const all=load();
   const search=(document.getElementById('cn-search')?.value||'').toLowerCase();
-  const MY_NAME='ian irvine';
+  const MY_NAMES=new Set(['ian irvine','irvine']); // exclude self
 
-  // Build person map keyed by lowercase name
-  // Each person tracks all roles flown + all trip entries
+  const today=new Date();today.setHours(0,0,0,0);
   const personMap={};
 
-  all.forEach(p=>{
-    const legs=p.legs||[];
-    const airports=[...new Set(legs.map(l=>l.arr).filter(Boolean))];
-    const dates=legs.map(l=>l.date).filter(Boolean);
-    const firstDate=dates.length?dates.reduce((a,b)=>parseDate(a)<parseDate(b)?a:b):'';
-    const lastDate=dates.length?dates.reduce((a,b)=>parseDate(a)>parseDate(b)?a:b):'';
+  all.forEach(trip=>{
+    (trip.legs||[]).forEach(l=>{
+      const legDate=l.date;
+      const legDateTs=parseDate(legDate);
+      // Only past legs
+      if(legDateTs>today.getTime())return;
+      const firstLegRoute=(l.dep||'')+'→'+(l.arr||'');
 
-    const addPerson=(name,role,note)=>{
-      if(!name||!name.trim())return;
-      if(name.trim().toLowerCase()===MY_NAME)return;
-      const key=name.trim().toLowerCase();
-      if(!personMap[key]){
-        personMap[key]={name:name.trim(),roles:{},entries:[],airports:new Set(),lastDate:''};
-      }
-      const person=personMap[key];
-      person.roles[role]=(person.roles[role]||0)+1;
-      person.entries.push({date:firstDate,role,note:(note||'').trim()});
-      airports.forEach(a=>person.airports.add(a));
-      if(!person.lastDate||parseDate(lastDate)>parseDate(person.lastDate))person.lastDate=lastDate;
-    };
+      const addPerson=(name,role,note)=>{
+        if(!name||!name.trim())return;
+        if(MY_NAMES.has(name.trim().toLowerCase()))return;
+        const key=name.trim().toLowerCase();
+        if(!personMap[key]){
+          personMap[key]={name:name.trim(),roles:{},entries:[],airports:new Set(),lastDate:''};
+        }
+        const person=personMap[key];
+        person.roles[role]=(person.roles[role]||0)+1;
+        if(l.arr)person.airports.add(l.arr);
+        // Only add note if non-empty and not already recorded for this exact date+role
+        const noteText=(note||'').trim();
+        const isDupe=person.entries.some(e=>e.date===legDate&&e.role===role&&e.note===noteText);
+        if(!isDupe){
+          person.entries.push({date:legDate,role,note:noteText,route:firstLegRoute});
+        }
+        if(!person.lastDate||legDateTs>parseDate(person.lastDate))person.lastDate=legDate;
+      };
 
-    const caNote=p.caNotes||legs.map(l=>l.caNotes).filter(Boolean).join(' ');
-    const foNote=p.foNotes||legs.map(l=>l.foNotes).filter(Boolean).join(' ');
-
-    if(p.ca)  addPerson(p.ca,  'CA',   caNote);
-    if(p.fo)  addPerson(p.fo,  'FO',   foNote);
-    if(p.iro1)addPerson(p.iro1,'IRO1', p.iro1Notes||'');
-    if(p.iro2)addPerson(p.iro2,'IRO2', p.iro2Notes||'');
-    if(p.lcp) addPerson(p.lcp, 'LCP',  '');
+      addPerson(l.ca,'CA',l.caNotes||'');
+      addPerson(l.fo,'FO',l.foNotes||'');
+      addPerson(l.iro1,'IRO1',l.iro1Notes||'');
+      addPerson(l.iro2,'IRO2',l.iro2Notes||'');
+      addPerson(l.lcp,'LCP','');
+    });
   });
 
   // Sort each person's entries newest first
@@ -1298,11 +1293,10 @@ function renderCrewNotes(){
     p.entries.sort((a,b)=>parseDate(b.date)-parseDate(a.date));
   });
 
-  // Sort people newest first
+  // Sort people by most recent past trip, newest first
   const people=Object.values(personMap).sort((a,b)=>parseDate(b.lastDate)-parseDate(a.lastDate));
 
   // Update stats
-  const uniqueNames=new Set(people.map(p=>p.name.toLowerCase()));
   const caCount=people.filter(p=>p.roles['CA']>0).length;
   const foCount=people.filter(p=>p.roles['FO']>0).length;
   const caEl=document.getElementById('cn-ca-count');
@@ -1332,30 +1326,29 @@ function renderCrewNotes(){
     const allNotesText=p.entries.map(e=>e.note).join(' ');
     const isAvoid=containsAvoid(allNotesText);
     const cardClass=isAvoid?'cn-card avoid-card':'cn-card';
-    const lastFmt=p.lastDate?fmtTripDate(p.lastDate):'';
-    const totalTrips=Object.values(p.roles).reduce((a,b)=>a+b,0);
 
-    // Role pills with counts
-    const rolePillMap={
-      'CA':'ca','FO':'fo','IRO1':'iro','IRO2':'iro','LCP':'lcp'
-    };
-    // Merge IRO1+IRO2 count
+    // Role pills — merge IRO1+IRO2 into IRO
     const roleDisplay={};
     Object.entries(p.roles).forEach(([role,count])=>{
-      const label=role==='IRO1'||role==='IRO2'?'IRO':role;
+      const label=(role==='IRO1'||role==='IRO2')?'IRO':role;
       roleDisplay[label]=(roleDisplay[label]||0)+count;
     });
-    const rolePills=Object.entries(roleDisplay).map(([role,count])=>{
-      const cls=rolePillMap[role]||role.toLowerCase();
-      return`<span class="cn-pill ${cls}">${role} ×${count}</span>`;
-    }).join('');
+    const pillClass={CA:'ca',FO:'fo',IRO:'iro',LCP:'lcp'};
+    const rolePills=Object.entries(roleDisplay).map(([role,count])=>
+      `<span class="cn-pill ${pillClass[role]||'lcp'}">${role} ×${count}</span>`
+    ).join('');
     const avoidBadge=isAvoid?'<span class="cn-pill avoid">⚠ AVOID</span>':'';
 
-    // Note entries
+    const totalTrips=Object.values(p.roles).reduce((a,b)=>a+b,0);
+    const lastFmt=p.lastDate?fmtTripDate(p.lastDate):'';
+
     const noteRows=p.entries.map(e=>`
       <div class="cn-note-entry">
-        <div class="cn-note-date">${fmtTripDate(e.date)}</div>
-        <div class="cn-note-role">${e.role} on this trip</div>
+        <div class="cn-entry-top">
+          <span class="cn-entry-date">${fmtTripDate(e.date)}</span>
+          <span class="cn-entry-role">${e.role}</span>
+          <span class="cn-entry-route">${e.route}</span>
+        </div>
         <div class="cn-note-text${e.note?'':' empty'}">${e.note||'No notes'}</div>
       </div>`).join('');
 
