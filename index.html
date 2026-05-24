@@ -304,6 +304,1423 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
+    <div class="action-bar">
+      <button class="btn btn-export" onclick="exportXLSX()">&#8595; EXPORT XLSX</button>
+      <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none" onchange="importXLSX(this)"/>
+      <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">&#8593; IMPORT XLSX</button>
+      <button class="btn btn-danger" onclick="clearAll()">&#x2715; CLEAR ALL</button>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">24 May 2026 · 05:22 UTC</span></div>
+    <div class="section-label">TOTALS</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val accent" id="s-pairings">0</div>
+        <div class="stat-lbl">Pairings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="s-legs">0</div>
+        <div class="stat-lbl">Legs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val accent" id="s-block">0.0</div>
+        <div class="stat-lbl">Block Total (hrs)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="s-miles">0</div>
+        <div class="stat-lbl">Miles</div>
+      </div>
+    </div>
+
+    <div class="section-label">BLOCK HOURS BY AIRCRAFT TYPE</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val accent" id="m-block-787">0.0</div>
+        <div class="stat-lbl">787 Block (hrs)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-block-737">0.0</div>
+        <div class="stat-lbl">737 Block (hrs)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val accent" id="m-sob-787">—</div>
+        <div class="stat-lbl">Avg SOB · 787</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="m-sob-737">—</div>
+        <div class="stat-lbl">Avg SOB · 737</div>
+      </div>
+    </div>
+
+    <div class="metrics-two-col">
+
+      <div>
+        <div class="section-label">TOP 787 DESTINATIONS</div>
+        <table class="metrics-tbl" id="m-destinations">
+          <thead><tr><th>Airport</th><th>Visits</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="section-label">BLOCK HOURS BY YEAR</div>
+        <table class="metrics-tbl" id="m-years">
+          <thead><tr><th>Year</th><th>Block (hrs)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="section-label" style="margin-top:20px">FLIGHT EXTREMES</div>
+    <div class="extreme-grid">
+      <div class="extreme-card longest" id="m-longest">
+        <div class="extreme-hdr"><span class="extreme-badge longest">Longest</span></div>
+        <div class="extreme-body">
+          <div class="extreme-hrs" id="m-longest-hrs">—</div>
+          <div class="extreme-route" id="m-longest-route">—</div>
+          <div class="extreme-date" id="m-longest-date">—</div>
+        </div>
+      </div>
+      <div class="extreme-card shortest" id="m-shortest">
+        <div class="extreme-hdr"><span class="extreme-badge shortest">Shortest</span></div>
+        <div class="extreme-body">
+          <div class="extreme-hrs" id="m-shortest-hrs">—</div>
+          <div class="extreme-route" id="m-shortest-route">—</div>
+          <div class="extreme-date" id="m-shortest-date">—</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+
+  <div class="tab-content" id="tab-crew">
+
+    <div class="section-label">CREW STATISTICS</div>
+    <div class="stats-grid" style="margin-bottom:24px">
+      <div class="stat-card">
+        <div class="stat-val accent" id="cn-ca-count">0</div>
+        <div class="stat-lbl">Unique Captains</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="cn-fo-count">0</div>
+        <div class="stat-lbl">Unique First Officers</div>
+      </div>
+    </div>
+
+    <div class="section-label">CREW NOTES</div>
+
+    <div class="filter-bar" style="margin-bottom:12px">
+      <input class="filter-input" id="cn-search" placeholder="Search by name or keyword…" style="min-width:220px;flex:1" oninput="renderCrewNotes()"/>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="cn-role-btn active" data-role="all" onclick="setCnRole('all')">ALL</button>
+      <button class="cn-role-btn" data-role="ca" onclick="setCnRole('ca')">CA</button>
+      <button class="cn-role-btn" data-role="fo" onclick="setCnRole('fo')">FO</button>
+      <button class="cn-role-btn" data-role="iro" onclick="setCnRole('iro')">IRO</button>
+      <button class="cn-role-btn" data-role="lcp" onclick="setCnRole('lcp')">LCP</button>
+      <button class="cn-role-btn avoid" data-role="avoid" onclick="setCnRole('avoid')">⚠ AVOID</button>
+    </div>
+
+    <div id="cn-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+function getTZAbbr(){
+  try{
+    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const parts=new Intl.DateTimeFormat('en-US',{timeZoneName:'short',timeZone:tz}).formatToParts(new Date());
+    return parts.find(p=>p.type==='timeZoneName')?.value||'';
+  }catch(e){return'';}
+}
+function updateClock(){
+  const now=new Date();
+  const local=now.toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const tzAbbr=getTZAbbr();
+  const zulu=now.toLocaleTimeString('en-US',{timeZone:'UTC',hour12:false,hour:'2-digit',minute:'2-digit'}).replace(':','')+'Z';
+  document.getElementById('localClock').textContent=local+(tzAbbr?' '+tzAbbr:'');
+  document.getElementById('zuluClock').textContent=zulu;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+const LS='ianLogbook_v3';
+function load(){try{return JSON.parse(localStorage.getItem(LS))||[];}catch{return[];}}
+function store(d){localStorage.setItem(LS,JSON.stringify(d));}
+
+let editId=null;
+let sortDir='desc'; // 'desc' = newest first, 'asc' = oldest first
+
+function toggleSort(){
+  sortDir=sortDir==='desc'?'asc':'desc';
+  const btn=document.getElementById('sort-toggle');
+  if(btn)btn.textContent=sortDir==='desc'?'\u21C5 NEW \u2192 OLD':'\u21C5 OLD \u2192 NEW';
+  renderAll();
+}
+
+function openForm(id){
+  editId=id||null;
+  const panel=document.getElementById('form-panel');
+  document.getElementById('form-title').textContent=id?'EDIT PAIRING':'NEW PAIRING';
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+  if(id){
+    const p=load().find(x=>x.id===id);
+    if(!p)return;
+    document.getElementById('fp-pairing').value=p.pairing||'';
+    document.getElementById('fp-notes').value=p.notes||'';
+    document.getElementById('fp-ca').value=p.ca||'';
+    document.getElementById('fp-fo').value=p.fo||'';
+    document.getElementById('fp-iro1').value=p.iro1||'';
+    document.getElementById('fp-iro2').value=p.iro2||'';
+    document.getElementById('fp-lcp').value=p.lcp||'';
+    if(document.getElementById('leg-body'))document.getElementById('leg-body').innerHTML='';
+    (p.legs||[]).forEach(l=>addLegRow(l));
+  }else{
+    clearFormFields();
+  }
+}
+
+function closeForm(){
+  document.getElementById('form-panel').style.display='none';
+  clearFormFields();
+  editId=null;
+}
+
+function clearFormFields(){
+  ['fp-pairing','fp-notes','fp-ca','fp-fo','fp-iro1','fp-iro2','fp-lcp']
+    .forEach(id=>{document.getElementById(id).value='';});
+  if(document.getElementById('leg-body'))document.getElementById('leg-body').innerHTML='';
+}
+
+function addLegRow(l){
+  l=l||{};
+  const tb=document.getElementById('leg-body');if(!tb)return;
+  const tr=document.createElement('tr');
+  const v=k=>l[k]||'';
+  tr.innerHTML=
+    '<td><input type="date" value="'+v('date')+'" style="width:120px"/></td>'+
+    '<td><input value="'+v('dep')+'" placeholder="KLAX" maxlength="5" style="width:52px;text-transform:uppercase"/></td>'+
+    '<td><input value="'+v('arr')+'" placeholder="RJAA" maxlength="5" style="width:52px;text-transform:uppercase"/></td>'+
+    '<td><input value="'+v('fltno')+'" placeholder="UA835" style="width:62px"/></td>'+
+    '<td><input type="time" value="'+v('to')+'" style="width:82px"/></td>'+
+    '<td><input type="time" value="'+v('land')+'" style="width:82px"/></td>'+
+    '<td><input value="'+v('block')+'" placeholder="8:45" style="width:52px"/></td>'+
+    '<td><input type="number" value="'+v('miles')+'" placeholder="5470" style="width:58px"/></td>'+
+    '<td><input type="number" value="'+v('sob')+'" placeholder="296" style="width:52px"/></td>'+
+    '<td><input value="'+v('aircraft')+'" placeholder="787-9" style="width:62px"/></td>'+
+    '<td><button class="del-btn" onclick="this.closest(\'tr\').remove()">X</button></td>';
+  tb.appendChild(tr);
+}
+
+function getLegs(){
+  return Array.from(document.getElementById('leg-body').querySelectorAll('tr')).map(tr=>{
+    const ins=tr.querySelectorAll('input');
+    return{date:ins[0].value,dep:ins[1].value.toUpperCase(),arr:ins[2].value.toUpperCase(),
+      fltno:ins[3].value,to:ins[4].value,land:ins[5].value,block:ins[6].value,
+      miles:ins[7].value,sob:ins[8].value,aircraft:ins[9].value};
+  });
+}
+
+function parseMins(s){
+  if(!s)return 0;
+  const m=s.match(/^(\d+):(\d{2})$/);
+  if(m)return parseInt(m[1])*60+parseInt(m[2]);
+  const n=parseFloat(s);
+  if(!isNaN(n))return Math.round(n*60);
+  return 0;
+}
+
+function toDecimal(m){
+  if(!m)return'0.0';
+  return(m/60).toFixed(1);
+}
+
+function savePairing(){
+  const legs=getLegs();
+  const totalMins=legs.reduce((a,l)=>a+parseMins(l.block),0);
+  const totalMiles=legs.reduce((a,l)=>a+(parseInt(l.miles)||0),0);
+  const p={
+    id:editId||'p_'+Date.now(),
+    pairing:document.getElementById('fp-pairing').value.trim(),
+    notes:document.getElementById('fp-notes').value.trim(),
+    ca:document.getElementById('fp-ca').value.trim(),
+    fo:document.getElementById('fp-fo').value.trim(),
+    iro1:document.getElementById('fp-iro1').value.trim(),
+    iro2:document.getElementById('fp-iro2').value.trim(),
+    lcp:document.getElementById('fp-lcp').value.trim(),
+    legs,totalMins,totalMiles
+  };
+  let data=load();
+  if(editId){data=data.map(x=>x.id===editId?p:x);}else{data.unshift(p);}
+  store(data);closeForm();renderAll();
+}
+
+function deletePairing(id){
+  if(!confirm('Delete this pairing? This cannot be undone.'))return;
+  store(load().filter(x=>x.id!==id));renderAll();
+}
+
+function clearAll(){
+  if(!confirm('Clear ALL logbook data?'))return;
+  store([]);renderAll();
+}
+
+function clearFilters(){
+  if(document.getElementById('f-search'))document.getElementById('f-search').value='';
+  if(document.getElementById('f-month'))document.getElementById('f-month').value='';
+  renderAll();
+}
+
+function renderAll(){
+  const all=load();
+  const search=((document.getElementById('f-search')||{}).value||'').toLowerCase();
+  const month=(document.getElementById('f-month')||{}).value||'';
+  const filtered=all.filter(p=>{
+    let ok=true;
+    if(search){
+      // Search across all leg-level crew fields and route info
+      const hay=(p.legs||[]).map(l=>[
+        l.dep,l.arr,l.fltno,l.aircraft,
+        l.ca,l.fo,l.iro1,l.iro2,l.lcp,
+        l.caNotes,l.foNotes,l.iro1Notes,l.iro2Notes,l.notes
+      ].join(' ')).join(' ').toLowerCase();
+      ok=ok&&hay.includes(search);
+    }
+    if(month&&p.legs&&p.legs.length){
+      ok=ok&&p.legs.some(l=>l.date&&l.date.startsWith(month));
+    }
+    return ok;
+  });
+
+  // Sort by first leg date — use parseDate() for reliable cross-format parsing
+  filtered.sort((a,b)=>{
+    const da=parseDate(a.legs&&a.legs[0]?a.legs[0].date:'');
+    const db=parseDate(b.legs&&b.legs[0]?b.legs[0].date:'');
+    return sortDir==='desc'?db-da:da-db;
+  });
+
+  const tMins=filtered.reduce((a,p)=>a+p.totalMins,0);
+  const tMiles=filtered.reduce((a,p)=>a+p.totalMiles,0);
+  const tLegs=filtered.reduce((a,p)=>a+(p.legs||[]).length,0);
+  document.getElementById('s-pairings').textContent=filtered.length;
+  document.getElementById('s-legs').textContent=tLegs;
+  document.getElementById('s-block').textContent=toDecimal(tMins);
+  document.getElementById('s-miles').textContent=tMiles.toLocaleString();
+
+  // ── METRICS COMPUTATION ──
+  const BASE_AIRPORTS=new Set(['LAX','SNA','ONT','EWR','SFO','ORD','IAH','IAD','DEN']);
+  const acType=ac=>{
+    if(!ac)return'other';
+    if(ac.includes('787'))return'787';
+    if(ac.includes('737'))return'737';
+    return'other';
+  };
+
+  // Block hours + SOB by aircraft type
+  const block787m=[];const sob787=[];
+  const block737m=[];const sob737=[];
+  // Destination visit counts (count each arrival)
+  const destCount={};
+  // Block by year
+  const yearBlock={};
+
+  filtered.forEach(p=>{
+    (p.legs||[]).forEach(l=>{
+      const type=acType(l.aircraft||'');
+      const bm=parseMins(l.block);
+      const sob=parseInt(l.sob)||0;
+      if(type==='787'){block787m.push(bm);if(sob)sob787.push(sob);}
+      else if(type==='737'){block737m.push(bm);if(sob)sob737.push(sob);}
+
+      // Destination: count arrival airport on 787 legs only, exclude base airports
+      const arr=(l.arr||'').trim().toUpperCase();
+      if(arr&&!BASE_AIRPORTS.has(arr)&&type==='787'){
+        destCount[arr]=(destCount[arr]||0)+1;
+      }
+
+      // Year from leg date
+      const yr=parseYearFromDate(l.date);
+      if(yr){
+        yearBlock[yr]=(yearBlock[yr]||0)+bm;
+      }
+    });
+  });
+
+  // Aircraft block + SOB
+  const sum=arr=>arr.reduce((a,b)=>a+b,0);
+  document.getElementById('m-block-787').textContent=toDecimal(sum(block787m));
+  document.getElementById('m-block-737').textContent=toDecimal(sum(block737m));
+  document.getElementById('m-sob-787').textContent=sob787.length?Math.round(sum(sob787)/sob787.length).toLocaleString():'—';
+  document.getElementById('m-sob-737').textContent=sob737.length?Math.round(sum(sob737)/sob737.length).toLocaleString():'—';
+
+  // Extremes — longest and shortest by block hours across all flights
+  let longestLeg=null,shortestLeg=null;
+  filtered.forEach(p=>{
+    (p.legs||[]).forEach(l=>{
+      const bm=parseMins(l.block);
+      if(!bm)return;
+      if(!longestLeg||bm>parseMins(longestLeg.block))longestLeg=l;
+      if(!shortestLeg||bm<parseMins(shortestLeg.block))shortestLeg=l;
+    });
+  });
+  if(longestLeg){
+    document.getElementById('m-longest-hrs').textContent=toDecimal(parseMins(longestLeg.block))+' hrs';
+    document.getElementById('m-longest-route').textContent=(longestLeg.dep||'?')+'-'+(longestLeg.arr||'?');
+    document.getElementById('m-longest-date').textContent=longestLeg.date||'';
+  }
+  if(shortestLeg){
+    document.getElementById('m-shortest-hrs').textContent=toDecimal(parseMins(shortestLeg.block))+' hrs';
+    document.getElementById('m-shortest-route').textContent=(shortestLeg.dep||'?')+'-'+(shortestLeg.arr||'?');
+    document.getElementById('m-shortest-date').textContent=shortestLeg.date||'';
+  }
+
+  // Top 10 destinations
+  const destSorted=Object.entries(destCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const destTbl=document.querySelector('#m-destinations tbody');
+  destTbl.innerHTML=destSorted.length
+    ?destSorted.map((d,i)=>'<tr><td>'+(i===0?'<span style="color:var(--gold)">'+d[0]+'</span>':d[0])+'</td><td>'+d[1]+'</td></tr>').join('')
+    :'<tr><td colspan="2" style="color:var(--text3);text-align:center">No data</td></tr>';
+
+  // Hours by year
+  const yearSorted=Object.entries(yearBlock).sort((a,b)=>parseInt(b[0])-parseInt(a[0]));
+  const yearTbl=document.querySelector('#m-years tbody');
+  yearTbl.innerHTML=yearSorted.length
+    ?yearSorted.map(y=>'<tr><td>'+y[0]+'</td><td>'+toDecimal(y[1])+'</td></tr>').join('')
+    :'<tr><td colspan="2" style="color:var(--text3);text-align:center">No data</td></tr>';
+
+  const list=document.getElementById('pairings-list');
+  if(!list)return;
+  if(!filtered.length){
+    list.innerHTML='<div class="empty-state"><span class="empty-icon">&#x2708;</span>No pairings found.</div>';
+    return;
+  }
+
+  // First pass — find global max block and miles across all visible legs
+  let maxBlock=0,maxMiles=0;
+  filtered.forEach(p=>(p.legs||[]).forEach(l=>{
+    const b=parseMins(l.block);
+    const m=parseInt(l.miles)||0;
+    if(b>maxBlock)maxBlock=b;
+    if(m>maxMiles)maxMiles=m;
+  }));
+
+  list.innerHTML=filtered.map(p=>{
+    // Aggregate unique crew across all legs
+    const crewRoles={CA:new Set(),FO:new Set(),IRO1:new Set(),IRO2:new Set(),LCP:new Set()};
+    (p.legs||[]).forEach(l=>{
+      if(l.ca)crewRoles.CA.add(l.ca);
+      if(l.fo)crewRoles.FO.add(l.fo);
+      if(l.iro1)crewRoles.IRO1.add(l.iro1);
+      if(l.iro2)crewRoles.IRO2.add(l.iro2);
+      if(l.lcp)crewRoles.LCP.add(l.lcp);
+    });
+    const crewPills=Object.entries(crewRoles).flatMap(([role,names])=>
+      [...names].map(n=>'<span class="crew-pill"><span class="crew-pill-role">'+role+' </span><span class="crew-pill-name">'+n+'</span></span>')
+    ).join('');
+
+    const legRows=(p.legs||[]).map(l=>{
+      const bMins=parseMins(l.block);
+      const mVal=parseInt(l.miles)||0;
+      const bClass=(maxBlock>0&&bMins===maxBlock)?' class="max-val"':'';
+      const mClass=(maxMiles>0&&mVal===maxMiles)?' class="max-val"':'';
+      return '<tr>'+
+      '<td>'+( l.date||'&#x2014;')+'</td>'+
+      '<td class="iata">'+(l.dep||'&#x2014;')+'</td>'+
+      '<td class="iata">'+(l.arr||'&#x2014;')+'</td>'+
+      '<td class="fltno">'+(l.fltno||'&#x2014;')+'</td>'+
+      '<td>'+(l.to||'&#x2014;')+'</td>'+
+      '<td>'+(l.land||'&#x2014;')+'</td>'+
+      '<td'+bClass+' style="color:'+(bClass?'var(--red)':'var(--gold)')+'">'+( l.block||'&#x2014;')+'</td>'+
+      '<td'+mClass+'>'+(l.miles?parseInt(l.miles).toLocaleString():'&#x2014;')+'</td>'+
+      '<td>'+(l.sob||'&#x2014;')+'</td>'+
+      '</tr>';
+    }).join('');
+
+    // Build route glance and date range
+    const dates=(p.legs||[]).map(l=>l.date).filter(Boolean);
+    const firstDate=dates.length?fmtDisplayDate(dates[dates.length-1]):'—';
+    const lastDate=dates.length>1?fmtDisplayDate(dates[0]):'';
+    const dateRange=lastDate&&lastDate!==firstDate?firstDate+' → '+lastDate:firstDate;
+    const stops=(p.legs&&p.legs[0]?[p.legs[0].dep]:[]).concat((p.legs||[]).map(l=>l.arr)).filter(Boolean);
+    const routeGlance=stops.join('-');
+    const isManual=p.id&&p.id.startsWith('p_')&&!p.id.startsWith('p_imp');
+    const manualBadge=isManual?'<span class="manual-trip-badge">⚑ FIELD ENTRY</span>':'';
+
+    return '<div class="pcard">'+
+      '<div class="pcard-header">'+
+        '<div>'+
+          '<div class="pcard-pairing">'+routeGlance+manualBadge+'</div>'+
+          '<div class="pcard-aircraft">'+dateRange+(p.notes?' · '+p.notes:'')+'</div>'+
+        '</div>'+
+        '<div class="pcard-totals">'+
+          '<div class="pcard-total"><div class="pcard-total-val" style="color:var(--gold)">'+toDecimal(p.totalMins)+'</div><div class="pcard-total-lbl">Block</div></div>'+
+          '<div class="pcard-total"><div class="pcard-total-val">'+p.totalMiles.toLocaleString()+'</div><div class="pcard-total-lbl">Miles</div></div>'+
+          '<div class="pcard-total"><div class="pcard-total-val" style="color:var(--accent2)">'+(p.legs||[]).length+'</div><div class="pcard-total-lbl">Legs</div></div>'+
+          '<div class="pcard-actions">'+
+            '<button class="edit-btn" onclick="openForm(\''+p.id+'\')">EDIT</button>'+
+            '<button class="del-btn" onclick="deletePairing(\''+p.id+'\')">DEL</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      (crewPills?'<div class="pcard-crew">'+crewPills+'</div>':'')+
+      '<div class="pcard-legs" style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+
+        '<table class="legs-tbl">'+
+          '<thead><tr><th>Date</th><th>Dep</th><th>Arr</th><th>Flt #</th><th>T/O</th><th>Land</th><th>Block</th><th>Miles</th><th>SOB</th></tr></thead>'+
+          '<tbody>'+legRows+'</tbody>'+
+        '</table>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function importXLSX(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(rows.length<3){alert('No data rows found in file.');return;}
+
+      // Ian's spreadsheet has 2 header rows — row 1 is group labels (merged),
+      // row 2 is actual column names. Data starts row 3 (index 2).
+      // Row 2 columns: Date, Dep, Arr, Flight #, Local T/O, Local Land, Total, Pairing,
+      //   CA, CA Notes, FO, FO Notes, IRO 1, IRO 1 Notes, IRO 2, IRO 2 Notes,
+      //   Check Airman, Check Airman Notes, Miles, Aircraft, SOB, Notes
+      const header=rows[1].map(h=>String(h).trim().toLowerCase());
+      const idx={
+        date:    findCol(header,['date']),
+        dep:     findCol(header,['dep']),
+        arr:     findCol(header,['arr']),
+        fltno:   findCol(header,['flight #','flight#']),
+        to:      findCol(header,['local t/o']),
+        land:    findCol(header,['local land']),
+        block:   findCol(header,['total']),
+        pairing: findCol(header,['pairing']),
+        ca:      findCol(header,['ca']),
+        caNotes: findCol(header,['ca notes']),
+        fo:      findCol(header,['fo']),
+        foNotes: findCol(header,['fo notes']),
+        iro1:    findCol(header,['iro 1']),
+        iro1Notes:findCol(header,['iro 1 notes']),
+        iro2:    findCol(header,['iro 2']),
+        iro2Notes:findCol(header,['iro 2 notes']),
+        lcp:     findCol(header,['check airman']),
+        miles:   findCol(header,['miles']),
+        aircraft:findCol(header,['aircraft']),
+        sob:     findCol(header,['sob']),
+        notes:   findCol(header,['notes'])
+      };
+
+      // Process row by row. Each row is one leg.
+      // Store ALL crew fields per leg. Group into trips by pairing# + base-departure split.
+      const BASE_APTS=new Set(['LAX','SNA','ONT']);
+      const trips=[]; // final list of trip objects
+      let currentTrip=null;
+
+      for(let i=2;i<rows.length;i++){
+        const r=rows[i];
+        if(r.every(c=>String(c).trim()===''))continue;
+        const pairingNum=String(r[idx.pairing]||'').trim()||('imported_'+i);
+        const dep=String(r[idx.dep]||'').trim().toUpperCase();
+        const leg={
+          date:fmtDate(r[idx.date]),
+          dep:dep,
+          arr:String(r[idx.arr]||'').trim().toUpperCase(),
+          fltno:String(r[idx.fltno]||'').trim(),
+          to:String(r[idx.to]||'').trim(),
+          land:String(r[idx.land]||'').trim(),
+          block:String(r[idx.block]||'').trim(),
+          miles:String(r[idx.miles]||'').trim(),
+          sob:String(r[idx.sob]||'').trim(),
+          aircraft:String(r[idx.aircraft]||'').trim(),
+          ca:String(r[idx.ca]||'').trim(),
+          caNotes:String(r[idx.caNotes]||'').trim(),
+          fo:String(r[idx.fo]||'').trim(),
+          foNotes:String(r[idx.foNotes]||'').trim(),
+          iro1:String(r[idx.iro1]||'').trim(),
+          iro1Notes:String(r[idx.iro1Notes]||'').trim(),
+          iro2:String(r[idx.iro2]||'').trim(),
+          iro2Notes:String(r[idx.iro2Notes]||'').trim(),
+          lcp:String(r[idx.lcp]||'').trim(),
+          notes:String(r[idx.notes]||'').trim()
+        };
+        // Start new trip if: no current trip, OR pairing# changed, OR dep is a base airport (new trip starting)
+        const isNewTrip=!currentTrip
+          || currentTrip.pairing!==pairingNum
+          || (currentTrip.legs.length>0 && BASE_APTS.has(dep));
+        if(isNewTrip){
+          currentTrip={
+            id:'p_imp_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2),
+            pairing:pairingNum,
+            legs:[],totalMins:0,totalMiles:0
+          };
+          trips.push(currentTrip);
+        }
+        currentTrip.legs.push(leg);
+        currentTrip.totalMins+=parseMins(leg.block);
+        currentTrip.totalMiles+=parseInt(leg.miles)||0;
+      }
+
+      const imported=trips;
+      const existing=load();
+      // Composite key: pairing# + first leg date — same pairing# in different weeks is a different trip
+      const existingKeys=new Set(existing.map(p=>p.pairing+'||'+(p.legs[0]?.date||'')));
+      const newOnes=imported.filter(p=>!existingKeys.has(p.pairing+'||'+(p.legs[0]?.date||'')));
+      const dupes=imported.length-newOnes.length;
+      store([...newOnes,...existing]);
+      renderAll();
+      input.value='';
+      let msg='Imported '+newOnes.length+' pairing'+(newOnes.length!==1?'s':'')+'.';
+      if(dupes>0)msg+='\n'+dupes+' pairing'+(dupes!==1?'s':'')+' skipped (already imported — same pairing # and start date).';
+      alert(msg);
+    }catch(err){
+      alert('Import failed: '+err.message);
+      console.error(err);
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+function parseYearFromDate(val){
+  if(!val)return null;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(String(val)))return String(val).slice(0,4);
+  // DD Mon YY or DD Mon YYYY
+  const dmy=String(val).match(/^(\d{1,2})\s+[A-Za-z]{3}\s+(\d{2,4})$/);
+  if(dmy){
+    const yr=dmy[2].length===2?'20'+dmy[2]:dmy[2];
+    return yr;
+  }
+  // MM/DD/YYYY
+  const mdy=String(val).match(/^\d{1,2}\/\d{1,2}\/(\d{2,4})$/);
+  if(mdy)return mdy[1].length===2?'20'+mdy[1]:mdy[1];
+  // Excel serial
+  if(typeof val==='number'){
+    return String(new Date(Math.round((val-25569)*86400*1000)).getFullYear());
+  }
+  return null;
+}
+
+function fmtDisplayDate(val){
+  if(!val)return'—';
+  // YYYY-MM-DD → DD Mon YY
+  if(/^\d{4}-\d{2}-\d{2}$/.test(val)){
+    const d=new Date(val+'T12:00:00');
+    return d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'});
+  }
+  return val;
+}
+
+function findCol(header,candidates){
+  // Exact match first
+  for(const c of candidates){
+    const i=header.findIndex(h=>h===c);
+    if(i!==-1)return i;
+  }
+  // Then startsWith
+  for(const c of candidates){
+    const i=header.findIndex(h=>h.startsWith(c));
+    if(i!==-1)return i;
+  }
+  return 99;
+}
+
+const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+
+function parseDate(val){
+  if(!val)return 0;
+  // Excel serial
+  if(typeof val==='number') return new Date(Math.round((val-25569)*86400*1000)).getTime();
+  const s=String(val).trim();
+  // YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s+'T12:00:00').getTime();
+  // DD Mon YY or DD Mon YYYY (e.g. "07 Dec 21", "1 Jul 2022")
+  const dmy=s.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{2,4})$/);
+  if(dmy){
+    const mo=MONTHS[dmy[2].toLowerCase()];
+    const yr=dmy[3].length===2?2000+parseInt(dmy[3]):parseInt(dmy[3]);
+    return new Date(yr,mo,parseInt(dmy[1]),12).getTime();
+  }
+  // MM/DD/YYYY
+  const mdy=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(mdy){
+    const yr=mdy[3].length===2?2000+parseInt(mdy[3]):parseInt(mdy[3]);
+    return new Date(yr,parseInt(mdy[1])-1,parseInt(mdy[2]),12).getTime();
+  }
+  // fallback
+  const d=new Date(s);
+  return isNaN(d)?0:d.getTime();
+}
+
+function fmtDate(val){
+  if(!val)return'';
+  // Excel serial number
+  if(typeof val==='number'){
+    const d=new Date(Math.round((val-25569)*86400*1000));
+    return d.toISOString().slice(0,10);
+  }
+  const s=String(val).trim();
+  // Already YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  // MM/DD/YYYY or M/D/YY
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(m){
+    const yr=m[3].length===2?'20'+m[3]:m[3];
+    return yr+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0');
+  }
+  return s;
+}
+
+function exportXLSX(){
+  const data=load();
+  const rows=[['Date','Dep','Arr','Flight #','Local T/O','Local Land','Total','Pairing','CA','FO','IRO1','IRO2','LCP','Miles','Aircraft','SOB','Notes']];
+  data.forEach(p=>{
+    (p.legs||[]).forEach(l=>{
+      rows.push([l.date||'',l.dep||'',l.arr||'',l.fltno||'',l.to||'',l.land||'',
+        l.block||'',p.pairing||'',p.ca||'',p.fo||'',p.iro1||'',p.iro2||'',
+        p.lcp||'',l.miles||'',l.aircraft||'',l.sob||'',p.notes||'']);
+    });
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[10,6,6,9,9,9,7,12,10,10,10,10,10,7,10,6,20].map(w=>({wch:w}));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,'Logbook',ws);
+  XLSX.writeFile(wb,'IanLogbook_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+// ── TRIPS TAB ──
+
+const HOTEL_COORDS={
+  NRT:{lat:35.6683,lon:139.7408,name:'ANA InterContinental Tokyo',maps:'https://maps.google.com/?q=ANA+InterContinental+Tokyo+Minato'},
+  HND:{lat:35.6683,lon:139.7408,name:'ANA InterContinental Tokyo',maps:'https://maps.google.com/?q=ANA+InterContinental+Tokyo+Minato'},
+  HKG:{lat:22.2767,lon:114.1654,name:'Conrad Hong Kong',maps:'https://maps.google.com/?q=Conrad+Hong+Kong+Admiralty'},
+  PEK:{lat:39.9139,lon:116.4582,name:'Kerry Hotel Beijing',maps:'https://maps.google.com/?q=Kerry+Hotel+Beijing'},
+  PVG:{lat:31.2091,lon:121.5182,name:'Sheraton Grand Shanghai Pudong',maps:'https://maps.google.com/?q=Sheraton+Grand+Shanghai+Pudong+Hotel'},
+  BKK:{lat:13.7346,lon:100.5646,name:'Carlton Hotel Bangkok Sukhumvit',maps:'https://maps.google.com/?q=Carlton+Hotel+Bangkok+Sukhumvit'},
+  SYD:{lat:-33.8654,lon:151.2089,name:'Paradox Sydney',maps:'https://maps.google.com/?q=Paradox+Hotel+Sydney'},
+  MEL:{lat:-37.8251,lon:144.9510,name:'Pan Pacific Melbourne',maps:'https://maps.google.com/?q=Pan+Pacific+Melbourne'},
+  LHR:{lat:51.5010,lon:-0.1169,name:'Park Plaza London Westminster Bridge',maps:'https://maps.google.com/?q=Park+Plaza+London+Westminster+Bridge'},
+  SGN:{lat:10.7786,lon:106.7068,name:'Lotte Hotel Saigon',maps:'https://maps.google.com/?q=Lotte+Hotel+Saigon+Ho+Chi+Minh'}
+};
+
+const AIRPORT_COORDS={
+  LAX:{lat:33.9425,lon:-118.4081},SNA:{lat:33.6757,lon:-117.8676},
+  ONT:{lat:34.0560,lon:-117.6012},SFO:{lat:37.6213,lon:-122.3790},
+  ORD:{lat:41.9742,lon:-87.9073},EWR:{lat:40.6895,lon:-74.1745},
+  JFK:{lat:40.6413,lon:-73.7781},IAH:{lat:29.9902,lon:-95.3368},
+  IAD:{lat:38.9531,lon:-77.4565},DEN:{lat:39.8561,lon:-104.6737},
+  NRT:{lat:35.7720,lon:140.3929},HND:{lat:35.5494,lon:139.7798},
+  HKG:{lat:22.3080,lon:113.9185},PEK:{lat:40.0799,lon:116.6031},
+  PVG:{lat:31.1443,lon:121.8083},BKK:{lat:13.6900,lon:100.7501},
+  SYD:{lat:-33.9399,lon:151.1753},MEL:{lat:-37.6690,lon:144.8410},
+  LHR:{lat:51.4700,lon:-0.4543},SGN:{lat:10.8188,lon:106.6520},
+  ICN:{lat:37.4602,lon:126.4407},SIN:{lat:1.3644,lon:103.9915},
+  DXB:{lat:25.2532,lon:55.3657},CDG:{lat:49.0097,lon:2.5479},
+  AMS:{lat:52.3105,lon:4.7683},FCO:{lat:41.8003,lon:12.2389}
+};
+
+const WMO_ICONS={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'🌨',75:'🌨',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
+const WMO_DESC={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Heavy showers',82:'Violent showers',95:'Thunderstorm',96:'Thunderstorm w/ hail',99:'Thunderstorm w/ hail'};
+
+function getCoords(iata){return HOTEL_COORDS[iata]||AIRPORT_COORDS[iata]||null;}
+function getLocationName(iata){
+  const h=HOTEL_COORDS[iata];
+  if(h)return`<a href="${h.maps}" target="_blank" style="color:var(--accent2);text-decoration:none;border-bottom:1px dotted var(--border)">${h.name}</a>`;
+  return iata+' Airport';
+}
+function getWxLink(iata){
+  const c=getCoords(iata);
+  if(!c)return'https://open-meteo.com';
+  return`https://open-meteo.com/en/docs#latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit`;
+}
+
+async function fetchCurrentWx(iata){
+  const c=getCoords(iata);if(!c)return null;
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`);
+    if(!r.ok)return null;
+    const d=await r.json();
+    if(!d.daily)return null;
+    return{hi:Math.round(d.daily.temperature_2m_max[0]),lo:Math.round(d.daily.temperature_2m_min[0]),code:d.daily.weather_code[0],icon:WMO_ICONS[d.daily.weather_code[0]]||'🌡',desc:WMO_DESC[d.daily.weather_code[0]]||'Unknown'};
+  }catch(e){return null;}
+}
+
+async function fetchForecastWx(iata,days){
+  const c=getCoords(iata);if(!c)return null;
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=auto&forecast_days=${days}`;
+    const r=await fetch(url);
+    if(!r.ok)return null;
+    const d=await r.json();
+    if(!d.daily)return null;
+    return d.daily.time.map((t,i)=>({date:t,hi:Math.round(d.daily.temperature_2m_max[i]),lo:Math.round(d.daily.temperature_2m_min[i]),icon:WMO_ICONS[d.daily.weather_code[i]]||'🌡'}));
+  }catch(e){console.log('FC CATCH',e.message);return null;}
+}
+
+function fmtTripDate(d){if(!d)return'—';return new Date(parseDate(d)).toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'});}
+
+function buildCrewPills(p){
+  return[
+    p.ca?`<span class="t-crew-pill"><span class="t-crew-role">CA </span><span class="t-crew-name">${p.ca}</span></span>`:'',
+    p.fo?`<span class="t-crew-pill"><span class="t-crew-role">FO </span><span class="t-crew-name">${p.fo}</span></span>`:'',
+    p.iro1?`<span class="t-crew-pill"><span class="t-crew-role">IRO1 </span><span class="t-crew-name">${p.iro1}</span></span>`:'',
+    p.iro2?`<span class="t-crew-pill"><span class="t-crew-role">IRO2 </span><span class="t-crew-name">${p.iro2}</span></span>`:'',
+    p.lcp?`<span class="t-crew-pill"><span class="t-crew-role">LCP </span><span class="t-crew-name">${p.lcp}</span></span>`:''
+  ].filter(Boolean).join('');
+}
+
+function buildLegCard(l,p,type){
+  const mi=(x,lbl,val)=>val?`<div class="t-mi"><div class="t-ml">${lbl}</div><div class="t-mv">${val}</div></div>`:'';
+  const blockHrs=l.block?toDecimal(parseMins(l.block))+' hrs':'—';
+  const miles=l.miles?parseInt(l.miles).toLocaleString():'';
+  const pax=l.sob||'';
+  const aircraft=l.aircraft||'';
+  const crew=type!=='next'?buildCrewPills(p):'';
+
+  let meta='';
+  if(type==='last'||type==='current'){
+    meta=`
+      ${mi('','Date',fmtTripDate(l.date))}
+      ${mi('','Aircraft',aircraft)}
+      ${mi('','Block',blockHrs)}
+      ${miles?mi('','Miles',miles):''}
+      ${pax?mi('','PAX',pax):''}
+    `;
+  } else {
+    // next — date only, no crew/pax
+    meta=`
+      ${mi('','Date',fmtTripDate(l.date))}
+      ${aircraft?mi('','Aircraft',aircraft):''}
+      ${mi('','Block',blockHrs)}
+    `;
+  }
+
+  return `
+    <div class="t-leg-card ${type}-card">
+      <div class="t-leg-card-hdr">
+        <span class="t-leg-route">${l.dep||'—'}<span class="t-leg-route-sep">-</span>${l.arr||'—'}</span>
+        <span class="t-leg-fltno">${l.fltno||''}</span>
+      </div>
+      <div class="t-leg-card-body">
+        <div class="t-meta">${meta}</div>
+        ${crew?`<div class="t-crew">${crew}</div>`:''}
+      </div>
+    </div>`;
+}
+
+function getUniqueHotelDests(p){
+  const base=new Set(['LAX','SNA','ONT']);
+  const seen=new Set();
+  const result=[];
+  for(const l of(p.legs||[])){
+    const arr=(l.arr||'').toUpperCase();
+    if(arr&&!base.has(arr)&&!seen.has(arr)){
+      seen.add(arr);
+      result.push(arr);
+    }
+  }
+  return result;
+}
+
+function daysUntil(p){
+  const fl=p.legs&&p.legs[0];if(!fl||!fl.date)return null;
+  const today=new Date();today.setHours(0,0,0,0);
+  const trip=new Date(parseDate(fl.date));trip.setHours(0,0,0,0);
+  return Math.round((trip-today)/(1000*60*60*24));
+}
+
+function buildWxTile(iata,idSuffix){
+  const locName=getLocationName(iata);
+  const wxLink=getWxLink(iata);
+  return`<div class="t-wx" id="wx-${idSuffix}">
+    <div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
+    <div class="t-wx-loading">FETCHING...</div>
+  </div>`;
+}
+
+function buildFcTile(iata,idSuffix){
+  const locName=getLocationName(iata);
+  const wxLink=getWxLink(iata);
+  return`<div class="t-wx" id="fc-${idSuffix}">
+    <div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
+    <div class="t-wx-loading">FETCHING...</div>
+  </div>`;
+}
+
+async function renderTripsTab(){
+  const all=load();
+  if(!all.length){
+    ['last','current','next'].forEach(t=>{document.getElementById('ts-'+t).innerHTML='<div class="t-empty">No logbook data</div>';});
+    return;
+  }
+  const today=new Date();today.setHours(0,0,0,0);
+  function fld(p){return p.legs&&p.legs[0]?new Date(parseDate(p.legs[0].date)):new Date(0);}
+  function lld(p){const l=p.legs;return l&&l.length?new Date(parseDate(l[l.length-1].date)):new Date(0);}
+
+  const currentP=all.find(p=>{
+    const s=fld(p);s.setHours(0,0,0,0);
+    const e=lld(p);e.setHours(0,0,0,0);
+    return today>=s&&today<=e;
+  });
+  const past=all.filter(p=>{const e=lld(p);e.setHours(0,0,0,0);return e<today&&p!==currentP;}).sort((a,b)=>lld(b)-lld(a));
+  const future=all.filter(p=>{const s=fld(p);s.setHours(0,0,0,0);return s>today&&p!==currentP;}).sort((a,b)=>fld(a)-fld(b));
+  const lastP=past[0]||null;
+  const nextP=future[0]||null;
+
+  // ── LAST TRIP ──
+  if(lastP){
+    const cards=(lastP.legs||[]).map(l=>buildLegCard(l,lastP,'last')).join('');
+    document.getElementById('ts-last').innerHTML=cards||'<div class="t-empty">No legs</div>';
+  }else{
+    document.getElementById('ts-last').innerHTML='<div class="t-empty">No completed trips</div>';
+  }
+
+  // ── CURRENT TRIP ──
+  if(currentP){
+    const cards=(currentP.legs||[]).map(l=>buildLegCard(l,currentP,'current')).join('');
+    const dests=getUniqueHotelDests(currentP);
+    const wxTiles=dests.map((iata,i)=>buildWxTile(iata,`cur_${i}`)).join('');
+    document.getElementById('ts-current').innerHTML=
+      cards+
+      (dests.length?`<div class="t-wx-section">${wxTiles}</div>`:'');
+    dests.forEach((iata,i)=>{
+      fetchCurrentWx(iata).then(wx=>{
+        const el=document.getElementById(`wx-cur_${i}`);if(!el)return;
+        const locName=getLocationName(iata);const wxLink=getWxLink(iata);
+        if(!wx){el.innerHTML=`<div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div><div class="t-wx-loading">UNAVAILABLE</div>`;return;}
+        el.innerHTML=`
+          <div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
+          <div class="t-wx-main"><div class="t-wx-icon">${wx.icon}</div><div><div class="t-wx-desc">${wx.desc}</div><div class="t-wx-temps"><span class="t-wx-hi">H: ${wx.hi}°F</span>&nbsp;&nbsp;<span class="t-wx-lo">L: ${wx.lo}°F</span></div></div></div>`;
+      });
+    });
+  }else{
+    document.getElementById('ts-current').innerHTML='<div class="t-empty" style="padding:40px 20px"><div style="font-size:28px;margin-bottom:8px;opacity:0.3">🏠</div>OFF DUTY</div>';
+  }
+
+  // ── NEXT TRIP ──
+  if(nextP){
+    const daysAway=daysUntil(nextP);
+    const daysBlock=daysAway!==null?`<div class="t-days-block" style="width:100%"><div class="t-days">${daysAway}</div><div class="t-days-lbl">Days until departure</div></div>`:'';
+    const cards=(nextP.legs||[]).map(l=>buildLegCard(l,nextP,'next')).join('');
+    const dests=getUniqueHotelDests(nextP);
+    const fcTiles=dests.map((iata,i)=>buildFcTile(iata,`nxt_${i}`)).join('');
+    document.getElementById('ts-next').innerHTML=
+      daysBlock+
+      cards+
+      (dests.length?`<div class="t-wx-section">${fcTiles}</div>`:'');
+    dests.forEach((iata,i)=>{
+      fetchForecastWx(iata,10).then(fc=>{
+        const el=document.getElementById(`fc-nxt_${i}`);if(!el)return;
+        const locName=getLocationName(iata);const wxLink=getWxLink(iata);
+        if(!fc){el.innerHTML=`<div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div><div class="t-wx-loading">UNAVAILABLE</div>`;return;}
+        const mkDay=d=>{const dt=new Date(d.date+'T12:00:00');const lbl=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});return`<div class="t-fc-day"><div class="t-fc-date">${lbl}</div><div class="t-fc-icon">${d.icon}</div><div class="t-fc-hi">${d.hi}°</div><div class="t-fc-lo">${d.lo}°</div></div>`;};
+        el.innerHTML=`
+          <div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
+          <div class="t-fc-grid">${fc.slice(0,5).map(mkDay).join('')}</div>
+          <div class="t-fc-grid" style="margin-top:4px">${fc.slice(5,10).map(mkDay).join('')}</div>`;
+      });
+    });
+  }else{
+    document.getElementById('ts-next').innerHTML='<div class="t-empty">No upcoming trips in logbook</div>';
+  }
+}
+
+
+// ── CREW NOTES ──
+let cnRole='all';
+
+function setCnRole(role){
+  cnRole=role;
+  document.querySelectorAll('.cn-role-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.role===role);
+  });
+  renderCrewNotes();
+}
+
+function containsAvoid(text){
+  return /avoid/i.test(text.replace(/[^a-zA-Z0-9]/g,' '));
+}
+
+function renderCrewNotes(){
+  const all=load();
+  const search=(document.getElementById('cn-search')?.value||'').toLowerCase();
+  const MY_NAMES=new Set(['ian irvine','irvine']); // exclude self
+
+  const today=new Date();today.setHours(0,0,0,0);
+  const personMap={};
+
+  all.forEach(trip=>{
+    (trip.legs||[]).forEach(l=>{
+      const legDate=l.date;
+      const legDateTs=parseDate(legDate);
+      // Only past legs
+      if(legDateTs>today.getTime())return;
+      const firstLegRoute=(l.dep||'')+'→'+(l.arr||'');
+
+      const addPerson=(name,role,note)=>{
+        if(!name||!name.trim())return;
+        if(MY_NAMES.has(name.trim().toLowerCase()))return;
+        const key=name.trim().toLowerCase();
+        if(!personMap[key]){
+          personMap[key]={name:name.trim(),roles:{},entries:[],airports:new Set(),lastDate:''};
+        }
+        const person=personMap[key];
+        person.roles[role]=(person.roles[role]||0)+1;
+        if(l.arr)person.airports.add(l.arr);
+        // Only add note if non-empty and not already recorded for this exact date+role
+        const noteText=(note||'').trim();
+        const isDupe=person.entries.some(e=>e.date===legDate&&e.role===role&&e.note===noteText);
+        if(!isDupe){
+          person.entries.push({date:legDate,role,note:noteText,route:firstLegRoute});
+        }
+        if(!person.lastDate||legDateTs>parseDate(person.lastDate))person.lastDate=legDate;
+      };
+
+      addPerson(l.ca,'CA',l.caNotes||'');
+      addPerson(l.fo,'FO',l.foNotes||'');
+      addPerson(l.iro1,'IRO1',l.iro1Notes||'');
+      addPerson(l.iro2,'IRO2',l.iro2Notes||'');
+      addPerson(l.lcp,'LCP','');
+    });
+  });
+
+  // Sort each person's entries newest first
+  Object.values(personMap).forEach(p=>{
+    p.entries.sort((a,b)=>parseDate(b.date)-parseDate(a.date));
+  });
+
+  // Sort people by most recent past trip, newest first
+  const people=Object.values(personMap).sort((a,b)=>parseDate(b.lastDate)-parseDate(a.lastDate));
+
+  // Update stats
+  const caCount=people.filter(p=>p.roles['CA']>0).length;
+  const foCount=people.filter(p=>p.roles['FO']>0).length;
+  const caEl=document.getElementById('cn-ca-count');
+  const foEl=document.getElementById('cn-fo-count');
+  if(caEl)caEl.textContent=caCount;
+  if(foEl)foEl.textContent=foCount;
+
+  // Filter
+  const filtered=people.filter(p=>{
+    const allNotesText=p.entries.map(e=>e.note).join(' ');
+    const nameMatch=p.name.toLowerCase().includes(search);
+    const noteMatch=allNotesText.toLowerCase().includes(search);
+    if(search&&!nameMatch&&!noteMatch)return false;
+    if(cnRole==='ca'&&!p.roles['CA'])return false;
+    if(cnRole==='fo'&&!p.roles['FO'])return false;
+    if(cnRole==='iro'&&!p.roles['IRO1']&&!p.roles['IRO2'])return false;
+    if(cnRole==='lcp'&&!p.roles['LCP'])return false;
+    if(cnRole==='avoid'&&!containsAvoid(allNotesText))return false;
+    return true;
+  });
+
+  const list=document.getElementById('cn-list');
+  if(!list)return;
+  if(!filtered.length){list.innerHTML='<div class="t-empty">No crew notes found</div>';return;}
+
+  list.innerHTML=filtered.map(p=>{
+    const allNotesText=p.entries.map(e=>e.note).join(' ');
+    const isAvoid=containsAvoid(allNotesText);
+    const cardClass=isAvoid?'cn-card avoid-card':'cn-card';
+
+    // Role pills — merge IRO1+IRO2 into IRO
+    const roleDisplay={};
+    Object.entries(p.roles).forEach(([role,count])=>{
+      const label=(role==='IRO1'||role==='IRO2')?'IRO':role;
+      roleDisplay[label]=(roleDisplay[label]||0)+count;
+    });
+    const pillClass={CA:'ca',FO:'fo',IRO:'iro',LCP:'lcp'};
+    const rolePills=Object.entries(roleDisplay).map(([role,count])=>
+      `<span class="cn-pill ${pillClass[role]||'lcp'}">${role} ×${count}</span>`
+    ).join('');
+    const avoidBadge=isAvoid?'<span class="cn-pill avoid">⚠ AVOID</span>':'';
+
+    const totalTrips=Object.values(p.roles).reduce((a,b)=>a+b,0);
+    const lastFmt=p.lastDate?fmtTripDate(p.lastDate):'';
+
+    const noteRows=p.entries.map(e=>`
+      <div class="cn-note-entry">
+        <div class="cn-entry-top">
+          <span class="cn-entry-date">${fmtTripDate(e.date)}</span>
+          <span class="cn-entry-role">${e.role}</span>
+          <span class="cn-entry-route">${e.route}</span>
+        </div>
+        <div class="cn-note-text${e.note?'':' empty'}">${e.note||'No notes'}</div>
+      </div>`).join('');
+
+    const tags=[...p.airports].slice(0,10).map(a=>`<span class="cn-tag">${a}</span>`).join('');
+
+    // Load field notes for this person
+    const allFieldNotes=loadFieldNotes();
+    const personKey=p.name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+    const fieldNotes=allFieldNotes[personKey]||[];
+    const fieldNoteRows=fieldNotes.map(fn=>`
+      <div class="field-note-entry">
+        <div style="display:flex;align-items:center">
+          <span class="field-note-badge">⚑ Field note</span>
+          <span class="field-note-date">${fn.date}</span>
+          <button class="field-note-del" onclick="deleteFieldNote('${personKey}','${fn.id}')">✕ delete</button>
+        </div>
+        <div class="field-note-text">${fn.text}</div>
+        <div class="field-note-hint">Not yet transferred to spreadsheet</div>
+      </div>`).join('');
+
+    const fnForm=`
+      <div class="fn-form" id="fn-form-${personKey}" style="display:none">
+        <div class="fn-form-hint">⚑ Field note — transfer to spreadsheet when home</div>
+        <textarea id="fn-ta-${personKey}" placeholder="Type your note here…"></textarea>
+        <div class="fn-form-actions">
+          <button class="fn-cancel" onclick="toggleFnForm('${personKey}')">Cancel</button>
+          <button class="fn-save" onclick="addFieldNote('${personKey}')">Save Note</button>
+        </div>
+      </div>`;
+
+    return`
+      <div class="${cardClass}">
+        <div class="cn-hdr">
+          <span class="cn-name">${p.name}</span>
+          <div class="cn-role-pills">${rolePills}${avoidBadge}</div>
+          <span class="cn-meta">${totalTrips} trip${totalTrips!==1?'s':''} · Last: ${lastFmt}</span>
+          <button class="add-note-btn" onclick="toggleFnForm('${personKey}')">+ NOTE</button>
+        </div>
+        <div class="cn-body">
+          ${fnForm}
+          ${fieldNoteRows}
+          ${noteRows}
+        </div>
+        ${tags?`<div class="cn-tags">${tags}</div>`:''}
+      </div>`;
+  }).join('');
+}
+
+// renderCrewNotes called directly from nav button
+
+
+// ── FIELD NOTES ──
+const FN_KEY='ianFieldNotes_v1';
+function loadFieldNotes(){try{return JSON.parse(localStorage.getItem(FN_KEY))||{};}catch{return{};}}
+function saveFieldNotes(d){localStorage.setItem(FN_KEY,JSON.stringify(d));}
+
+function addFieldNote(personKey){
+  const ta=document.getElementById('fn-ta-'+personKey);
+  if(!ta||!ta.value.trim())return;
+  const notes=loadFieldNotes();
+  if(!notes[personKey])notes[personKey]=[];
+  notes[personKey].push({
+    id:'fn_'+Date.now(),
+    date:new Date().toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'}),
+    text:ta.value.trim()
+  });
+  saveFieldNotes(notes);
+  renderCrewNotes();
+}
+
+function deleteFieldNote(personKey,noteId){
+  const notes=loadFieldNotes();
+  if(notes[personKey])notes[personKey]=notes[personKey].filter(n=>n.id!==noteId);
+  saveFieldNotes(notes);
+  renderCrewNotes();
+}
+
+function toggleFnForm(personKey){
+  const form=document.getElementById('fn-form-'+personKey);
+  if(!form)return;
+  form.style.display=form.style.display==='none'?'block':'none';
+  if(form.style.display==='block'){
+    const ta=document.getElementById('fn-ta-'+personKey);
+    if(ta){ta.value='';ta.focus();}
+  }
+}
+
+renderAll();
+</script>
+</body>
+</html>
+.tab-content{display:none}
+.tab-content.active{display:block}
+.section-label{font-family:var(--font-mono);font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-label::after{content:'';flex:1;height:1px;background:linear-gradient(to right,rgba(227,179,65,0.3),transparent)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:14px 16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,var(--accent3),transparent);opacity:0.4}
+.stat-val{font-family:var(--font-head);font-size:32px;font-weight:700;color:#fff;letter-spacing:0.04em;line-height:1;margin-bottom:4px}
+.stat-val.accent{color:var(--accent2)}
+.stat-lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold)}
+.action-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.btn{font-family:var(--font-head);font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:8px 16px;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s}
+.btn-primary{background:var(--accent3);color:#fff;border:1px solid var(--accent)}
+.btn-primary:hover{background:var(--accent)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--text2);color:var(--text)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(248,81,73,0.3)}
+.btn-danger:hover{background:rgba(248,81,73,0.1);border-color:var(--red)}
+.btn-export{background:transparent;color:var(--gold);border:1px solid rgba(227,179,65,0.3)}
+.btn-export:hover{background:rgba(227,179,65,0.1);border-color:var(--gold)}
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-input{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:7px 12px;color:var(--text);font-family:var(--font-mono);font-size:14px;outline:none;transition:border-color 0.2s}
+.filter-input:focus{border-color:var(--accent)}
+.filter-input::placeholder{color:var(--text3)}
+.form-panel{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:24px;animation:fadeIn 0.2s ease}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text3)}
+.form-input{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:8px 11px;color:var(--text);font-family:var(--font-mono);font-size:14px;outline:none;transition:border-color 0.2s;width:100%}
+.form-input:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text3)}
+.leg-tbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.leg-tbl th{font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border2);padding:5px 7px;text-align:left;white-space:nowrap}
+.leg-tbl td{padding:4px 4px;border-bottom:1px solid var(--border2)}
+.leg-tbl tr:last-child td{border-bottom:none}
+.leg-tbl td input{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:4px 6px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:100%;transition:border-color 0.2s}
+.leg-tbl td input:focus{border-color:var(--accent)}
+.pairings-list{display:flex;flex-direction:column;gap:14px}
+.pcard{background:var(--panel);border:1px solid var(--border2);border-radius:6px;overflow:hidden;animation:fadeIn 0.3s ease both;transition:border-color 0.3s}
+.pcard:hover{border-color:var(--border)}
+.pcard-header{background:var(--bg2);border-bottom:1px solid var(--border2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pcard-pairing{font-family:var(--font-head);font-size:18px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent2)}
+.pcard-aircraft{font-family:var(--font-mono);font-size:13px;color:var(--text3);letter-spacing:0.05em;margin-top:2px}
+.pcard-totals{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.pcard-total{text-align:right}
+.pcard-total-val{font-family:var(--font-head);font-size:20px;font-weight:600;color:#fff;letter-spacing:0.05em;line-height:1}
+.pcard-total-lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-top:2px}
+.pcard-actions{display:flex;gap:8px;align-items:center}
+.pcard-crew{display:flex;gap:8px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--border2)}
+.crew-pill{background:rgba(39,116,174,0.06);border:1px solid var(--border2);border-radius:3px;padding:4px 10px;font-family:var(--font-mono);font-size:12px;letter-spacing:0.05em}
+.crew-pill-role{color:var(--text3)}
+.crew-pill-name{color:var(--text)}
+.pcard-legs{padding:12px 16px 14px}
+.legs-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.legs-tbl th{font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border2);padding:4px 8px;text-align:left;white-space:nowrap}
+.legs-tbl td{font-family:var(--font-mono);font-size:11px;color:var(--text2);padding:5px 8px;border-bottom:1px solid var(--border2)}
+.legs-tbl tr:last-child td{border-bottom:none}
+.legs-tbl .iata{color:#fff;font-size:14px;font-weight:600}
+.legs-tbl .max-val{color:var(--red)!important;font-weight:600}
+.legs-tbl .fltno{color:var(--accent);letter-spacing:0.05em}
+.edit-btn{background:none;border:1px solid var(--border2);border-radius:3px;color:var(--text3);font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;padding:3px 8px;cursor:pointer;text-transform:uppercase;transition:all 0.2s}
+.edit-btn:hover{border-color:var(--accent);color:var(--accent2)}
+.del-btn{background:none;border:1px solid rgba(248,81,73,0.2);border-radius:3px;color:var(--text3);font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;padding:3px 8px;cursor:pointer;text-transform:uppercase;transition:all 0.2s}
+.del-btn:hover{border-color:var(--red);color:var(--red)}
+.empty-state{text-align:center;padding:48px 20px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:12px;opacity:0.2;display:block}
+.placeholder-tab{display:flex;align-items:center;justify-content:center;height:300px;color:var(--text3);font-family:var(--font-mono);font-size:12px;letter-spacing:0.15em;text-transform:uppercase;border:1px dashed var(--border2);border-radius:6px;margin-top:24px}
+.metrics-tbl{width:100%;border-collapse:collapse;font-size:14px}
+.metrics-tbl th{font-family:var(--font-mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--border2);padding:5px 10px;text-align:left}
+.metrics-tbl td{font-family:var(--font-mono);font-size:12px;color:var(--text2);padding:6px 10px;border-bottom:1px solid var(--border2)}
+.metrics-tbl tr:last-child td{border-bottom:none}
+.metrics-tbl td:last-child{text-align:right;color:var(--accent2)}
+.metrics-tbl tr:first-child td{color:var(--gold)}
+.metrics-two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}
+@media(max-width:480px){.metrics-two-col{grid-template-columns:1fr;gap:16px}}
+.extreme-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.extreme-card{background:var(--panel);border:1px solid var(--border2);border-radius:6px;overflow:hidden}
+.extreme-card.longest{border-top:2px solid var(--red)}
+.extreme-card.shortest{border-top:2px solid var(--green)}
+.extreme-hdr{background:var(--bg2);padding:7px 12px;border-bottom:1px solid var(--border2)}
+.extreme-badge{font-family:var(--font-mono);font-size:8px;letter-spacing:0.15em;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.extreme-badge.longest{background:rgba(248,81,73,0.1);color:var(--red);border:1px solid rgba(248,81,73,0.3)}
+.extreme-badge.shortest{background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
+.extreme-body{padding:10px 12px}
+.extreme-hrs{font-family:var(--font-head);font-size:26px;font-weight:700;line-height:1;margin-bottom:5px}
+.extreme-card.longest .extreme-hrs{color:var(--red)}
+.extreme-card.shortest .extreme-hrs{color:var(--green)}
+.extreme-route{font-family:var(--font-head);font-size:16px;font-weight:600;color:#fff;letter-spacing:0.05em;margin-bottom:3px}
+.extreme-date{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+@media(max-width:480px){.extreme-grid{grid-template-columns:1fr 1fr}}
+.t-section{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+.t-leg-card{background:var(--panel);border-radius:6px;overflow:hidden;min-width:200px;flex:1}
+.t-leg-card.last-card{border:1px solid rgba(80,96,112,0.4)}
+.t-leg-card.current-card{border:1px solid rgba(39,116,174,0.35)}
+.t-leg-card.next-card{border:1px solid rgba(227,179,65,0.25)}
+.t-leg-card-hdr{background:var(--bg2);padding:8px 12px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.t-leg-route{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:0.06em;line-height:1}
+.t-leg-route-sep{color:var(--accent2);font-size:16px;margin:0 2px}
+.t-leg-fltno{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.05em}
+.t-leg-card-body{padding:12px}
+.t-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.t-mi{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:5px 8px}
+.t-ml{font-family:var(--font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:2px}
+.t-mv{font-family:var(--font-mono);font-size:13px;color:var(--text)}
+.t-crew{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.t-crew-pill{background:rgba(39,116,174,0.06);border:1px solid var(--border2);border-radius:3px;padding:5px 11px;font-family:var(--font-mono);font-size:13px}
+.t-crew-role{color:var(--text3)}.t-crew-name{color:var(--text);font-weight:500}
+.t-wx-section{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;width:100%}
+.t-wx{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;flex:1;min-width:180px}
+.t-wx-hdr{font-family:var(--font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
+.t-wx-main{display:flex;align-items:center;gap:10px}
+.t-wx-icon{font-size:24px;line-height:1}
+.t-wx-desc{font-family:var(--font-body);font-size:13px;color:var(--text);margin-bottom:3px}
+.t-wx-temps{font-family:var(--font-mono);font-size:13px}
+.t-wx-hi{color:var(--gold)}.t-wx-lo{color:var(--accent2)}
+.t-fc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:6px}
+.t-fc-day{background:var(--bg2);border:1px solid var(--border2);border-radius:4px;padding:5px 3px;text-align:center}
+.t-fc-date{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:3px}
+.t-fc-icon{font-size:14px;line-height:1;margin-bottom:2px}
+.t-fc-hi{font-family:var(--font-mono);font-size:11px;color:var(--gold)}
+.t-fc-lo{font-family:var(--font-mono);font-size:11px;color:var(--accent2)}
+.t-days-block{background:var(--bg2);border:1px solid rgba(227,179,65,0.2);border-radius:4px;padding:8px 12px;margin-bottom:12px;text-align:center}
+.t-days{font-family:var(--font-head);font-size:32px;font-weight:700;color:var(--gold);letter-spacing:0.05em;margin-bottom:2px}
+.t-days-lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3)}
+.t-wx-loading{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;animation:blink 1.2s infinite}
+.t-empty{text-align:center;padding:32px 12px;font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);opacity:0.5}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+@media(max-width:480px){
+  .t-section{flex-direction:column}
+  .t-leg-card{min-width:0;width:100%}
+  .t-wx-section{flex-direction:column}
+  .t-fc-grid{grid-template-columns:repeat(5,1fr)}
+  .t-crew-pill{font-size:12px}
+}
+@media(max-width:800px){.main{padding:12px}.header-title{font-size:16px}}
+@media(max-width:480px){
+  .header{padding:0 12px;height:52px}
+  .header-title{font-size:15px;letter-spacing:0.06em}
+  .logo-mark{width:26px;height:26px}
+  .header-clock{font-size:12px}
+  .header-zulu{font-size:11px;padding:3px 7px}
+  .nav{padding:0 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav-tab{padding:12px 14px;font-size:12px;letter-spacing:0.06em;white-space:nowrap;flex-shrink:0}
+  .main{padding:10px 8px}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+  .stat-card{padding:12px 14px}
+  .stat-val{font-size:26px}
+  .stat-lbl{font-size:11px}
+  .section-label{font-size:11px;letter-spacing:0.1em;margin-bottom:10px}
+  .action-bar{flex-wrap:wrap;gap:7px;margin-bottom:12px}
+  .btn{font-size:12px;padding:10px 14px;letter-spacing:0.06em}
+  .filter-bar{flex-direction:column;align-items:stretch;gap:7px;margin-bottom:12px}
+  .filter-input{font-size:14px;padding:10px 11px;width:100%;min-width:0!important}
+  .filter-bar .btn{width:100%;justify-content:center}
+  .form-panel{padding:12px 10px}
+  .form-row{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .form-input{font-size:14px;padding:10px 11px}
+  .leg-tbl-wrap,.pcard-legs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .leg-tbl{min-width:640px}
+  .leg-tbl th{font-size:12px}
+  .leg-tbl td input{font-size:13px;padding:6px 4px}
+  .pcard-header{flex-direction:column;align-items:flex-start;gap:8px;padding:10px 12px}
+  .pcard-totals{width:100%;justify-content:flex-start;gap:16px}
+  .pcard-total-val{font-size:17px}
+  .pcard-total-lbl{font-size:10px}
+  .pcard-actions{margin-left:auto}
+  .pcard-crew{gap:5px;padding:6px 12px}
+  .crew-pill{font-size:11px;padding:3px 8px}
+  .pcard-legs{padding:8px 0 10px}
+  .legs-tbl{min-width:580px;font-size:12px}
+  .legs-tbl th{font-size:11px;padding:4px 6px}
+  .legs-tbl td{padding:5px 6px}
+  .metrics-tbl{font-size:13px}
+  .metrics-tbl th{font-size:11px;padding:5px 8px}
+  .metrics-tbl td{padding:6px 8px}
+  .edit-btn,.del-btn{font-size:11px;padding:6px 12px}
+  .t-iata{font-size:28px}
+  .t-leg-dep,.t-leg-arr{font-size:13px}
+  .t-ml{font-size:11px}
+  .t-mv{font-size:14px}
+  .t-wx-desc{font-size:14px}
+  .t-wx-temps{font-size:13px}
+  .t-fc-date{font-size:10px}
+  .t-fc-hi,.t-fc-lo{font-size:12px}
+  .t-days{font-size:32px}
+  .t-days-lbl{font-size:12px}
+}
+.cn-role-btn{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;padding:7px 16px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2);transition:all 0.2s}
+.cn-role-btn.active{background:rgba(39,116,174,0.15);color:var(--accent2);border-color:var(--accent)}
+.cn-role-btn[data-role="ca"].active{background:rgba(227,179,65,0.1);color:var(--gold);border-color:rgba(227,179,65,0.4)}
+.cn-role-btn[data-role="fo"].active{background:rgba(63,185,80,0.1);color:var(--green);border-color:rgba(63,185,80,0.3)}
+.cn-role-btn.avoid{color:var(--red);border-color:rgba(248,81,73,0.3)}
+.cn-role-btn.avoid.active{background:rgba(248,81,73,0.1);color:var(--red);border-color:var(--red)}
+.cn-card{background:var(--panel);border:1px solid var(--border2);border-radius:6px;overflow:hidden}
+.cn-card.avoid-card{border-left:3px solid var(--red)}
+.cn-hdr{background:var(--bg2);padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border2);flex-wrap:wrap}
+.cn-name{font-family:var(--font-head);font-size:18px;font-weight:700;color:#fff;letter-spacing:0.05em}
+.cn-role-pills{display:flex;gap:6px;flex-wrap:wrap}
+.cn-pill{font-family:var(--font-mono);font-size:9px;letter-spacing:0.15em;text-transform:uppercase;padding:2px 8px;border-radius:3px}
+.cn-pill.ca{background:rgba(227,179,65,0.1);color:var(--gold);border:1px solid rgba(227,179,65,0.3)}
+.cn-pill.fo{background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
+.cn-pill.iro{background:rgba(58,143,209,0.1);color:var(--accent2);border:1px solid rgba(58,143,209,0.3)}
+.cn-pill.lcp{background:rgba(139,158,181,0.1);color:var(--text2);border:1px solid var(--border)}
+.cn-pill.avoid{background:rgba(248,81,73,0.1);color:var(--red);border:1px solid rgba(248,81,73,0.3)}
+.cn-meta{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-left:auto;white-space:nowrap}
+.cn-body{padding:10px 14px}
+.cn-note-entry{padding:8px 0;border-bottom:1px solid var(--border2)}
+.cn-note-entry:last-child{border-bottom:none}
+.cn-entry-top{display:flex;gap:10px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
+.cn-entry-date{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+.cn-entry-role{font-family:var(--font-mono);font-size:10px;color:var(--accent2)}
+.cn-entry-route{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+.cn-note-date{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-bottom:3px}
+.cn-note-role{font-family:var(--font-mono);font-size:10px;color:var(--accent2);margin-bottom:4px}
+.cn-note-text{font-family:var(--font-body);font-size:13px;color:var(--text2);line-height:1.5}
+.cn-note-text.empty{color:var(--text3);font-style:italic}
+.cn-tags{padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap}
+.cn-tag{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.05em}
+
+/* ── FIELD NOTES ── */
+.field-note-entry{background:rgba(217,119,6,0.08);border-left:2px solid #d97706;border-radius:0 4px 4px 0;padding:7px 10px;margin-bottom:6px}
+.field-note-badge{font-family:var(--font-mono);font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:#d97706;border:1px solid rgba(217,119,6,0.3);padding:1px 6px;border-radius:2px;margin-right:6px}
+.field-note-date{font-family:var(--font-mono);font-size:9px;color:var(--text3)}
+.field-note-text{font-family:var(--font-body);font-size:13px;color:var(--text);line-height:1.5;margin-top:4px}
+.field-note-hint{font-family:var(--font-mono);font-size:9px;color:#d97706;opacity:0.7;margin-top:3px}
+.field-note-del{font-family:var(--font-mono);font-size:9px;color:var(--red);border:none;background:none;cursor:pointer;padding:0;margin-left:auto;opacity:0.7}
+.fn-form{background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.3);border-radius:4px;padding:10px 12px;margin:8px 0}
+.fn-form-hint{font-family:var(--font-mono);font-size:9px;color:#d97706;margin-bottom:6px;opacity:0.8}
+.fn-form textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:7px 9px;resize:vertical;min-height:64px}
+.fn-form-actions{display:flex;gap:8px;margin-top:8px;justify-content:flex-end}
+.fn-save{font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 14px;border-radius:3px;cursor:pointer;background:#d97706;color:#fff;border:none}
+.fn-cancel{font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 14px;border-radius:3px;cursor:pointer;background:transparent;color:var(--text3);border:1px solid var(--border)}
+.add-note-btn{font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:4px 10px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);white-space:nowrap}
+.manual-trip-badge{display:inline-block;font-family:var(--font-mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:#d97706;border:1px solid rgba(217,119,6,0.3);padding:1px 6px;border-radius:2px;margin-left:8px;vertical-align:middle}
+.manual-trip-hint{font-family:var(--font-mono);font-size:9px;color:#d97706;opacity:0.7;padding:4px 14px 8px}
+
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M4 20 L16 8 L28 20" stroke="#2774AE" stroke-width="1.5" fill="none"/>
+        <path d="M10 20 L16 14 L22 20" stroke="#2774AE" stroke-width="1" fill="none" opacity="0.5"/>
+        <line x1="16" y1="8" x2="16" y2="26" stroke="#2774AE" stroke-width="1" opacity="0.3"/>
+        <circle cx="16" cy="8" r="2" fill="#3a8fd1"/>
+      </svg>
+    </div>
+    <span class="header-title">Ian Irvine <span>/ DASHBOARD</span></span>
+  </div>
+  <div class="header-right">
+    <span class="header-clock" id="localClock">--:--:-- PDT</span>
+    <span class="header-zulu" id="zuluClock">----Z</span>
+  </div>
+</header>
+
+<nav class="nav">
+  <button class="nav-tab active" onclick="switchTab('metrics',this)">METRICS</button>
+  <button class="nav-tab" onclick="switchTab('crew',this);renderCrewNotes()">CREW NOTES</button>
+</nav>
+
+<main class="main">
+
+  <!-- ── TAB 0: METRICS ── -->
+  <div class="tab-content active" id="tab-metrics">
+
     <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">24 May 2026 · 05:10 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
