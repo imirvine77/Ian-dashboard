@@ -110,6 +110,21 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .metrics-tbl tr:first-child td{color:var(--gold)}
 .metrics-two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}
 @media(max-width:480px){.metrics-two-col{grid-template-columns:1fr;gap:16px}}
+.extreme-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.extreme-card{background:var(--panel);border:1px solid var(--border2);border-radius:6px;overflow:hidden}
+.extreme-card.longest{border-top:2px solid var(--red)}
+.extreme-card.shortest{border-top:2px solid var(--green)}
+.extreme-hdr{background:var(--bg2);padding:7px 12px;border-bottom:1px solid var(--border2)}
+.extreme-badge{font-family:var(--font-mono);font-size:8px;letter-spacing:0.15em;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.extreme-badge.longest{background:rgba(248,81,73,0.1);color:var(--red);border:1px solid rgba(248,81,73,0.3)}
+.extreme-badge.shortest{background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
+.extreme-body{padding:10px 12px}
+.extreme-hrs{font-family:var(--font-head);font-size:26px;font-weight:700;line-height:1;margin-bottom:5px}
+.extreme-card.longest .extreme-hrs{color:var(--red)}
+.extreme-card.shortest .extreme-hrs{color:var(--green)}
+.extreme-route{font-family:var(--font-head);font-size:16px;font-weight:600;color:#fff;letter-spacing:0.05em;margin-bottom:3px}
+.extreme-date{font-family:var(--font-mono);font-size:10px;color:var(--text3)}
+@media(max-width:480px){.extreme-grid{grid-template-columns:1fr 1fr}}
 .t-section{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px}
 .t-leg-card{background:var(--panel);border-radius:6px;overflow:hidden;min-width:200px;flex:1}
 .t-leg-card.last-card{border:1px solid rgba(80,96,112,0.4)}
@@ -281,7 +296,6 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <nav class="nav">
   <button class="nav-tab active" onclick="switchTab('metrics',this)">METRICS</button>
-  <button class="nav-tab" onclick="switchTab('logbook',this)">TRIP LOG</button>
   <button class="nav-tab" onclick="switchTab('crew',this);renderCrewNotes()">CREW NOTES</button>
 </nav>
 
@@ -290,7 +304,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">24 May 2026 · 04:29 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">24 May 2026 · 05:10 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -351,68 +365,28 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
     </div>
 
+    <div class="section-label" style="margin-top:20px">787 EXTREMES</div>
+    <div class="extreme-grid">
+      <div class="extreme-card longest" id="m-longest">
+        <div class="extreme-hdr"><span class="extreme-badge longest">Longest</span></div>
+        <div class="extreme-body">
+          <div class="extreme-hrs" id="m-longest-hrs">—</div>
+          <div class="extreme-route" id="m-longest-route">—</div>
+          <div class="extreme-date" id="m-longest-date">—</div>
+        </div>
+      </div>
+      <div class="extreme-card shortest" id="m-shortest">
+        <div class="extreme-hdr"><span class="extreme-badge shortest">Shortest</span></div>
+        <div class="extreme-body">
+          <div class="extreme-hrs" id="m-shortest-hrs">—</div>
+          <div class="extreme-route" id="m-shortest-route">—</div>
+          <div class="extreme-date" id="m-shortest-date">—</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- ── TAB 1: TRIP LOG ── -->
-  <div class="tab-content" id="tab-logbook">
-
-    <div class="action-bar">
-      <button class="btn btn-primary" onclick="openForm()">+ NEW PAIRING</button>
-      <button class="btn btn-export" onclick="exportXLSX()">&#8595; EXPORT XLSX</button>
-      <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none" onchange="importXLSX(this)"/>
-      <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">&#8593; IMPORT XLSX</button>
-      <button class="btn btn-danger" onclick="clearAll()">&#x2715; CLEAR ALL</button>
-    </div>
-
-    <div class="filter-bar">
-      <input class="filter-input" id="f-search" placeholder="Search pairing · route · crew…" style="min-width:220px" oninput="renderAll()"/>
-      <input class="filter-input" id="f-month" type="month" oninput="renderAll()" title="Filter by month"/>
-      <button class="btn btn-ghost" id="sort-toggle" onclick="toggleSort()">&#8597; NEW → OLD</button>
-      <button class="btn btn-ghost" onclick="clearFilters()">CLEAR FILTERS</button>
-    </div>
-
-    <div class="form-panel" id="form-panel" style="display:none">
-      <div class="section-label" id="form-title">NEW PAIRING</div>
-
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Pairing #</label><input class="form-input" id="fp-pairing" placeholder="e.g. UA1234P"/></div>
-        <div class="form-group"><label class="form-label">Notes</label><input class="form-input" id="fp-notes" placeholder="Optional"/></div>
-      </div>
-
-      <div class="section-label">CREW</div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">CA</label><input class="form-input" id="fp-ca" placeholder="Last name"/></div>
-        <div class="form-group"><label class="form-label">FO</label><input class="form-input" id="fp-fo" placeholder="Last name"/></div>
-        <div class="form-group"><label class="form-label">IRO 1</label><input class="form-input" id="fp-iro1" placeholder="Last name"/></div>
-        <div class="form-group"><label class="form-label">IRO 2</label><input class="form-input" id="fp-iro2" placeholder="Last name"/></div>
-        <div class="form-group"><label class="form-label">LCP</label><input class="form-input" id="fp-lcp" placeholder="Last name"/></div>
-      </div>
-
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="section-label" style="margin-bottom:0;flex:1">LEGS</div>
-        <button class="btn btn-ghost" style="font-size:11px;padding:5px 12px" onclick="addLegRow()">+ ADD LEG</button>
-      </div>
-      <div class="leg-tbl-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px">
-        <table class="leg-tbl">
-          <thead>
-            <tr>
-              <th>Date</th><th>Dep</th><th>Arr</th><th>Flt #</th>
-              <th>T/O Local</th><th>Land Local</th><th>Block</th><th>Miles</th><th>SOB</th><th>Aircraft</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="leg-body"></tbody>
-        </table>
-      </div>
-
-      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">
-        <button class="btn btn-ghost" onclick="closeForm()">CANCEL</button>
-        <button class="btn btn-primary" onclick="savePairing()">SAVE PAIRING</button>
-      </div>
-    </div>
-
-    <div class="pairings-list" id="pairings-list"></div>
-
-  </div>
 
 
   <div class="tab-content" id="tab-crew">
@@ -486,7 +460,7 @@ let sortDir='desc'; // 'desc' = newest first, 'asc' = oldest first
 function toggleSort(){
   sortDir=sortDir==='desc'?'asc':'desc';
   const btn=document.getElementById('sort-toggle');
-  btn.textContent=sortDir==='desc'?'\u21C5 NEW \u2192 OLD':'\u21C5 OLD \u2192 NEW';
+  if(btn)btn.textContent=sortDir==='desc'?'\u21C5 NEW \u2192 OLD':'\u21C5 OLD \u2192 NEW';
   renderAll();
 }
 
@@ -599,15 +573,15 @@ function clearAll(){
 }
 
 function clearFilters(){
-  document.getElementById('f-search').value='';
-  document.getElementById('f-month').value='';
+  if(document.getElementById('f-search'))document.getElementById('f-search').value='';
+  if(document.getElementById('f-month'))document.getElementById('f-month').value='';
   renderAll();
 }
 
 function renderAll(){
   const all=load();
-  const search=(document.getElementById('f-search').value||'').toLowerCase();
-  const month=document.getElementById('f-month').value||'';
+  const search=((document.getElementById('f-search')||{}).value||'').toLowerCase();
+  const month=(document.getElementById('f-month')||{}).value||'';
   const filtered=all.filter(p=>{
     let ok=true;
     if(search){
@@ -686,6 +660,29 @@ function renderAll(){
   document.getElementById('m-sob-787').textContent=sob787.length?Math.round(sum(sob787)/sob787.length).toLocaleString():'—';
   document.getElementById('m-sob-737').textContent=sob737.length?Math.round(sum(sob737)/sob737.length).toLocaleString():'—';
 
+  // 787 Extremes — longest and shortest by block hours
+  let longestLeg=null,shortestLeg=null;
+  filtered.forEach(p=>{
+    (p.legs||[]).forEach(l=>{
+      const type=acType(l.aircraft||'');
+      if(type!=='787')return;
+      const bm=parseMins(l.block);
+      if(!bm)return;
+      if(!longestLeg||bm>parseMins(longestLeg.block))longestLeg=l;
+      if(!shortestLeg||bm<parseMins(shortestLeg.block))shortestLeg=l;
+    });
+  });
+  if(longestLeg){
+    document.getElementById('m-longest-hrs').textContent=toDecimal(parseMins(longestLeg.block))+' hrs';
+    document.getElementById('m-longest-route').textContent=(longestLeg.dep||'?')+'-'+(longestLeg.arr||'?');
+    document.getElementById('m-longest-date').textContent=longestLeg.date||'';
+  }
+  if(shortestLeg){
+    document.getElementById('m-shortest-hrs').textContent=toDecimal(parseMins(shortestLeg.block))+' hrs';
+    document.getElementById('m-shortest-route').textContent=(shortestLeg.dep||'?')+'-'+(shortestLeg.arr||'?');
+    document.getElementById('m-shortest-date').textContent=shortestLeg.date||'';
+  }
+
   // Top 10 destinations
   const destSorted=Object.entries(destCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const destTbl=document.querySelector('#m-destinations tbody');
@@ -701,7 +698,7 @@ function renderAll(){
     :'<tr><td colspan="2" style="color:var(--text3);text-align:center">No data</td></tr>';
 
   const list=document.getElementById('pairings-list');
-  if(!filtered.length){
+  if(!list||!filtered.length){
     list.innerHTML='<div class="empty-state"><span class="empty-icon">&#x2708;</span>No pairings found. Add your first pairing above.</div>';
     return;
   }
