@@ -272,6 +272,28 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .manual-trip-badge{display:inline-block;font-family:var(--font-mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:#d97706;border:1px solid rgba(217,119,6,0.3);padding:1px 6px;border-radius:2px;margin-left:8px;vertical-align:middle}
 .manual-trip-hint{font-family:var(--font-mono);font-size:9px;color:#d97706;opacity:0.7;padding:4px 14px 8px}
 
+.sp-card{background:var(--panel);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.sp-card.complete{border:1px solid var(--border2);border-left:3px solid var(--green)}
+.sp-card.partial{border:1px solid var(--border2);border-left:3px solid var(--gold)}
+.sp-card.pending{border:1px solid var(--border2);border-left:3px solid var(--border)}
+.sp-hdr{background:var(--bg2);padding:9px 12px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px}
+.sp-route{font-family:var(--font-head);font-size:20px;font-weight:700;color:#fff;letter-spacing:0.05em}
+.sp-sep{color:var(--accent2);margin:0 2px}
+.sp-flt{font-family:var(--font-mono);font-size:11px;color:var(--text3);flex:1}
+.sp-status{font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;padding:2px 8px;border-radius:3px}
+.sp-status.complete{background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
+.sp-status.partial{background:rgba(227,179,65,0.1);color:var(--gold);border:1px solid rgba(227,179,65,0.3)}
+.sp-status.pending{color:var(--text3);border:1px solid var(--border2)}
+.sp-body{padding:10px 12px}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.sp-field{display:flex;flex-direction:column;gap:2px}
+.sp-lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3)}
+.sp-val{font-family:var(--font-mono);font-size:13px;color:var(--text)}
+.sp-val.gold{color:var(--gold)}
+.sp-val.empty{color:var(--text3);font-style:italic;font-size:12px}
+.sp-notes{padding-top:6px;border-top:1px solid var(--border2)}
+.sp-actions{display:flex;gap:8px;padding:0 12px 10px;justify-content:flex-end}
+
 </style>
 </head>
 <body>
@@ -296,6 +318,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
 <nav class="nav">
   <button class="nav-tab active" onclick="switchTab('metrics',this)">METRICS</button>
+  <button class="nav-tab" onclick="switchTab('logbook',this);renderScratchpad()">LOGBOOK</button>
   <button class="nav-tab" onclick="switchTab('crew',this);renderCrewNotes()">CREW NOTES</button>
 </nav>
 
@@ -310,7 +333,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">&#8593; IMPORT XLSX</button>
       <button class="btn btn-danger" onclick="clearAll()">&#x2715; CLEAR ALL</button>
     </div>
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">24 May 2026 · 05:33 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">24 May 2026 · 05:40 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -394,6 +417,48 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   </div>
 
 
+
+  <div class="tab-content" id="tab-logbook">
+    <div class="section-label">LOGBOOK SCRATCHPAD</div>
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="openLegForm()">+ ADD LEG</button>
+      <button class="btn btn-danger" onclick="clearScratchpad()">&#x2715; CLEAR ALL</button>
+    </div>
+
+    <div class="form-panel" id="leg-form-panel" style="display:none">
+      <div class="section-label" id="leg-form-title">ADD LEG</div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:12px;letter-spacing:0.1em">Enter skeleton before flight · Fill actuals after landing</div>
+
+      <div class="section-label" style="font-size:9px;color:var(--accent2)">SKELETON — BEFORE FLIGHT</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="lf-date" type="date"/></div>
+        <div class="form-group"><label class="form-label">Flight #</label><input class="form-input" id="lf-fltno" placeholder="UA152"/></div>
+        <div class="form-group"><label class="form-label">Dep</label><input class="form-input" id="lf-dep" placeholder="KLAX" maxlength="5"/></div>
+        <div class="form-group"><label class="form-label">Arr</label><input class="form-input" id="lf-arr" placeholder="VHHH" maxlength="5"/></div>
+      </div>
+
+      <div class="section-label" style="font-size:9px;color:var(--accent2)">ACTUALS — AFTER LANDING</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">T/O Local</label><input class="form-input" id="lf-to" type="time"/></div>
+        <div class="form-group"><label class="form-label">Land Local</label><input class="form-input" id="lf-land" type="time"/></div>
+        <div class="form-group"><label class="form-label">Block (hrs)</label><input class="form-input" id="lf-block" placeholder="14.2"/></div>
+        <div class="form-group"><label class="form-label">Miles</label><input class="form-input" id="lf-miles" placeholder="7228"/></div>
+        <div class="form-group"><label class="form-label">PAX (SOB)</label><input class="form-input" id="lf-pax" placeholder="286"/></div>
+        <div class="form-group"><label class="form-label">Tail #</label><input class="form-input" id="lf-tail" placeholder="N12345"/></div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label class="form-label">Notes</label>
+        <textarea class="form-input" id="lf-notes" style="min-height:60px;resize:vertical" placeholder="Optional notes…"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px">
+        <button class="btn btn-ghost" onclick="closeLegForm()">CANCEL</button>
+        <button class="btn btn-primary" onclick="saveLeg()">SAVE LEG</button>
+      </div>
+    </div>
+
+    <div id="scratchpad-list"></div>
+  </div>
 
   <div class="tab-content" id="tab-crew">
 
@@ -1445,6 +1510,125 @@ function toggleFnForm(personKey){
     const ta=document.getElementById('fn-ta-'+personKey);
     if(ta){ta.value='';ta.focus();}
   }
+}
+
+
+// ── LOGBOOK SCRATCHPAD ──
+const SP_KEY='ianScratchpad_v1';
+function loadSP(){try{return JSON.parse(localStorage.getItem(SP_KEY))||[];}catch{return[];}}
+function saveSP(d){localStorage.setItem(SP_KEY,JSON.stringify(d));}
+
+let spEditId=null;
+
+function openLegForm(id){
+  spEditId=id||null;
+  const panel=document.getElementById('leg-form-panel');
+  if(!panel)return;
+  document.getElementById('leg-form-title').textContent=id?'EDIT LEG':'ADD LEG';
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+  if(id){
+    const leg=loadSP().find(l=>l.id===id);
+    if(!leg)return;
+    document.getElementById('lf-date').value=leg.date||'';
+    document.getElementById('lf-fltno').value=leg.fltno||'';
+    document.getElementById('lf-dep').value=leg.dep||'';
+    document.getElementById('lf-arr').value=leg.arr||'';
+    document.getElementById('lf-to').value=leg.to||'';
+    document.getElementById('lf-land').value=leg.land||'';
+    document.getElementById('lf-block').value=leg.block||'';
+    document.getElementById('lf-miles').value=leg.miles||'';
+    document.getElementById('lf-pax').value=leg.pax||'';
+    document.getElementById('lf-tail').value=leg.tail||'';
+    document.getElementById('lf-notes').value=leg.notes||'';
+  }else{
+    ['lf-date','lf-fltno','lf-dep','lf-arr','lf-to','lf-land','lf-block','lf-miles','lf-pax','lf-tail','lf-notes']
+      .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  }
+}
+
+function closeLegForm(){
+  const panel=document.getElementById('leg-form-panel');
+  if(panel)panel.style.display='none';
+  spEditId=null;
+}
+
+function saveLeg(){
+  const g=id=>(document.getElementById(id)||{}).value||'';
+  const leg={
+    id:spEditId||'sp_'+Date.now(),
+    date:g('lf-date'),fltno:g('lf-fltno'),
+    dep:g('lf-dep').toUpperCase(),arr:g('lf-arr').toUpperCase(),
+    to:g('lf-to'),land:g('lf-land'),
+    block:g('lf-block'),miles:g('lf-miles'),
+    pax:g('lf-pax'),tail:g('lf-tail'),notes:g('lf-notes')
+  };
+  let data=loadSP();
+  if(spEditId){data=data.map(l=>l.id===spEditId?leg:l);}
+  else{data.push(leg);}
+  saveSP(data);
+  closeLegForm();
+  renderScratchpad();
+}
+
+function deleteLeg(id){
+  if(!confirm('Delete this leg?'))return;
+  saveSP(loadSP().filter(l=>l.id!==id));
+  renderScratchpad();
+}
+
+function clearScratchpad(){
+  if(!confirm('Clear all scratchpad entries?'))return;
+  saveSP([]);
+  renderScratchpad();
+}
+
+function legStatus(leg){
+  const skeleton=leg.date&&leg.dep&&leg.arr;
+  if(!skeleton)return'pending';
+  const actuals=[leg.to,leg.land,leg.block,leg.miles,leg.pax,leg.tail];
+  const filled=actuals.filter(Boolean).length;
+  if(filled===0)return'pending';
+  if(filled===actuals.length)return'complete';
+  return'partial';
+}
+
+function renderScratchpad(){
+  const list=document.getElementById('scratchpad-list');
+  if(!list)return;
+  const data=loadSP();
+  if(!data.length){
+    list.innerHTML='<div class="t-empty" style="padding:40px 12px">No legs entered yet.<br>Tap + ADD LEG to start.</div>';
+    return;
+  }
+  const fmtV=(v,cls='')=>v?`<div class="sp-val ${cls}">${v}</div>`:`<div class="sp-val empty">—</div>`;
+  list.innerHTML=data.map(leg=>{
+    const status=legStatus(leg);
+    const dateStr=leg.date?new Date(leg.date+'T12:00:00').toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+    return`
+      <div class="sp-card ${status}">
+        <div class="sp-hdr">
+          <div class="sp-route">${leg.dep||'?'}<span class="sp-sep">-</span>${leg.arr||'?'}</div>
+          <div class="sp-flt">${leg.fltno||''} · ${dateStr}</div>
+          <span class="sp-status ${status}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>
+        </div>
+        <div class="sp-body">
+          <div class="sp-grid">
+            <div class="sp-field"><div class="sp-lbl">T/O</div>${fmtV(leg.to)}</div>
+            <div class="sp-field"><div class="sp-lbl">Land</div>${fmtV(leg.land)}</div>
+            <div class="sp-field"><div class="sp-lbl">Block</div>${leg.block?`<div class="sp-val gold">${leg.block} hrs</div>`:'<div class="sp-val empty">—</div>'}</div>
+            <div class="sp-field"><div class="sp-lbl">Miles</div>${fmtV(leg.miles?parseInt(leg.miles).toLocaleString():'')}</div>
+            <div class="sp-field"><div class="sp-lbl">PAX</div>${fmtV(leg.pax)}</div>
+            <div class="sp-field"><div class="sp-lbl">Tail #</div>${fmtV(leg.tail)}</div>
+          </div>
+          ${leg.notes?`<div class="sp-notes"><div class="sp-lbl">Notes</div><div class="sp-val" style="font-family:var(--font-body);font-size:13px;color:var(--text2);margin-top:2px">${leg.notes}</div></div>`:''}
+        </div>
+        <div class="sp-actions">
+          <button class="edit-btn" onclick="openLegForm('${leg.id}')">EDIT</button>
+          <button class="del-btn" onclick="deleteLeg('${leg.id}')">DEL</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 renderAll();
