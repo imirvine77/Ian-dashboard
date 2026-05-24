@@ -240,6 +240,23 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .cn-tags{padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap}
 .cn-tag{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;padding:2px 8px;font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.05em}
 
+/* ── FIELD NOTES ── */
+.field-note-entry{background:rgba(217,119,6,0.08);border-left:2px solid #d97706;border-radius:0 4px 4px 0;padding:7px 10px;margin-bottom:6px}
+.field-note-badge{font-family:var(--font-mono);font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:#d97706;border:1px solid rgba(217,119,6,0.3);padding:1px 6px;border-radius:2px;margin-right:6px}
+.field-note-date{font-family:var(--font-mono);font-size:9px;color:var(--text3)}
+.field-note-text{font-family:var(--font-body);font-size:13px;color:var(--text);line-height:1.5;margin-top:4px}
+.field-note-hint{font-family:var(--font-mono);font-size:9px;color:#d97706;opacity:0.7;margin-top:3px}
+.field-note-del{font-family:var(--font-mono);font-size:9px;color:var(--red);border:none;background:none;cursor:pointer;padding:0;margin-left:auto;opacity:0.7}
+.fn-form{background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.3);border-radius:4px;padding:10px 12px;margin:8px 0}
+.fn-form-hint{font-family:var(--font-mono);font-size:9px;color:#d97706;margin-bottom:6px;opacity:0.8}
+.fn-form textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--font-body);font-size:13px;padding:7px 9px;resize:vertical;min-height:64px}
+.fn-form-actions{display:flex;gap:8px;margin-top:8px;justify-content:flex-end}
+.fn-save{font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 14px;border-radius:3px;cursor:pointer;background:#d97706;color:#fff;border:none}
+.fn-cancel{font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 14px;border-radius:3px;cursor:pointer;background:transparent;color:var(--text3);border:1px solid var(--border)}
+.add-note-btn{font-family:var(--font-mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:4px 10px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);white-space:nowrap}
+.manual-trip-badge{display:inline-block;font-family:var(--font-mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:#d97706;border:1px solid rgba(217,119,6,0.3);padding:1px 6px;border-radius:2px;margin-left:8px;vertical-align:middle}
+.manual-trip-hint{font-family:var(--font-mono);font-size:9px;color:#d97706;opacity:0.7;padding:4px 14px 8px}
+
 </style>
 </head>
 <body>
@@ -265,7 +282,6 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 <nav class="nav">
   <button class="nav-tab active" onclick="switchTab('metrics',this)">METRICS</button>
   <button class="nav-tab" onclick="switchTab('logbook',this)">TRIP LOG</button>
-  <button class="nav-tab" onclick="switchTab('trips',this);renderTripsTab()">TRIPS</button>
   <button class="nav-tab" onclick="switchTab('crew',this);renderCrewNotes()">CREW NOTES</button>
 </nav>
 
@@ -274,7 +290,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
   <!-- ── TAB 0: METRICS ── -->
   <div class="tab-content active" id="tab-metrics">
 
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">13 May 2026 · 02:39 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">24 May 2026 · 04:29 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -398,16 +414,6 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 
   </div>
 
-  <div class="tab-content" id="tab-trips">
-    <div class="section-label">LAST TRIP</div>
-    <div class="t-section" id="ts-last"><div class="t-empty">No logbook data</div></div>
-
-    <div class="section-label" style="margin-top:24px">CURRENT TRIP</div>
-    <div class="t-section" id="ts-current"><div class="t-empty">No logbook data</div></div>
-
-    <div class="section-label" style="margin-top:24px">NEXT TRIP</div>
-    <div class="t-section" id="ts-next"><div class="t-empty">No logbook data</div></div>
-  </div>
 
   <div class="tab-content" id="tab-crew">
 
@@ -738,21 +744,24 @@ function renderAll(){
       '<td'+bClass+' style="color:'+(bClass?'var(--red)':'var(--gold)')+'">'+( l.block||'&#x2014;')+'</td>'+
       '<td'+mClass+'>'+(l.miles?parseInt(l.miles).toLocaleString():'&#x2014;')+'</td>'+
       '<td>'+(l.sob||'&#x2014;')+'</td>'+
-      '<td style="color:var(--text2)">'+(l.aircraft||'&#x2014;')+'</td>'+
       '</tr>';
     }).join('');
 
-    // Build date range for card header
+    // Build route glance and date range
     const dates=(p.legs||[]).map(l=>l.date).filter(Boolean);
     const firstDate=dates.length?fmtDisplayDate(dates[dates.length-1]):'—';
     const lastDate=dates.length>1?fmtDisplayDate(dates[0]):'';
-    const dateRange=lastDate&&lastDate!==firstDate?firstDate+' &rarr; '+lastDate:firstDate;
+    const dateRange=lastDate&&lastDate!==firstDate?firstDate+' → '+lastDate:firstDate;
+    const stops=(p.legs&&p.legs[0]?[p.legs[0].dep]:[]).concat((p.legs||[]).map(l=>l.arr)).filter(Boolean);
+    const routeGlance=stops.join('-');
+    const isManual=p.id&&p.id.startsWith('p_')&&!p.id.startsWith('p_imp');
+    const manualBadge=isManual?'<span class="manual-trip-badge">⚑ FIELD ENTRY</span>':'';
 
     return '<div class="pcard">'+
       '<div class="pcard-header">'+
         '<div>'+
-          '<div class="pcard-pairing">'+dateRange+'</div>'+
-          '<div class="pcard-aircraft">'+(p.notes||'&nbsp;')+'</div>'+
+          '<div class="pcard-pairing">'+routeGlance+manualBadge+'</div>'+
+          '<div class="pcard-aircraft">'+dateRange+(p.notes?' · '+p.notes:'')+'</div>'+
         '</div>'+
         '<div class="pcard-totals">'+
           '<div class="pcard-total"><div class="pcard-total-val" style="color:var(--gold)">'+toDecimal(p.totalMins)+'</div><div class="pcard-total-lbl">Block</div></div>'+
@@ -767,7 +776,7 @@ function renderAll(){
       (crewPills?'<div class="pcard-crew">'+crewPills+'</div>':'')+
       '<div class="pcard-legs" style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+
         '<table class="legs-tbl">'+
-          '<thead><tr><th>Date</th><th>Dep</th><th>Arr</th><th>Flt #</th><th>T/O</th><th>Land</th><th>Block</th><th>Miles</th><th>SOB</th><th>Aircraft</th></tr></thead>'+
+          '<thead><tr><th>Date</th><th>Dep</th><th>Arr</th><th>Flt #</th><th>T/O</th><th>Land</th><th>Block</th><th>Miles</th><th>SOB</th></tr></thead>'+
           '<tbody>'+legRows+'</tbody>'+
         '</table>'+
       '</div>'+
@@ -1354,20 +1363,87 @@ function renderCrewNotes(){
 
     const tags=[...p.airports].slice(0,10).map(a=>`<span class="cn-tag">${a}</span>`).join('');
 
+    // Load field notes for this person
+    const allFieldNotes=loadFieldNotes();
+    const personKey=p.name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+    const fieldNotes=allFieldNotes[personKey]||[];
+    const fieldNoteRows=fieldNotes.map(fn=>`
+      <div class="field-note-entry">
+        <div style="display:flex;align-items:center">
+          <span class="field-note-badge">⚑ Field note</span>
+          <span class="field-note-date">${fn.date}</span>
+          <button class="field-note-del" onclick="deleteFieldNote('${personKey}','${fn.id}')">✕ delete</button>
+        </div>
+        <div class="field-note-text">${fn.text}</div>
+        <div class="field-note-hint">Not yet transferred to spreadsheet</div>
+      </div>`).join('');
+
+    const fnForm=`
+      <div class="fn-form" id="fn-form-${personKey}" style="display:none">
+        <div class="fn-form-hint">⚑ Field note — transfer to spreadsheet when home</div>
+        <textarea id="fn-ta-${personKey}" placeholder="Type your note here…"></textarea>
+        <div class="fn-form-actions">
+          <button class="fn-cancel" onclick="toggleFnForm('${personKey}')">Cancel</button>
+          <button class="fn-save" onclick="addFieldNote('${personKey}')">Save Note</button>
+        </div>
+      </div>`;
+
     return`
       <div class="${cardClass}">
         <div class="cn-hdr">
           <span class="cn-name">${p.name}</span>
           <div class="cn-role-pills">${rolePills}${avoidBadge}</div>
           <span class="cn-meta">${totalTrips} trip${totalTrips!==1?'s':''} · Last: ${lastFmt}</span>
+          <button class="add-note-btn" onclick="toggleFnForm('${personKey}')">+ NOTE</button>
         </div>
-        <div class="cn-body">${noteRows}</div>
+        <div class="cn-body">
+          ${fnForm}
+          ${fieldNoteRows}
+          ${noteRows}
+        </div>
         ${tags?`<div class="cn-tags">${tags}</div>`:''}
       </div>`;
   }).join('');
 }
 
 // renderCrewNotes called directly from nav button
+
+
+// ── FIELD NOTES ──
+const FN_KEY='ianFieldNotes_v1';
+function loadFieldNotes(){try{return JSON.parse(localStorage.getItem(FN_KEY))||{};}catch{return{};}}
+function saveFieldNotes(d){localStorage.setItem(FN_KEY,JSON.stringify(d));}
+
+function addFieldNote(personKey){
+  const ta=document.getElementById('fn-ta-'+personKey);
+  if(!ta||!ta.value.trim())return;
+  const notes=loadFieldNotes();
+  if(!notes[personKey])notes[personKey]=[];
+  notes[personKey].push({
+    id:'fn_'+Date.now(),
+    date:new Date().toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'}),
+    text:ta.value.trim()
+  });
+  saveFieldNotes(notes);
+  renderCrewNotes();
+}
+
+function deleteFieldNote(personKey,noteId){
+  const notes=loadFieldNotes();
+  if(notes[personKey])notes[personKey]=notes[personKey].filter(n=>n.id!==noteId);
+  saveFieldNotes(notes);
+  renderCrewNotes();
+}
+
+function toggleFnForm(personKey){
+  const form=document.getElementById('fn-form-'+personKey);
+  if(!form)return;
+  form.style.display=form.style.display==='none'?'block':'none';
+  if(form.style.display==='block'){
+    const ta=document.getElementById('fn-ta-'+personKey);
+    if(ta){ta.value='';ta.focus();}
+  }
+}
 
 renderAll();
 </script>
