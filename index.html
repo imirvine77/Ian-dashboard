@@ -294,6 +294,21 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .sp-notes{padding-top:6px;border-top:1px solid var(--border2)}
 .sp-actions{display:flex;gap:8px;padding:0 12px 10px;justify-content:flex-end}
 
+/* ── 787 LANDINGS ── */
+.landing-year-block{background:var(--panel);border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:8px}
+.landing-year-hdr{background:var(--bg2);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--border2)}
+.landing-year-hdr:hover{background:var(--panel2)}
+.landing-year-label{font-family:var(--font-mono);font-size:12px;letter-spacing:0.1em;color:var(--gold)}
+.landing-year-count{font-family:var(--font-mono);font-size:11px;color:var(--text3)}
+.landing-year-chevron{font-family:var(--font-mono);font-size:10px;color:var(--text3);transition:transform 0.2s}
+.landing-year-chevron.open{transform:rotate(180deg)}
+.landing-log-tbl{width:100%;border-collapse:collapse}
+.landing-log-tbl th{font-family:var(--font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--border2);padding:5px 12px;text-align:left}
+.landing-log-tbl td{font-family:var(--font-mono);font-size:11px;color:var(--text2);padding:5px 12px;border-bottom:1px solid var(--border2)}
+.landing-log-tbl tr:last-child td{border-bottom:none}
+.landing-log-tbl .ld-num{color:var(--accent2);width:40px}
+.landing-log-tbl .ld-arr{color:#fff;font-size:13px;font-weight:600}
+
 </style>
 </head>
 <body>
@@ -333,7 +348,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
       <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">&#8593; IMPORT XLSX</button>
       <button class="btn btn-danger" onclick="clearAll()">&#x2715; CLEAR ALL</button>
     </div>
-    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">24 May 2026 · 05:40 UTC</span></div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:16px">LAST BUILD <span style="color:var(--gold)">23 Jun 2026 · 05:40 UTC</span></div>
     <div class="section-label">TOTALS</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -413,6 +428,25 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         </div>
       </div>
     </div>
+
+    <div class="section-label" style="margin-top:24px">787 LANDINGS</div>
+    <div class="stats-grid" style="grid-template-columns:repeat(2,1fr);max-width:320px;margin-bottom:20px">
+      <div class="stat-card">
+        <div class="stat-val accent" id="m-land-total">—</div>
+        <div class="stat-lbl">Total 787 Landings</div>
+      </div>
+    </div>
+    <div class="metrics-two-col" style="margin-bottom:20px">
+      <div>
+        <div style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">BY YEAR</div>
+        <table class="metrics-tbl" id="m-land-year-tbl">
+          <thead><tr><th>Year</th><th>Landings</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">LANDING LOG</div>
+    <div id="m-land-log"></div>
 
   </div>
 
@@ -649,6 +683,14 @@ function clearFilters(){
   renderAll();
 }
 
+function toggleLandYear(hdr){
+  const body=hdr.nextElementSibling;
+  const chevron=hdr.querySelector('.landing-year-chevron');
+  const isOpen=body.style.display==='block';
+  body.style.display=isOpen?'none':'block';
+  chevron.classList.toggle('open',!isOpen);
+}
+
 function renderAll(){
   const all=load();
   const search=((document.getElementById('f-search')||{}).value||'').toLowerCase();
@@ -765,6 +807,71 @@ function renderAll(){
   yearTbl.innerHTML=yearSorted.length
     ?yearSorted.map(y=>'<tr><td>'+y[0]+'</td><td>'+toDecimal(y[1])+'</td></tr>').join('')
     :'<tr><td colspan="2" style="color:var(--text3);text-align:center">No data</td></tr>';
+
+  // 787 Landings
+  const landingLegs=[];
+  filtered.forEach(p=>{
+    (p.legs||[]).forEach(l=>{
+      if(l.landed&&acType(l.aircraft||'')==='787'){
+        landingLegs.push(l);
+      }
+    });
+  });
+  // Sort by date ascending so sequential numbering is chronological
+  landingLegs.sort((a,b)=>{
+    const da=new Date(a.date||'1970-01-01');
+    const db=new Date(b.date||'1970-01-01');
+    return da-db;
+  });
+  const totalLandings=landingLegs.length;
+  document.getElementById('m-land-total').textContent=totalLandings||'—';
+
+  // By year
+  const landByYear={};
+  landingLegs.forEach((l,i)=>{
+    const yr=parseYearFromDate(l.date)||'?';
+    if(!landByYear[yr])landByYear[yr]=[];
+    landByYear[yr].push({...l,seqNum:i+1});
+  });
+  const landYearSorted=Object.keys(landByYear).sort((a,b)=>parseInt(b)-parseInt(a));
+  const landYearTbl=document.querySelector('#m-land-year-tbl tbody');
+  landYearTbl.innerHTML=landYearSorted.length
+    ?landYearSorted.map(yr=>'<tr><td>'+yr+'</td><td>'+landByYear[yr].length+'</td></tr>').join('')
+    :'<tr><td colspan="2" style="color:var(--text3);text-align:center">No data</td></tr>';
+
+  // Landing log collapsible by year (newest year first, legs newest first within year)
+  const landLog=document.getElementById('m-land-log');
+  if(!landYearSorted.length){
+    landLog.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;padding:12px 0">No 787 landings recorded. Add a "Landings" column to your spreadsheet with "Yes" on applicable legs.</div>';
+  }else{
+    landLog.innerHTML=landYearSorted.map((yr,yi)=>{
+      const legs=[...landByYear[yr]].reverse(); // newest first
+      const rows=legs.map(l=>{
+        const route=(l.dep||'?')+'-'+(l.arr||'?');
+        const dateDisp=fmtDisplayDate(l.date);
+        return '<tr>'+
+          '<td class="ld-num">#'+l.seqNum+'</td>'+
+          '<td>'+dateDisp+'</td>'+
+          '<td class="ld-arr">'+(l.arr||'—')+'</td>'+
+          '<td>'+route+'</td>'+
+          '</tr>';
+      }).join('');
+      const openClass=yi===0?' open':'';
+      return '<div class="landing-year-block">'+
+        '<div class="landing-year-hdr" onclick="toggleLandYear(this)">'+
+          '<span class="landing-year-label">'+yr+'</span>'+
+          '<span class="landing-year-count">'+landByYear[yr].length+' landing'+(landByYear[yr].length!==1?'s':'')+'</span>'+
+          '<span class="landing-year-chevron'+openClass+'">▼</span>'+
+        '</div>'+
+        '<div style="display:'+(yi===0?'block':'none')+'">'+
+          '<table class="landing-log-tbl">'+
+            '<thead><tr><th>#</th><th>Date</th><th>Arr</th><th>Route</th></tr></thead>'+
+            '<tbody>'+rows+'</tbody>'+
+          '</table>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
 
   const list=document.getElementById('pairings-list');
   if(!list)return;
@@ -889,7 +996,8 @@ function importXLSX(input){
         miles:   findCol(header,['miles']),
         aircraft:findCol(header,['aircraft']),
         sob:     findCol(header,['sob']),
-        notes:   findCol(header,['notes'])
+        notes:   findCol(header,['notes']),
+        landed:  findCol(header,['landings','landed'])
       };
 
       // Process row by row. Each row is one leg.
@@ -923,7 +1031,8 @@ function importXLSX(input){
           iro2:String(r[idx.iro2]||'').trim(),
           iro2Notes:String(r[idx.iro2Notes]||'').trim(),
           lcp:String(r[idx.lcp]||'').trim(),
-          notes:String(r[idx.notes]||'').trim()
+          notes:String(r[idx.notes]||'').trim(),
+          landed:String(r[idx.landed]||'').trim().toLowerCase()==='yes'
         };
         // Start new trip if: no current trip, OR pairing# changed, OR dep is a base airport (new trip starting)
         const isNewTrip=!currentTrip
