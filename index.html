@@ -787,11 +787,19 @@ function renderAll(){
     document.getElementById('m-longest-hrs').textContent=toDecimal(parseMins(longestLeg.block))+' hrs';
     document.getElementById('m-longest-route').textContent=(longestLeg.dep||'?')+'-'+(longestLeg.arr||'?');
     document.getElementById('m-longest-date').textContent=longestLeg.date||'';
+  }else{
+    document.getElementById('m-longest-hrs').textContent='\u2014';
+    document.getElementById('m-longest-route').textContent='\u2014';
+    document.getElementById('m-longest-date').textContent='';
   }
   if(shortestLeg){
     document.getElementById('m-shortest-hrs').textContent=toDecimal(parseMins(shortestLeg.block))+' hrs';
     document.getElementById('m-shortest-route').textContent=(shortestLeg.dep||'?')+'-'+(shortestLeg.arr||'?');
     document.getElementById('m-shortest-date').textContent=shortestLeg.date||'';
+  }else{
+    document.getElementById('m-shortest-hrs').textContent='\u2014';
+    document.getElementById('m-shortest-route').textContent='\u2014';
+    document.getElementById('m-shortest-date').textContent='';
   }
 
   // Top 10 destinations
