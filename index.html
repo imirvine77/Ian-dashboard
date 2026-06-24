@@ -190,6 +190,22 @@ body{min-height:100vh}
 /* ── EDIT/DEL BUTTONS ── */
 .eb{font-family:var(--fm);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;background:rgba(0,51,160,.07);color:var(--ua);border:1px solid rgba(0,51,160,.2)}
 .db{font-family:var(--fm);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;background:rgba(192,57,43,.07);color:var(--red);border:1px solid rgba(192,57,43,.2)}
+
+/* ── DONUT CHART ── */
+.wrap-donut{display:flex;align-items:center;gap:12px}
+.donut-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.dl-row{display:flex;align-items:center;gap:6px;min-width:0}
+.dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dl-iata{font-size:13px;font-weight:900;color:var(--t1);width:30px;flex-shrink:0}
+.dl-val{font-size:12px;color:var(--t4);font-weight:600;white-space:nowrap}
+/* ── BAR CHART ── */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-row:last-child{margin-bottom:0}
+.bar-yr{font-size:14px;font-weight:700;color:var(--t1);width:34px;flex-shrink:0}
+.bar-track{flex:1;height:26px;background:var(--s2);border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.bar-lbl{font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
+.bar-lbl-out{font-size:12px;font-weight:700;white-space:nowrap;margin-left:6px}
 /* ── RESPONSIVE ── */
 @media(max-width:600px){
   .tab{padding:12px 10px}
@@ -234,13 +250,15 @@ body{min-height:100vh}
   </div>
 
   <div class="sl">Top 787 destinations</div>
-  <div id="m-dests"><div class="empty">Import your spreadsheet to see data</div></div>
+  <div id="m-dests">
+    <div class="wrap-donut">
+      <svg id="m-dests-svg" viewBox="0 0 130 130" style="width:165px;height:165px;flex-shrink:0;overflow:visible"></svg>
+      <div id="m-dests-legend" class="donut-legend"></div>
+    </div>
+  </div>
 
-  <div class="sl">Block hrs by year</div>
-  <table class="tbl" id="m-years-tbl">
-    <thead><tr><th>Year</th><th>Block (hrs)</th></tr></thead>
-    <tbody><tr><td colspan="2" class="empty" style="text-align:center">—</td></tr></tbody>
-  </table>
+  <div class="sl">Block Hours by Calendar Year</div>
+  <div id="m-years-bars"><div class="empty">Import your spreadsheet to see data</div></div>
 
   <div class="sl">Flight extremes</div>
   <div class="eg" style="margin-bottom:20px">
@@ -513,18 +531,71 @@ function renderMetrics(){
     }).join('')
     :'<div class="empty">No 787 landings recorded. Add a "Landings" column with "Yes" on applicable legs.</div>';
 
-  // Destinations bar chart
+  // Destinations donut chart
   const dests=Object.entries(destCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const maxD=dests[0]?.[1]||1;
-  document.getElementById('m-dests').innerHTML=dests.length
-    ?dests.map(([iata,n])=>`<div class="br"><span class="bi">${iata}</span><div class="bt"><div class="bf" style="width:${Math.round(n/maxD*100)}%"></div></div><span class="bn">${n}</span></div>`).join('')
-    :'<div class="empty">No data</div>';
+  const svg=document.getElementById('m-dests-svg');
+  const leg=document.getElementById('m-dests-legend');
+  if(!svg||!leg){}
+  else if(!dests.length){
+    svg.innerHTML='';leg.innerHTML='<div class="empty">No data</div>';
+  }else{
+    const dtotal=dests.reduce((a,b)=>a+b[1],0);
+    const CX=65,CY=65,R=50,r=30,GAP=0.022;
+    const polar=(a,rad)=>[CX+rad*Math.cos(a),CY+rad*Math.sin(a)];
+    svg.innerHTML='';leg.innerHTML='';
+    // Center label
+    svg.innerHTML+=`<text x="${CX}" y="${CY+7}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="20" font-weight="900" fill="#0033A0">${dtotal}</text><text x="${CX}" y="${CY+18}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="7" fill="#999" letter-spacing="0.5">FLIGHTS</text>`;
+    const n=dests.length;
+    let angle=-Math.PI/2;
+    const slices=[];
+    dests.forEach(([iata,cnt],i)=>{
+      const slice=(cnt/dtotal)*Math.PI*2-GAP;
+      const t=i/(n-1||1);
+      const rc=Math.round(0+t*153),gc=Math.round(51+t*133),bc=Math.round(160+t*64);
+      const color=`rgb(${rc},${gc},${bc})`;
+      const [x1,y1]=polar(angle,R),[x2,y2]=polar(angle+slice,R);
+      const [x3,y3]=polar(angle+slice,r),[x4,y4]=polar(angle,r);
+      const large=slice>Math.PI?1:0;
+      svg.innerHTML+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R},0,${large},1,${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${r},${r},0,${large},0,${x4.toFixed(2)},${y4.toFixed(2)} Z" fill="${color}"/>`;
+      slices.push({iata,cnt,midAngle:angle+slice/2,pct:cnt/dtotal,color});
+      // Legend row
+      leg.innerHTML+=`<div class="dl-row"><div class="dl-dot" style="background:${color}"></div><span class="dl-iata">${iata}</span><span class="dl-val">${cnt} · ${Math.round(cnt/dtotal*100)}%</span></div>`;
+      angle+=slice+GAP;
+    });
+    // Labels
+    slices.forEach(({iata,pct,midAngle,color})=>{
+      if(pct>=0.08){
+        const [lx,ly]=polar(midAngle,(R+r)/2);
+        svg.innerHTML+=`<text x="${lx.toFixed(2)}" y="${(ly+2.5).toFixed(2)}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="6.5" font-weight="700" fill="#fff">${iata}</text>`;
+      }else{
+        const [x1,y1]=polar(midAngle,R+4),[x2,y2]=polar(midAngle,R+11);
+        const right=x2>CX,lx=right?x2+2:x2-2;
+        svg.innerHTML+=`<polyline points="${x1.toFixed(2)},${y1.toFixed(2)} ${x2.toFixed(2)},${y2.toFixed(2)} ${lx.toFixed(2)},${y2.toFixed(2)}" fill="none" stroke="${color}" stroke-width="0.8"/>`;
+        svg.innerHTML+=`<text x="${lx.toFixed(2)}" y="${(+y2.toFixed(2)+2.5).toString()}" text-anchor="${right?'start':'end'}" font-family="Helvetica Neue,sans-serif" font-size="6" font-weight="700" fill="${color}">${iata}</text>`;
+      }
+    });
+  }
 
-  // Years table
-  const yrs=Object.entries(yearBlock).sort((a,b)=>+b[0]-+a[0]);
-  document.querySelector('#m-years-tbl tbody').innerHTML=yrs.length
-    ?yrs.map(([yr,m])=>`<tr><td>${yr}</td><td class="val">${toDecimal(m)}</td></tr>`).join('')
-    :'<tr><td colspan="2" class="empty" style="text-align:center">—</td></tr>';
+  // Years bar chart (oldest at top, newest at bottom, light->dark)
+  const yrs=Object.entries(yearBlock).sort((a,b)=>+a[0]-+b[0]);
+  const barsEl=document.getElementById('m-years-bars');
+  if(barsEl){
+    if(!yrs.length){barsEl.innerHTML='<div class="empty">No data</div>';}
+    else{
+      const maxHrs=Math.max(...yrs.map(([,m])=>m/60));
+      const ny=yrs.length;
+      const MIN_PCT=14;
+      barsEl.innerHTML=yrs.map(([yr,m],i)=>{
+        const hrs=+(m/60).toFixed(1);
+        const pct=Math.round(hrs/maxHrs*100);
+        const t=i/(ny-1||1);
+        const rc=Math.round(0+t*153),gc=Math.round(51+t*133),bc=Math.round(160+t*64);
+        const color=`rgb(${rc},${gc},${bc})`;
+        const inside=pct>=MIN_PCT;
+        return`<div class="bar-row"><span class="bar-yr">${yr}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}">${inside?`<span class="bar-lbl">${hrs}</span>`:''}</div></div>${!inside?`<span class="bar-lbl-out" style="color:${color}">${hrs}</span>`:''}</div>`;
+      }).join('');
+    }
+  }
 
   // Extremes
   if(longest){setText('m-long-hrs',toDecimal(parseMins(longest.block))+' hrs');setText('m-long-route',(longest.dep||'?')+'-'+(longest.arr||'?'));setText('m-long-date',longest.date||'');}
