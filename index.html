@@ -192,7 +192,7 @@ body{min-height:100vh}
 .db{font-family:var(--fm);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;background:rgba(192,57,43,.07);color:var(--red);border:1px solid rgba(192,57,43,.2)}
 
 /* ── DONUT CHART ── */
-.wrap-donut{display:flex;align-items:center;gap:12px}
+.wrap-donut{display:flex;align-items:center;gap:16px;max-width:500px}
 .donut-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
 .dl-row{display:flex;align-items:center;gap:6px;min-width:0}
 .dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -252,7 +252,7 @@ body{min-height:100vh}
   <div class="sl">Top 787 destinations</div>
   <div id="m-dests">
     <div class="wrap-donut">
-      <svg id="m-dests-svg" viewBox="-20 -20 200 200" style="width:150px;height:150px;flex-shrink:0"></svg>
+      <svg id="m-dests-svg" viewBox="0 0 130 130" style="width:min(45%,180px);height:min(45vw,180px);flex-shrink:0"></svg>
       <div id="m-dests-legend" class="donut-legend"></div>
     </div>
   </div>
@@ -562,16 +562,11 @@ function renderMetrics(){
       leg.innerHTML+=`<div class="dl-row"><div class="dl-dot" style="background:${color}"></div><span class="dl-iata">${iata}</span><span class="dl-val">${cnt} · ${Math.round(cnt/dtotal*100)}%</span></div>`;
       angle+=slice+GAP;
     });
-    // Labels
-    slices.forEach(({iata,pct,midAngle,color})=>{
+    // Labels — inside only for slices >= 8%
+    slices.forEach(({iata,pct,midAngle})=>{
       if(pct>=0.08){
         const [lx,ly]=polar(midAngle,(R+r)/2);
-        svg.innerHTML+=`<text x="${lx.toFixed(2)}" y="${(ly+2.5).toFixed(2)}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="6.5" font-weight="700" fill="#fff">${iata}</text>`;
-      }else{
-        const [x1,y1]=polar(midAngle,R+4),[x2,y2]=polar(midAngle,R+11);
-        const right=x2>CX,lx=right?x2+2:x2-2;
-        svg.innerHTML+=`<polyline points="${x1.toFixed(2)},${y1.toFixed(2)} ${x2.toFixed(2)},${y2.toFixed(2)} ${lx.toFixed(2)},${y2.toFixed(2)}" fill="none" stroke="${color}" stroke-width="0.8"/>`;
-        svg.innerHTML+=`<text x="${lx.toFixed(2)}" y="${(+y2.toFixed(2)+2.5).toString()}" text-anchor="${right?'start':'end'}" font-family="Helvetica Neue,sans-serif" font-size="6" font-weight="700" fill="${color}">${iata}</text>`;
+        svg.innerHTML+=`<text x="${lx.toFixed(2)}" y="${(ly+2.5).toFixed(2)}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="7" font-weight="700" fill="#fff">${iata}</text>`;
       }
     });
   }
