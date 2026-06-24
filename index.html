@@ -293,7 +293,7 @@ body{min-height:100vh}
     <button class="btn btn-x" onclick="exportXLSX()">↓ Export XLSX</button>
     <button class="btn btn-d" onclick="clearAll()">✕ Clear All</button>
   </div>
-  <div style="font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:6px">Build: 23 Jun 2026</div>
+  <div style="font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:6px">Build: 23 Jun 2026 · v1.15</div>
 </div>
 
 <!-- ══ TAB: CREW NOTES ══ -->
@@ -571,8 +571,8 @@ function renderMetrics(){
     });
   }
 
-  // Years bar chart (oldest at top, newest at bottom, light->dark)
-  const yrs=Object.entries(yearBlock).sort((a,b)=>+a[0]-+b[0]);
+  // Years bar chart (newest at top, oldest at bottom, newest=darkest)
+  const yrs=Object.entries(yearBlock).sort((a,b)=>+b[0]-+a[0]);
   const barsEl=document.getElementById('m-years-bars');
   if(barsEl){
     if(!yrs.length){barsEl.innerHTML='<div class="empty">No data</div>';}
@@ -583,7 +583,7 @@ function renderMetrics(){
       barsEl.innerHTML=yrs.map(([yr,m],i)=>{
         const hrs=+(m/60).toFixed(1);
         const pct=Math.round(hrs/maxHrs*100);
-        const t=i/(ny-1||1);
+        const t=i/(ny-1||1); // 0=newest=darkest, 1=oldest=lightest
         const rc=Math.round(0+t*153),gc=Math.round(51+t*133),bc=Math.round(160+t*64);
         const color=`rgb(${rc},${gc},${bc})`;
         const inside=pct>=MIN_PCT;
