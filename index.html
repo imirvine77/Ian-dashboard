@@ -233,8 +233,8 @@ body{min-height:100vh}
 <nav class="nav">
   <button class="nt on" onclick="showTab('metrics',this)">METRICS</button>
   <button class="nt" onclick="showTab('crew',this);renderCrew()">CREW NOTES</button>
-  <button class="nt" onclick="showTab('logbook',this);renderSP()">LOGBOOK</button>
   <button class="nt" onclick="showTab('seniority',this);renderSeniority()">SENIORITY</button>
+  <button class="nt" onclick="showTab('logbook',this);renderSP()">LOGBOOK</button>
 </nav>
 
 <!-- ══ TAB: METRICS ══ -->
@@ -277,8 +277,8 @@ body{min-height:100vh}
   </div>
 
   <div class="sl">787 landing log</div>
-  <div class="g2" style="max-width:200px;margin-bottom:14px">
-    <div class="card"><div class="sv b" id="m-land-total2">—</div><div class="slbl">Total</div></div>
+  <div style="margin-bottom:14px">
+    <div class="card"><div class="sv b" id="m-land-total2">—</div><div class="slbl">Total 787 Landings</div></div>
   </div>
   <div id="m-land-log"></div>
 
@@ -289,7 +289,7 @@ body{min-height:100vh}
     <button class="btn btn-x" onclick="exportXLSX()">↓ Export XLSX</button>
     <button class="btn btn-d" onclick="clearAll()">✕ Clear All</button>
   </div>
-  <div style="font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:6px">Build: 23 Jun 2026 · v1.17</div>
+  <div style="font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:6px">Build: 23 Jun 2026 · v1.18</div>
 </div>
 
 <!-- ══ TAB: CREW NOTES ══ -->
@@ -357,27 +357,23 @@ body{min-height:100vh}
     <div class="card" style="margin-top:0"><div class="sv b" id="sen-gpct">—</div><div class="slbl">G-Line %</div></div>
   </div>
 
-  <div class="sl">System seniority over time</div>
   <div class="sen-chart">
     <div class="sen-chart-title">System Seniority Number</div>
     <svg id="sen-sys-chart" viewBox="0 0 340 120"></svg>
   </div>
 
-  <div class="sl">Category seniority over time</div>
   <div class="sen-chart">
     <div class="sen-chart-title">Category Seniority Number</div>
     <svg id="sen-cat-chart" viewBox="0 0 340 120"></svg>
   </div>
 
-  <div class="sl">Category % &amp; G-Line % over time</div>
   <div class="sen-chart">
     <div class="sen-chart-title">Category % &amp; G-Line %</div>
     <svg id="sen-pct-chart" viewBox="0 0 340 130"></svg>
   </div>
 
-  <div class="sl">Total pilots in category</div>
   <div class="sen-chart">
-
+    <div class="sen-chart-title">Total Pilots in Category</div>
     <svg id="sen-tot-chart" viewBox="0 0 340 120"></svg>
   </div>
 
@@ -548,7 +544,9 @@ function renderMetrics(){
       svg.innerHTML+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R},0,${large},1,${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${r},${r},0,${large},0,${x4.toFixed(2)},${y4.toFixed(2)} Z" fill="${color}"/>`;
       slices.push({iata,cnt,midAngle:angle+slice/2,pct:cnt/dtotal,color});
       // Legend row
-      leg.innerHTML+=`<div class="dl-row"><div class="dl-dot" style="background:${color}"></div><span class="dl-iata">${iata}</span><span class="dl-val">${cnt} · ${Math.round(cnt/dtotal*100)}%</span></div>`;
+      const FLAGS={HND:'🇯🇵',NRT:'🇯🇵',HKG:'🇭🇰',PVG:'🇨🇳',PEK:'🇨🇳',SYD:'🇦🇺',MEL:'🇦🇺',LHR:'🇬🇧',BKK:'🇹🇭',SGN:'🇻🇳',AKL:'🇳🇿',BRU:'🇧🇪',ICN:'🇰🇷',SIN:'🇸🇬',DXB:'🇦🇪',CDG:'🇫🇷',AMS:'🇳🇱',FCO:'🇮🇹',LAX:'🇺🇸',SFO:'🇺🇸'};
+      const flag=FLAGS[iata]||'';
+      leg.innerHTML+=`<div class="dl-row"><div class="dl-dot" style="background:${color}"></div><span class="dl-iata">${iata}</span><span style="font-size:14px;margin-right:2px">${flag}</span><span class="dl-val">${cnt} · ${Math.round(cnt/dtotal*100)}%</span></div>`;
       angle+=slice+GAP;
     });
     // Labels — inside only for slices >= 8%
