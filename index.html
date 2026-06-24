@@ -2,1691 +2,888 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Ian Irvine — Flying Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Ian Irvine — Flight Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
-:root{
-  --bg:#f5f5f7;--bg2:#ffffff;--bg3:#f0f0f5;--panel:#ffffff;--panel2:#f5f5f7;
-  --border:#e0e0e5;--border2:#f0f0f5;
-  --blue:#0033A0;--accent:#0033A0;--accent2:#0055cc;
-  --red:#c0392b;--green:#2e7d32;--gold:#f57f17;
-  --text:#1d1d1f;--text2:#444;--text3:#666;--text4:#999;
-  --font-head:'Inter',sans-serif;--font-mono:'Share Tech Mono',monospace;
-}
+/* ── RESET & TOKENS ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:#f5f5f7;color:#1d1d1f;font-family:var(--font-head);min-height:100vh;overflow-x:hidden;font-size:16px}
-
-/* HEADER */
-.header{background:#0033A0;padding:0 18px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.header-logo{display:flex;align-items:center;gap:12px}
-.logo-mark{display:none}
-.header-title{font-family:var(--font-head);font-size:19px;font-weight:900;color:#fff;letter-spacing:-0.3px}
-.header-title span{color:rgba(255,255,255,0.6);font-weight:400}
-.header-right{display:flex;align-items:center;gap:12px}
-.header-clock{display:none}
-.header-zulu{font-family:var(--font-mono);font-size:15px;color:rgba(255,255,255,0.9);letter-spacing:0.05em}
-
-/* NAV */
-.nav{background:#fff;border-bottom:2px solid #0033A0;padding:0 18px;display:flex;gap:0}
-.nav-tab{font-family:var(--font-head);font-size:15px;font-weight:700;color:#999;padding:14px 20px;border:none;background:none;cursor:pointer;position:relative;border-bottom:3px solid transparent;transition:color 0.2s,border-color 0.2s;letter-spacing:0.02em}
-.nav-tab:hover{color:var(--text2)}
-.nav-tab.active{color:#0033A0;border-bottom-color:#0033A0}
-
-/* LAYOUT */
-.tab-content{display:none}
-.tab-content.active{display:block}
-.main{padding:18px;max-width:900px;margin:0 auto;background:#f5f5f7}
-
-/* SECTION LABEL */
-.section-label{font-family:var(--font-mono);font-size:13px;letter-spacing:0.15em;text-transform:uppercase;color:#999;margin-bottom:14px;display:flex;align-items:center;gap:10px}
-.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* STAT CARDS */
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
-.stat-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border:none}
-.stat-val{font-family:var(--font-head);font-size:32px;font-weight:900;color:#1d1d1f;line-height:1;margin-bottom:6px}
-.stat-val.accent{color:#0033A0}
-.stat-lbl{font-family:var(--font-mono);font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
-
-/* METRICS TABLE */
-.metrics-tbl{width:100%;border-collapse:collapse;font-size:15px}
-.metrics-tbl th{font-family:var(--font-mono);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);border-bottom:2px solid var(--border);padding:8px 12px;text-align:left}
-.metrics-tbl td{padding:10px 12px;border-bottom:1px solid #f0f0f5;color:#444;font-size:16px;font-weight:600}
-.metrics-tbl td:last-child{color:#0033A0;font-weight:700}
-.metrics-tbl tr:last-child td{border-bottom:none}
-
-/* TWO COL */
-.metrics-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-
-/* TOP DESTINATIONS BAR */
-.t-dest-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.t-iata{font-family:var(--font-head);font-size:22px;font-weight:900;color:#fff;width:50px}
-.t-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px}
-.t-bar-fill{height:6px;background:var(--accent);border-radius:3px}
-.t-bar-count{font-family:var(--font-head);font-size:16px;font-weight:700;color:var(--text2);width:30px;text-align:right}
-
-/* EXTREMES */
-.extreme-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.extreme-card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border:none}
-.extreme-card.longest{border-top:3px solid var(--red)}
-.extreme-card.shortest{border-top:3px solid var(--green)}
-.extreme-hdr{margin-bottom:8px}
-.extreme-badge{font-family:var(--font-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700}
-.extreme-badge.longest{color:var(--red)}
-.extreme-badge.shortest{color:var(--green)}
-.extreme-hrs{font-family:var(--font-head);font-size:26px;font-weight:900;color:#1d1d1f;line-height:1;margin-bottom:4px}
-.extreme-route{font-family:var(--font-head);font-size:16px;font-weight:700;color:#555}
-.extreme-date{font-family:var(--font-mono);font-size:12px;color:var(--text4);margin-top:4px}
-
-/* 787 LANDINGS */
-.landing-year-block{background:#fff;border:1px solid #e0e0e5;border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.landing-year-hdr{background:#f5f5f7;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
-.landing-year-hdr:hover{background:var(--panel2)}
-.landing-year-label{font-family:var(--font-head);font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:0.02em}
-.landing-year-count{font-family:var(--font-mono);font-size:13px;color:var(--text3)}
-.landing-year-chevron{font-family:var(--font-mono);font-size:12px;color:var(--text3);transition:transform 0.2s}
-.landing-year-chevron.open{transform:rotate(180deg)}
-.landing-log-tbl{width:100%;border-collapse:collapse}
-.landing-log-tbl th{font-family:var(--font-mono);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);padding:8px 14px;text-align:left}
-.landing-log-tbl td{font-family:var(--font-head);font-size:15px;font-weight:600;color:#444;padding:9px 14px;border-bottom:1px solid #f0f0f5}
-.landing-log-tbl tr:last-child td{border-bottom:none}
-.landing-log-tbl .ld-num{color:var(--accent);width:44px;font-weight:700}
-.landing-log-tbl .ld-arr{color:#1d1d1f;font-size:17px;font-weight:900}
-
-/* BUTTONS */
-.btn{font-family:var(--font-head);font-size:14px;font-weight:700;padding:10px 18px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;border:none}
-.btn-primary{background:#0033A0;color:#fff}
-.btn-primary:hover{background:#0044cc}
-.btn-ghost{background:#fff;color:#555;border:1px solid #ddd}
-.btn-ghost:hover{border-color:#999;color:#1d1d1f}
-.btn-export{background:transparent;color:var(--gold);border:1px solid rgba(240,180,41,0.3)}
-.btn-export:hover{background:rgba(240,180,41,0.1);border-color:var(--gold)}
-.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(224,92,92,0.3)}
-.btn-danger:hover{background:rgba(224,92,92,0.1)}
-
-/* INPUTS */
-.filter-input{background:#fff;border:1px solid #e0e0e5;border-radius:8px;padding:10px 14px;color:#1d1d1f;font-family:var(--font-head);font-size:15px;outline:none;transition:border-color 0.2s}
-.filter-input:focus{border-color:var(--accent)}
-.filter-input::placeholder{color:#999}
-.form-panel{background:#fff;border:1px solid #e0e0e5;border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.form-label{font-family:var(--font-mono);font-size:12px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3)}
-.form-input{background:#f5f5f7;border:1px solid #e0e0e5;border-radius:8px;padding:10px 12px;color:#1d1d1f;font-family:var(--font-head);font-size:15px;outline:none;transition:border-color 0.2s;width:100%}
-.form-input:focus{border-color:var(--accent)}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-
-/* ACTION BAR */
-.action-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.filter-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-
-/* PAIRINGS / TRIP CARDS */
-.pcard{background:#fff;border:1px solid #e0e0e5;border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.pcard-header{background:#f5f5f7;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #e0e0e5}
-.pcard-pairing{font-family:var(--font-head);font-size:18px;font-weight:900;color:var(--accent)}
-.pcard-aircraft{font-family:var(--font-mono);font-size:13px;color:var(--text3);margin-top:2px}
-.pcard-totals{display:flex;gap:20px;align-items:center}
-.pcard-total-val{font-family:var(--font-head);font-size:20px;font-weight:900;color:#1d1d1f;line-height:1}
-.pcard-total-lbl{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-top:2px}
-.pcard-actions{display:flex;gap:8px}
-.pcard-crew{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--border2);flex-wrap:wrap}
-.crew-pill{font-family:var(--font-mono);font-size:12px;padding:4px 10px;border-radius:6px;letter-spacing:0.05em}
-.crew-pill.ca{background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.3)}
-.crew-pill.fo{background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
-.crew-pill.iro{background:rgba(58,134,255,0.1);color:var(--accent);border:1px solid rgba(58,134,255,0.3)}
-.crew-pill.lcp{background:rgba(144,191,223,0.1);color:var(--text3);border:1px solid var(--border)}
-.pcard-legs{padding:8px 0 12px;overflow-x:auto}
-.legs-tbl{width:100%;border-collapse:collapse;min-width:520px}
-.legs-tbl th{font-family:var(--font-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);padding:7px 14px;text-align:left}
-.legs-tbl td{font-family:var(--font-head);font-size:15px;font-weight:600;color:#444;padding:9px 14px;border-bottom:1px solid #f0f0f5}
-.legs-tbl tr:last-child td{border-bottom:none}
-
-/* LEG TABLE (LOGBOOK) */
-.leg-tbl-wrap{overflow-x:auto}
-.leg-tbl{width:100%;border-collapse:collapse;min-width:580px}
-.leg-tbl th{font-family:var(--font-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);padding:7px 8px;text-align:left}
-.leg-tbl td{padding:7px 8px;border-bottom:1px solid var(--border2)}
-.leg-tbl td input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:#fff;font-family:var(--font-head);font-size:14px;font-weight:600;outline:none;width:100%;transition:border-color 0.2s}
-.leg-tbl td input:focus{border-color:var(--accent)}
-.edit-btn{font-family:var(--font-mono);font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer;background:rgba(58,134,255,0.1);color:var(--accent);border:1px solid rgba(58,134,255,0.3)}
-.del-btn{font-family:var(--font-mono);font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer;background:rgba(224,92,92,0.1);color:var(--red);border:1px solid rgba(224,92,92,0.3)}
-
-/* SCRATCHPAD */
-.sp-card{background:var(--bg2);border-radius:12px;overflow:hidden;margin-bottom:10px}
-.sp-card.complete{border:1px solid var(--border);border-left:4px solid var(--green)}
-.sp-card.partial{border:1px solid var(--border);border-left:4px solid var(--gold)}
-.sp-card.pending{border:1px solid var(--border)}
-.sp-hdr{background:#f5f5f7;padding:12px 14px;border-bottom:1px solid #e0e0e5;display:flex;align-items:center;gap:10px}
-.sp-route{font-family:var(--font-head);font-size:22px;font-weight:900;color:#1d1d1f}
-.sp-sep{color:var(--accent);margin:0 2px}
-.sp-flt{font-family:var(--font-mono);font-size:13px;color:var(--text3);flex:1}
-.sp-status{font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border-radius:6px}
-.sp-status.complete{background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
-.sp-status.partial{background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.3)}
-.sp-status.pending{color:var(--text4);border:1px solid var(--border)}
-.sp-body{padding:12px 14px}
-.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.sp-field{display:flex;flex-direction:column;gap:4px}
-.sp-lbl{font-family:var(--font-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
-.sp-val{font-family:var(--font-head);font-size:16px;font-weight:700;color:#fff}
-.sp-val.gold{color:var(--gold)}
-.sp-val.empty{color:var(--text4);font-style:italic;font-size:14px}
-.sp-notes{padding-top:8px;border-top:1px solid var(--border2)}
-.sp-actions{display:flex;gap:8px;padding:0 14px 12px;justify-content:flex-end}
-
-/* CREW NOTES */
-.cn-role-btn{font-family:var(--font-head);font-size:14px;font-weight:700;padding:9px 18px;border-radius:8px;cursor:pointer;border:1px solid #ddd;background:#fff;color:#666;transition:all 0.2s}
-.cn-role-btn.active{background:rgba(58,134,255,0.15);color:var(--accent);border-color:var(--accent)}
-.cn-role-btn[data-role="ca"].active{background:rgba(240,180,41,0.1);color:var(--gold);border-color:rgba(240,180,41,0.4)}
-.cn-role-btn[data-role="fo"].active{background:rgba(63,185,80,0.1);color:var(--green);border-color:rgba(63,185,80,0.3)}
-.cn-role-btn.avoid{color:var(--red);border-color:rgba(224,92,92,0.3)}
-.cn-role-btn.avoid.active{background:rgba(224,92,92,0.1);color:var(--red);border-color:var(--red)}
-.cn-card{background:#fff;border:1px solid #e0e0e5;border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-.cn-card.avoid-card{border-left:4px solid var(--red)}
-.cn-hdr{background:#f5f5f7;padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e0e0e5;flex-wrap:wrap}
-.cn-name{font-family:var(--font-head);font-size:18px;font-weight:900;color:#1d1d1f}
-.cn-role-pills{display:flex;gap:6px;flex-wrap:wrap}
-.cn-pill{font-family:var(--font-mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:6px}
-.cn-pill.ca{background:rgba(240,180,41,0.1);color:var(--gold);border:1px solid rgba(240,180,41,0.3)}
-.cn-pill.fo{background:rgba(63,185,80,0.1);color:var(--green);border:1px solid rgba(63,185,80,0.3)}
-.cn-pill.iro{background:rgba(58,134,255,0.1);color:var(--accent);border:1px solid rgba(58,134,255,0.3)}
-.cn-pill.lcp{background:rgba(144,191,223,0.1);color:var(--text3);border:1px solid var(--border)}
-.cn-pill.avoid{background:rgba(224,92,92,0.1);color:var(--red);border:1px solid rgba(224,92,92,0.3)}
-.cn-meta{font-family:var(--font-mono);font-size:13px;color:var(--text4);margin-left:auto;white-space:nowrap}
-.cn-body{padding:12px 16px;background:#fff}
-.cn-note-entry{padding:10px 0;border-bottom:1px solid var(--border2)}
-.cn-note-entry:last-child{border-bottom:none}
-.cn-entry-top{display:flex;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
-.cn-entry-date{font-family:var(--font-mono);font-size:13px;color:var(--text3)}
-.cn-entry-role{font-family:var(--font-mono);font-size:13px;color:var(--accent)}
-.cn-entry-route{font-family:var(--font-mono);font-size:13px;color:var(--text4)}
-.cn-note-text{font-family:var(--font-head);font-size:15px;color:#444;line-height:1.5;font-weight:500}
-.cn-note-text.empty{color:var(--text4);font-style:italic}
-.cn-tags{padding:0 16px 12px;display:flex;gap:6px;flex-wrap:wrap}
-.cn-tag{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:12px;color:var(--text4)}
-
-/* FIELD NOTES */
-.field-note-entry{background:rgba(217,119,6,0.08);border-left:3px solid #d97706;border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px}
-.field-note-badge{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#d97706;border:1px solid rgba(217,119,6,0.3);padding:2px 8px;border-radius:4px;margin-right:6px}
-.field-note-date{font-family:var(--font-mono);font-size:12px;color:var(--text4)}
-.field-note-text{font-family:var(--font-head);font-size:15px;color:#1d1d1f;line-height:1.5;margin-top:6px;font-weight:500}
-.field-note-del{font-family:var(--font-mono);font-size:11px;color:var(--red);border:none;background:none;cursor:pointer;padding:0;margin-left:auto;opacity:0.7}
-.fn-form{background:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.3);border-radius:8px;padding:12px 14px;margin:10px 0}
-.fn-form textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:#fff;font-family:var(--font-head);font-size:15px;padding:10px 12px;resize:vertical;min-height:72px;font-weight:500}
-.fn-form-actions{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
-.fn-save{font-family:var(--font-head);font-size:14px;font-weight:700;padding:8px 18px;border-radius:8px;cursor:pointer;background:#d97706;color:#fff;border:none}
-.fn-cancel{font-family:var(--font-head);font-size:14px;font-weight:700;padding:8px 18px;border-radius:8px;cursor:pointer;background:transparent;color:var(--text3);border:1px solid var(--border)}
-.add-note-btn{font-family:var(--font-mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);white-space:nowrap}
-.manual-trip-badge{display:inline-block;font-family:var(--font-mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#d97706;border:1px solid rgba(217,119,6,0.3);padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle}
-.manual-trip-hint{font-family:var(--font-mono);font-size:12px;color:#d97706;opacity:0.7;padding:4px 16px 10px}
-
-/* ANIMATIONS */
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-
-/* RESPONSIVE */
-@media(max-width:600px){
-  .header{padding:0 12px;height:52px}
-  .header-title{font-size:16px}
-  .header-zulu{font-size:13px}
-  .nav{padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .nav::-webkit-scrollbar{display:none}
-  .nav-tab{padding:12px 14px;font-size:13px;white-space:nowrap;flex-shrink:0}
-  .main{padding:12px 10px}
-  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px}
-  .stat-val{font-size:26px}
-  .metrics-two-col{grid-template-columns:1fr}
-  .extreme-grid{grid-template-columns:1fr 1fr}
-  .t-iata{font-size:18px}
+:root{
+  --f:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --fm:'Share Tech Mono',monospace;
+  --bg:#f5f5f7;--s:#fff;--s2:#f0f0f5;
+  --b:#e0e0e5;--b2:#f0f0f5;
+  --ua:#0033A0;--ua2:#0044cc;
+  --red:#c0392b;--grn:#2e7d32;--amb:#f57f17;
+  --t1:#1d1d1f;--t2:#444;--t3:#666;--t4:#999;
+  --r:14px;
 }
-/* keep these for scratchpad tab compat */
-.t-ml{font-size:13px;font-family:var(--font-mono);color:var(--text3);letter-spacing:0.1em;text-transform:uppercase}
-.t-mv{font-family:var(--font-head);font-size:16px;font-weight:700;color:#fff}
-.t-wx-desc{font-size:15px;color:var(--text2)}
-.t-wx-temps{font-size:14px;color:var(--text3)}
-.t-fc-date{font-family:var(--font-mono);font-size:12px;color:var(--text4)}
-.t-fc-hi{font-size:14px;font-weight:700;color:#fff}
-.t-fc-lo{font-size:13px;color:var(--text3)}
-.t-leg-dep,.t-leg-arr{font-size:15px;font-weight:700;color:#fff}
-.t-days{font-family:var(--font-head);font-size:36px;font-weight:900;color:var(--accent)}
-.t-days-lbl{font-family:var(--font-mono);font-size:12px;color:var(--text3)}
-.t-crew-pill{font-family:var(--font-mono);font-size:12px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);color:var(--text3)}
+html{background:var(--bg);color:var(--t1);font-family:var(--f);font-size:16px}
+body{min-height:100vh}
+/* ── HEADER ── */
+.hdr{background:var(--ua);height:56px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.hdr-logo{height:34px;width:34px;border-radius:4px}
+.hdr-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.hdr-title span{color:rgba(255,255,255,.55);font-weight:400}
+.hdr-zulu{font-family:var(--fm);font-size:15px;color:rgba(255,255,255,.9);letter-spacing:.04em}
+/* ── NAV ── */
+.nav{background:#fff;border-bottom:2px solid var(--ua);padding:0 14px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nt{font-family:var(--f);font-size:14px;font-weight:700;color:var(--t4);padding:13px 16px;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;flex-shrink:0;transition:color .15s}
+.nt:hover{color:var(--t2)}
+.nt.on{color:var(--ua);border-bottom-color:var(--ua)}
+/* ── TABS ── */
+.tab{display:none;padding:16px;max-width:860px;margin:0 auto}
+.tab.on{display:block}
+/* ── SECTION LABEL ── */
+.sl{font-family:var(--fm);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin:20px 0 12px;display:flex;align-items:center;gap:8px;font-weight:600}
+.sl::after{content:'';flex:1;height:1px;background:var(--b)}
+.sl:first-child{margin-top:0}
+/* ── CARDS ── */
+.card{background:var(--s);border-radius:var(--r);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* ── STAT ── */
+.sv{font-size:30px;font-weight:900;color:var(--t1);line-height:1;margin-bottom:5px;letter-spacing:-.5px}
+.sv.b{color:var(--ua)}
+.slbl{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);font-weight:600}
+/* ── BAR CHART ── */
+.br{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.bi{font-size:19px;font-weight:900;color:var(--t1);width:46px;letter-spacing:-.3px}
+.bt{flex:1;height:5px;background:var(--b);border-radius:3px}
+.bf{height:5px;background:var(--ua);border-radius:3px;transition:width .3s}
+.bn{font-size:15px;font-weight:700;color:var(--t3);width:28px;text-align:right}
+/* ── TABLES ── */
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-family:var(--fm);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);border-bottom:2px solid var(--b);padding:8px 10px;text-align:left}
+.tbl td{padding:10px 10px;border-bottom:1px solid var(--b2);color:var(--t2);font-weight:600}
+.tbl td.val{color:var(--ua);font-weight:700}
+.tbl tr:last-child td{border-bottom:none}
+/* ── EXTREMES ── */
+.eg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ec{background:var(--s);border-radius:var(--r);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.el{font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.ev{font-size:24px;font-weight:900;color:var(--t1);line-height:1;letter-spacing:-.3px}
+.er{font-size:15px;font-weight:700;color:var(--t3);margin-top:4px}
+.ed{font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:3px}
+/* ── LANDING LOG ── */
+.lyb{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.lyh{background:var(--s2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--b)}
+.lyh:hover{background:#e8e8ed}
+.lyl{font-size:17px;font-weight:700;color:var(--t1)}
+.lyc{font-family:var(--fm);font-size:12px;color:var(--t4)}
+.lychv{font-family:var(--fm);font-size:11px;color:var(--t4);transition:transform .2s}
+.lychv.open{transform:rotate(180deg)}
+.llt{width:100%;border-collapse:collapse}
+.llt th{font-family:var(--fm);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--b);padding:7px 14px;text-align:left}
+.llt td{font-size:15px;font-weight:600;color:var(--t2);padding:9px 14px;border-bottom:1px solid var(--b2)}
+.llt tr:last-child td{border-bottom:none}
+.llt .lnum{color:var(--ua);font-weight:700}
+.llt .larr{font-size:17px;font-weight:900;color:var(--t1)}
+/* ── BUTTONS ── */
+.btn{font-family:var(--f);font-size:14px;font-weight:700;padding:10px 18px;border-radius:9px;cursor:pointer;border:none;transition:all .15s}
+.btn-p{background:var(--ua);color:#fff}
+.btn-p:hover{background:var(--ua2)}
+.btn-g{background:var(--s);color:var(--t3);border:1px solid var(--b)}
+.btn-g:hover{border-color:var(--t3);color:var(--t1)}
+.btn-d{background:var(--s);color:var(--red);border:1px solid rgba(192,57,43,.25)}
+.btn-d:hover{background:rgba(192,57,43,.07)}
+.btn-x{background:var(--s);color:var(--amb);border:1px solid rgba(245,127,23,.3)}
+/* ── INPUTS ── */
+.inp{font-family:var(--f);font-size:15px;color:var(--t1);background:var(--s);border:1px solid var(--b);border-radius:9px;padding:10px 14px;outline:none;transition:border-color .15s;width:100%}
+.inp:focus{border-color:var(--ua)}
+.inp::placeholder{color:var(--t4)}
+/* ── ACTION BAR ── */
+.abar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+/* ── PCARD (trip cards in logbook) ── */
+.pcard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.pcard-hdr{background:var(--s2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--b)}
+.pcard-route{font-size:18px;font-weight:900;color:var(--ua);letter-spacing:-.2px}
+.pcard-meta{font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:2px}
+.pcard-totals{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.ptv{font-size:19px;font-weight:900;color:var(--t1);line-height:1}
+.ptl{font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-top:2px}
+.pcard-crew{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--b2);flex-wrap:wrap}
+.cpill{font-family:var(--fm);font-size:12px;padding:3px 10px;border-radius:6px;letter-spacing:.04em}
+.cpill.ca{background:rgba(245,127,23,.1);color:var(--amb);border:1px solid rgba(245,127,23,.3)}
+.cpill.fo{background:rgba(46,125,50,.1);color:var(--grn);border:1px solid rgba(46,125,50,.3)}
+.cpill.iro{background:rgba(0,51,160,.08);color:var(--ua);border:1px solid rgba(0,51,160,.2)}
+.cpill.lcp{background:var(--s2);color:var(--t3);border:1px solid var(--b)}
+.legs-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.legs-tbl{width:100%;border-collapse:collapse;min-width:500px}
+.legs-tbl th{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--b);padding:7px 12px;text-align:left}
+.legs-tbl td{font-size:14px;font-weight:600;color:var(--t2);padding:8px 12px;border-bottom:1px solid var(--b2)}
+.legs-tbl tr:last-child td{border-bottom:none}
+.iata{font-size:15px;font-weight:900;color:var(--t1)}
+/* ── SCRATCHPAD ── */
+.spcard{background:var(--s);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.spcard.complete{border-left:4px solid var(--grn);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.spcard.partial{border-left:4px solid var(--amb);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.spcard.pending{border:1px solid var(--b);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.sph{background:var(--s2);padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px}
+.sp-route{font-size:21px;font-weight:900;color:var(--t1);letter-spacing:-.3px}
+.sp-flt{font-family:var(--fm);font-size:12px;color:var(--t4);flex:1}
+.sp-status{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:6px}
+.sp-status.complete{background:rgba(46,125,50,.1);color:var(--grn);border:1px solid rgba(46,125,50,.3)}
+.sp-status.partial{background:rgba(245,127,23,.1);color:var(--amb);border:1px solid rgba(245,127,23,.3)}
+.sp-status.pending{color:var(--t4);border:1px solid var(--b)}
+.spb{padding:12px 14px}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.sp-lbl{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:3px}
+.sp-val{font-size:16px;font-weight:700;color:var(--t1)}
+.sp-val.gold{color:var(--amb)}
+.sp-val.empty{color:var(--b);font-weight:400;font-size:14px}
+.sp-act{display:flex;gap:8px;padding:0 14px 12px;justify-content:flex-end}
+/* ── FORM PANEL ── */
+.form-panel{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-lbl{font-family:var(--fm);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);margin-bottom:4px;font-weight:600}
+/* ── CREW NOTES ── */
+.cn-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.cn-card.av{border-left:4px solid var(--red)}
+.cn-hdr{background:var(--s2);padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b);flex-wrap:wrap}
+.cn-name{font-size:18px;font-weight:900;color:var(--t1)}
+.cn-card.av .cn-name{color:var(--red)}
+.cn-pills{display:flex;gap:5px;flex-wrap:wrap}
+.cnp{font-family:var(--fm);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:6px}
+.cnp.ca{background:rgba(245,127,23,.1);color:var(--amb);border:1px solid rgba(245,127,23,.3)}
+.cnp.fo{background:rgba(46,125,50,.1);color:var(--grn);border:1px solid rgba(46,125,50,.3)}
+.cnp.iro{background:rgba(0,51,160,.08);color:var(--ua);border:1px solid rgba(0,51,160,.2)}
+.cnp.lcp{background:var(--s2);color:var(--t3);border:1px solid var(--b)}
+.cnp.av{background:rgba(192,57,43,.1);color:var(--red);border:1px solid rgba(192,57,43,.3)}
+.cn-meta{font-family:var(--fm);font-size:12px;color:var(--t4);margin-left:auto;white-space:nowrap}
+.cn-body{padding:12px 16px}
+.cn-entry{padding:10px 0;border-bottom:1px solid var(--b2)}
+.cn-entry:last-child{border-bottom:none}
+.cn-etop{display:flex;gap:8px;align-items:center;margin-bottom:5px;flex-wrap:wrap}
+.cn-edate{font-family:var(--fm);font-size:12px;color:var(--t4)}
+.cn-erole{font-family:var(--fm);font-size:12px;color:var(--ua);font-weight:700}
+.cn-eroute{font-family:var(--fm);font-size:12px;color:var(--t4)}
+.cn-note{font-size:15px;color:var(--t2);line-height:1.5;font-weight:500}
+.cn-note.empty{color:var(--b);font-size:14px}
+.cn-tags{padding:0 16px 12px;display:flex;gap:5px;flex-wrap:wrap}
+.cn-tag{background:var(--s2);border:1px solid var(--b);border-radius:6px;padding:3px 9px;font-family:var(--fm);font-size:11px;color:var(--t4)}
+.cn-role-btn{font-family:var(--f);font-size:14px;font-weight:700;padding:9px 16px;border-radius:9px;cursor:pointer;border:1px solid var(--b);background:var(--s);color:var(--t3);transition:all .15s}
+.cn-role-btn.on{background:rgba(0,51,160,.08);color:var(--ua);border-color:rgba(0,51,160,.3)}
+.cn-role-btn[data-role="ca"].on{background:rgba(245,127,23,.1);color:var(--amb);border-color:rgba(245,127,23,.4)}
+.cn-role-btn[data-role="fo"].on{background:rgba(46,125,50,.1);color:var(--grn);border-color:rgba(46,125,50,.3)}
+.cn-role-btn[data-role="avoid"].on{background:rgba(192,57,43,.1);color:var(--red);border-color:var(--red)}
+/* ── FIELD NOTES ── */
+.fn-entry{background:rgba(245,127,23,.07);border-left:3px solid var(--amb);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px}
+.fn-badge{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--amb);border:1px solid rgba(245,127,23,.3);padding:2px 8px;border-radius:4px;margin-right:6px}
+.fn-date{font-family:var(--fm);font-size:12px;color:var(--t4)}
+.fn-text{font-size:15px;color:var(--t1);line-height:1.5;margin-top:6px;font-weight:500}
+.fn-del{font-family:var(--fm);font-size:11px;color:var(--red);border:none;background:none;cursor:pointer;margin-left:auto;opacity:.7}
+.fn-form{background:rgba(245,127,23,.07);border:1px solid rgba(245,127,23,.3);border-radius:9px;padding:12px 14px;margin:10px 0;display:none}
+.fn-form textarea{width:100%;background:var(--s);border:1px solid var(--b);border-radius:8px;color:var(--t1);font-family:var(--f);font-size:15px;padding:10px 12px;resize:vertical;min-height:70px}
+.fn-form-act{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
+.add-note-btn{font-family:var(--fm);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--b);background:var(--s);color:var(--t4)}
+/* ── SENIORITY ── */
+.sen-chart{background:var(--s);border-radius:var(--r);padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:14px}
+.sen-chart-title{font-size:16px;font-weight:700;color:var(--t1);margin-bottom:3px}
+.sen-chart-sub{font-size:13px;color:var(--t4);margin-bottom:14px}
+.sen-chart svg{width:100%;overflow:visible}
+.sal{font-family:var(--fm);font-size:11px;fill:var(--t4)}
+/* ── EMPTY STATE ── */
+.empty{font-family:var(--fm);font-size:13px;color:var(--t4);padding:32px 0;text-align:center;letter-spacing:.08em}
+/* ── EDIT/DEL BUTTONS ── */
+.eb{font-family:var(--fm);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;background:rgba(0,51,160,.07);color:var(--ua);border:1px solid rgba(0,51,160,.2)}
+.db{font-family:var(--fm);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;background:rgba(192,57,43,.07);color:var(--red);border:1px solid rgba(192,57,43,.2)}
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .tab{padding:12px 10px}
+  .hdr{padding:0 12px;height:52px}
+  .hdr-title{font-size:16px}
+  .form-row{grid-template-columns:1fr}
+  .g2{gap:8px}
+  .sv{font-size:26px}
+  .eg{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-logo">
-    <img src="data:image/png;base64,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" alt="United" style="height:36px;width:36px;border-radius:4px;"/>
-    <span class="header-title">Ian Irvine <span>/ Dashboard</span></span>
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-l">
+    <img src="data:image/png;base64,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" class="hdr-logo" alt="United"/>
+    <span class="hdr-title">Ian Irvine <span>/ Dashboard</span></span>
   </div>
-  <div class="header-right">
-    <span class="header-zulu" id="zuluClock">----Z</span>
-  </div>
+  <span class="hdr-zulu" id="zulu">----Z</span>
 </header>
 
+<!-- NAV -->
 <nav class="nav">
-  <button class="nav-tab active" onclick="switchTab('metrics',this)">METRICS</button>
-  <button class="nav-tab" onclick="switchTab('crew',this);renderCrewNotes()">CREW NOTES</button>
-  <button class="nav-tab" onclick="switchTab('logbook',this);renderScratchpad()">LOGBOOK</button>
+  <button class="nt on" onclick="showTab('metrics',this)">METRICS</button>
+  <button class="nt" onclick="showTab('crew',this);renderCrew()">CREW NOTES</button>
+  <button class="nt" onclick="showTab('logbook',this);renderSP()">LOGBOOK</button>
+  <button class="nt" onclick="showTab('seniority',this);renderSeniority()">SENIORITY</button>
 </nav>
 
-<main class="main">
-
-  <!-- ── TAB 0: METRICS ── -->
-  <div class="tab-content active" id="tab-metrics">
-
-    <div class="action-bar">
-      <button class="btn btn-export" onclick="exportXLSX()">&#8595; EXPORT XLSX</button>
-      <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none" onchange="importXLSX(this)"/>
-      <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">&#8593; IMPORT XLSX</button>
-      <button class="btn btn-danger" onclick="clearAll()">&#x2715; CLEAR ALL</button>
-    </div>
-    <div style="font-family:var(--font-mono);font-size:13px;color:var(--text3);letter-spacing:0.08em;margin-bottom:16px">LAST BUILD <span style="color:var(--text2)">23 Jun 2026 · 05:40 UTC</span></div>
-    <div class="section-label">TOTALS</div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-val accent" id="s-pairings">0</div>
-        <div class="stat-lbl">Pairings</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="s-legs">0</div>
-        <div class="stat-lbl">Legs</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val accent" id="s-block">0.0</div>
-        <div class="stat-lbl">Block Total (hrs)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="s-miles">0</div>
-        <div class="stat-lbl">Miles</div>
-      </div>
-    </div>
-
-    <div class="section-label">BLOCK HOURS BY AIRCRAFT TYPE</div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-val accent" id="m-block-787">0.0</div>
-        <div class="stat-lbl">787 Block (hrs)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="m-block-737">0.0</div>
-        <div class="stat-lbl">737 Block (hrs)</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val accent" id="m-sob-787">—</div>
-        <div class="stat-lbl">Avg SOB · 787</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="m-sob-737">—</div>
-        <div class="stat-lbl">Avg SOB · 737</div>
-      </div>
-    </div>
-
-    <div class="metrics-two-col">
-
-      <div>
-        <div class="section-label">TOP 787 DESTINATIONS</div>
-        <div id="m-destinations"></div>
-      </div>
-
-      <div>
-        <div class="section-label">BLOCK HOURS BY YEAR</div>
-        <table class="metrics-tbl" id="m-years">
-          <thead><tr><th>Year</th><th>Block (hrs)</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-    </div>
-
-    <div class="section-label" style="margin-top:20px">FLIGHT EXTREMES</div>
-    <div class="extreme-grid">
-      <div class="extreme-card longest" id="m-longest">
-        <div class="extreme-hdr"><span class="extreme-badge longest">Longest</span></div>
-        <div class="extreme-body">
-          <div class="extreme-hrs" id="m-longest-hrs">—</div>
-          <div class="extreme-route" id="m-longest-route">—</div>
-          <div class="extreme-date" id="m-longest-date">—</div>
-        </div>
-      </div>
-      <div class="extreme-card shortest" id="m-shortest">
-        <div class="extreme-hdr"><span class="extreme-badge shortest">Shortest</span></div>
-        <div class="extreme-body">
-          <div class="extreme-hrs" id="m-shortest-hrs">—</div>
-          <div class="extreme-route" id="m-shortest-route">—</div>
-          <div class="extreme-date" id="m-shortest-date">—</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-label" style="margin-top:24px">787 LANDINGS</div>
-    <div class="stats-grid" style="grid-template-columns:repeat(2,1fr);max-width:320px;margin-bottom:20px">
-      <div class="stat-card">
-        <div class="stat-val accent" id="m-land-total">—</div>
-        <div class="stat-lbl">Total 787 Landings</div>
-      </div>
-    </div>
-    <div class="metrics-two-col" style="margin-bottom:20px">
-      <div>
-        <div class="section-label">BY YEAR</div>
-        <table class="metrics-tbl" id="m-land-year-tbl">
-          <thead><tr><th>Year</th><th>Landings</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-    <div class="section-label">LANDING LOG</div>
-    <div id="m-land-log"></div>
-
+<!-- ══ TAB: METRICS ══ -->
+<div class="tab on" id="tab-metrics">
+  <div class="sl">Career totals</div>
+  <div class="g2" style="margin-bottom:10px">
+    <div class="card"><div class="sv" id="m-total-block">—</div><div class="slbl">Total Block Hrs</div></div>
+    <div class="card"><div class="sv b" id="m-land-total">—</div><div class="slbl">787 Landings</div></div>
+    <div class="card" style="margin-top:0"><div class="sv b" id="m-block-787">—</div><div class="slbl">787 Block Hrs</div></div>
+    <div class="card" style="margin-top:0"><div class="sv" id="m-block-737">—</div><div class="slbl">737 Block Hrs</div></div>
+    <div class="card" style="margin-top:0"><div class="sv" id="m-pairings">—</div><div class="slbl">Pairings</div></div>
+    <div class="card" style="margin-top:0"><div class="sv" id="m-sob-787">—</div><div class="slbl">Avg SOB 787</div></div>
   </div>
 
+  <div class="sl">Top 787 destinations</div>
+  <div id="m-dests"><div class="empty">Import your spreadsheet to see data</div></div>
 
+  <div class="sl">Block hrs by year</div>
+  <table class="tbl" id="m-years-tbl">
+    <thead><tr><th>Year</th><th>Block (hrs)</th></tr></thead>
+    <tbody><tr><td colspan="2" class="empty" style="text-align:center">—</td></tr></tbody>
+  </table>
 
-  <div class="tab-content" id="tab-logbook">
-    <div class="section-label">LOGBOOK SCRATCHPAD</div>
-    <div class="action-bar">
-      <button class="btn btn-primary" onclick="openLegForm()">+ ADD LEG</button>
-      <button class="btn btn-danger" onclick="clearScratchpad()">&#x2715; CLEAR ALL</button>
+  <div class="sl">Flight extremes</div>
+  <div class="eg" style="margin-bottom:20px">
+    <div class="ec" style="border-top:3px solid var(--red)">
+      <div class="el" style="color:var(--red)">Longest</div>
+      <div class="ev" id="m-long-hrs">—</div>
+      <div class="er" id="m-long-route">—</div>
+      <div class="ed" id="m-long-date"></div>
     </div>
-
-    <div class="form-panel" id="leg-form-panel" style="display:none">
-      <div class="section-label" id="leg-form-title">ADD LEG</div>
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-bottom:12px;letter-spacing:0.1em">Enter skeleton before flight · Fill actuals after landing</div>
-
-      <div class="section-label" style="font-size:9px;color:var(--accent2)">SKELETON — BEFORE FLIGHT</div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Date</label><input class="form-input" id="lf-date" type="date"/></div>
-        <div class="form-group"><label class="form-label">Flight #</label><input class="form-input" id="lf-fltno" placeholder="UA152"/></div>
-        <div class="form-group"><label class="form-label">Dep</label><input class="form-input" id="lf-dep" placeholder="KLAX" maxlength="5"/></div>
-        <div class="form-group"><label class="form-label">Arr</label><input class="form-input" id="lf-arr" placeholder="VHHH" maxlength="5"/></div>
-      </div>
-
-      <div class="section-label" style="font-size:9px;color:var(--accent2)">ACTUALS — AFTER LANDING</div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">T/O Local</label><input class="form-input" id="lf-to" type="time"/></div>
-        <div class="form-group"><label class="form-label">Land Local</label><input class="form-input" id="lf-land" type="time"/></div>
-        <div class="form-group"><label class="form-label">Block (hrs)</label><input class="form-input" id="lf-block" placeholder="14.2"/></div>
-        <div class="form-group"><label class="form-label">Miles</label><input class="form-input" id="lf-miles" placeholder="7228"/></div>
-        <div class="form-group"><label class="form-label">PAX (SOB)</label><input class="form-input" id="lf-pax" placeholder="286"/></div>
-        <div class="form-group"><label class="form-label">Tail #</label><input class="form-input" id="lf-tail" placeholder="N12345"/></div>
-      </div>
-      <div class="form-group" style="margin-bottom:16px">
-        <label class="form-label">Notes</label>
-        <textarea class="form-input" id="lf-notes" style="min-height:60px;resize:vertical" placeholder="Optional notes…"></textarea>
-      </div>
-
-      <div style="display:flex;justify-content:flex-end;gap:10px">
-        <button class="btn btn-ghost" onclick="closeLegForm()">CANCEL</button>
-        <button class="btn btn-primary" onclick="saveLeg()">SAVE LEG</button>
-      </div>
+    <div class="ec" style="border-top:3px solid var(--grn)">
+      <div class="el" style="color:var(--grn)">Shortest</div>
+      <div class="ev" id="m-short-hrs">—</div>
+      <div class="er" id="m-short-route">—</div>
+      <div class="ed" id="m-short-date"></div>
     </div>
-
-    <div id="scratchpad-list"></div>
   </div>
 
-  <div class="tab-content" id="tab-crew">
+  <div class="sl">787 landing log</div>
+  <div class="g2" style="max-width:200px;margin-bottom:14px">
+    <div class="card"><div class="sv b" id="m-land-total2">—</div><div class="slbl">Total</div></div>
+  </div>
+  <table class="tbl" id="m-land-yr-tbl" style="margin-bottom:14px">
+    <thead><tr><th>Year</th><th>Landings</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div id="m-land-log"></div>
 
-    <div class="section-label">CREW STATISTICS</div>
-    <div class="stats-grid" style="margin-bottom:24px">
-      <div class="stat-card">
-        <div class="stat-val accent" id="cn-ca-count">0</div>
-        <div class="stat-lbl">Unique Captains</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" id="cn-fo-count">0</div>
-        <div class="stat-lbl">Unique First Officers</div>
-      </div>
-    </div>
+  <div class="sl" style="margin-top:24px">Import / export</div>
+  <div class="abar">
+    <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none" onchange="importXLSX(this)"/>
+    <button class="btn btn-p" onclick="document.getElementById('import-file').click()">↑ Import XLSX</button>
+    <button class="btn btn-x" onclick="exportXLSX()">↓ Export XLSX</button>
+    <button class="btn btn-d" onclick="clearAll()">✕ Clear All</button>
+  </div>
+  <div style="font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:6px">Build: 23 Jun 2026</div>
+</div>
 
-    <div class="section-label">CREW NOTES</div>
+<!-- ══ TAB: CREW NOTES ══ -->
+<div class="tab" id="tab-crew">
+  <input class="inp" id="cn-search" placeholder="Search by name or keyword…" oninput="renderCrew()" style="margin-bottom:12px"/>
+  <div class="abar" style="margin-bottom:14px">
+    <button class="cn-role-btn on" data-role="all" onclick="setCnRole('all',this)">All</button>
+    <button class="cn-role-btn" data-role="ca" onclick="setCnRole('ca',this)">CA</button>
+    <button class="cn-role-btn" data-role="fo" onclick="setCnRole('fo',this)">FO</button>
+    <button class="cn-role-btn" data-role="iro" onclick="setCnRole('iro',this)">IRO</button>
+    <button class="cn-role-btn" data-role="lcp" onclick="setCnRole('lcp',this)">LCP</button>
+    <button class="cn-role-btn" data-role="avoid" onclick="setCnRole('avoid',this)">⚠ Avoid</button>
+  </div>
+  <div id="cn-list"><div class="empty">Import your spreadsheet to see crew notes</div></div>
+</div>
 
-    <div class="filter-bar" style="margin-bottom:12px">
-      <input class="filter-input" id="cn-search" placeholder="Search by name or keyword…" style="min-width:220px;flex:1" oninput="renderCrewNotes()"/>
-    </div>
-
-    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="cn-role-btn active" data-role="all" onclick="setCnRole('all')">ALL</button>
-      <button class="cn-role-btn" data-role="ca" onclick="setCnRole('ca')">CA</button>
-      <button class="cn-role-btn" data-role="fo" onclick="setCnRole('fo')">FO</button>
-      <button class="cn-role-btn" data-role="iro" onclick="setCnRole('iro')">IRO</button>
-      <button class="cn-role-btn" data-role="lcp" onclick="setCnRole('lcp')">LCP</button>
-      <button class="cn-role-btn avoid" data-role="avoid" onclick="setCnRole('avoid')">⚠ AVOID</button>
-    </div>
-
-    <div id="cn-list" style="display:flex;flex-direction:column;gap:10px"></div>
+<!-- ══ TAB: LOGBOOK ══ -->
+<div class="tab" id="tab-logbook">
+  <div class="abar">
+    <button class="btn btn-p" onclick="openLegForm(null)">+ Add Leg</button>
+    <button class="btn btn-g" onclick="clearSP()">Clear Scratchpad</button>
   </div>
 
-</main>
+  <div class="form-panel" id="leg-form" style="display:none">
+    <div class="sl" id="leg-form-title" style="margin-top:0">Add Leg</div>
+    <div class="form-row">
+      <div><div class="form-lbl">Date</div><input class="inp" type="date" id="lf-date"/></div>
+      <div><div class="form-lbl">Flight #</div><input class="inp" id="lf-fltno" placeholder="UA835"/></div>
+    </div>
+    <div class="form-row">
+      <div><div class="form-lbl">Dep</div><input class="inp" id="lf-dep" placeholder="KLAX" maxlength="5" style="text-transform:uppercase"/></div>
+      <div><div class="form-lbl">Arr</div><input class="inp" id="lf-arr" placeholder="RJAA" maxlength="5" style="text-transform:uppercase"/></div>
+    </div>
+    <div class="form-row">
+      <div><div class="form-lbl">T/O (local)</div><input class="inp" type="time" id="lf-to"/></div>
+      <div><div class="form-lbl">Land (local)</div><input class="inp" type="time" id="lf-land"/></div>
+    </div>
+    <div class="form-row">
+      <div><div class="form-lbl">Block (H:MM)</div><input class="inp" id="lf-block" placeholder="9:45"/></div>
+      <div><div class="form-lbl">Miles</div><input class="inp" type="number" id="lf-miles" placeholder="5470"/></div>
+    </div>
+    <div class="form-row">
+      <div><div class="form-lbl">PAX (SOB)</div><input class="inp" type="number" id="lf-pax" placeholder="296"/></div>
+      <div><div class="form-lbl">Tail #</div><input class="inp" id="lf-tail" placeholder="N12345"/></div>
+    </div>
+    <div style="margin-bottom:12px"><div class="form-lbl">Notes</div><input class="inp" id="lf-notes" placeholder="Optional notes…"/></div>
+    <div class="abar">
+      <button class="btn btn-p" onclick="saveLeg()">Save</button>
+      <button class="btn btn-g" onclick="closeLegForm()">Cancel</button>
+    </div>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <div id="sp-list"><div class="empty">No legs entered yet. Tap + Add Leg to start.</div></div>
+</div>
+
+<!-- ══ TAB: SENIORITY ══ -->
+<div class="tab" id="tab-seniority">
+  <div class="sl">Current snapshot</div>
+  <div class="g2" style="margin-bottom:10px">
+    <div class="card"><div class="sv b" id="sen-sys">—</div><div class="slbl">System Seniority</div></div>
+    <div class="card"><div class="sv b" id="sen-cat">—</div><div class="slbl">Category Seniority</div></div>
+    <div class="card" style="margin-top:0"><div class="sv" id="sen-total">—</div><div class="slbl">Total in Category</div></div>
+    <div class="card" style="margin-top:0"><div class="sv" id="sen-gline">—</div><div class="slbl">G-Line</div></div>
+    <div class="card" style="margin-top:0"><div class="sv b" id="sen-catpct">—</div><div class="slbl">Category %</div></div>
+    <div class="card" style="margin-top:0"><div class="sv b" id="sen-gpct">—</div><div class="slbl">G-Line %</div></div>
+  </div>
+
+  <div class="sl">System seniority over time</div>
+  <div class="sen-chart">
+    <div class="sen-chart-title">System Seniority Number</div>
+    <div class="sen-chart-sub">Lower number = more senior</div>
+    <svg id="sen-sys-chart" viewBox="0 0 340 120"></svg>
+  </div>
+
+  <div class="sl">Category seniority over time</div>
+  <div class="sen-chart">
+    <div class="sen-chart-title">Category Seniority Number</div>
+    <div class="sen-chart-sub">Lower number = more senior within category</div>
+    <svg id="sen-cat-chart" viewBox="0 0 340 120"></svg>
+  </div>
+
+  <div class="sl">Percentile over time</div>
+  <div class="sen-chart">
+    <div class="sen-chart-title">Category % &amp; G-Line %</div>
+    <div class="sen-chart-sub">Higher = more senior percentile</div>
+    <svg id="sen-pct-chart" viewBox="0 0 340 130"></svg>
+  </div>
+
+  <div class="sl">Total in category over time</div>
+  <div class="sen-chart">
+    <div class="sen-chart-title">Total Pilots in Category</div>
+    <div class="sen-chart-sub">Fleet size growth or contraction</div>
+    <svg id="sen-tot-chart" viewBox="0 0 340 120"></svg>
+  </div>
+
+  <div class="sl">Seniority data table</div>
+  <div style="overflow-x:auto">
+    <table class="tbl" id="sen-tbl">
+      <thead><tr><th>Date</th><th>System Sen.</th><th>Cat. Sen.</th><th>Total</th><th>G-Line</th><th>Cat %</th><th>G-Line %</th></tr></thead>
+      <tbody><tr><td colspan="7" class="empty" style="text-align:center">Import spreadsheet to see seniority data</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
 <script>
-function getTZAbbr(){
-  try{
-    const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const parts=new Intl.DateTimeFormat('en-US',{timeZoneName:'short',timeZone:tz}).formatToParts(new Date());
-    return parts.find(p=>p.type==='timeZoneName')?.value||'';
-  }catch(e){return'';}
-}
-function updateClock(){
-  const now=new Date();
-  const zulu=now.toLocaleTimeString('en-US',{timeZone:'UTC',hour12:false,hour:'2-digit',minute:'2-digit'}).replace(':','')+'Z';
-  document.getElementById('zuluClock').textContent=zulu;
-}
-setInterval(updateClock,1000);
-updateClock();
+// ── CLOCK ──
+(function tick(){
+  const z=new Date().toLocaleTimeString('en-US',{timeZone:'UTC',hour12:false,hour:'2-digit',minute:'2-digit'}).replace(':','')+'Z';
+  document.getElementById('zulu').textContent=z;
+  setTimeout(tick,10000);
+})();
 
-function switchTab(id,btn){
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  btn.classList.add('active');
+// ── TAB NAV ──
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.nt').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+  btn.classList.add('on');
 }
 
-const LS='ianLogbook_v3';
-function load(){try{return JSON.parse(localStorage.getItem(LS))||[];}catch{return[];}}
-function store(d){localStorage.setItem(LS,JSON.stringify(d));}
+// ── STORAGE ──
+const LS='ianLogbook_v3',FNK='ianFieldNotes_v1',SPK='ianScratchpad_v1',SNK='ianSeniority_v1';
+const load=()=>{try{return JSON.parse(localStorage.getItem(LS))||[];}catch{return[];}};
+const store=d=>localStorage.setItem(LS,JSON.stringify(d));
+const loadFN=()=>{try{return JSON.parse(localStorage.getItem(FNK))||{};}catch{return{};}};
+const storeFN=d=>localStorage.setItem(FNK,JSON.stringify(d));
+const loadSPD=()=>{try{return JSON.parse(localStorage.getItem(SPK))||[];}catch{return[];}};
+const saveSPD=d=>localStorage.setItem(SPK,JSON.stringify(d));
+const loadSen=()=>{try{return JSON.parse(localStorage.getItem(SNK))||[];}catch{return[];}};
+const saveSen=d=>localStorage.setItem(SNK,JSON.stringify(d));
 
-let editId=null;
-let sortDir='desc'; // 'desc' = newest first, 'asc' = oldest first
-
-function toggleSort(){
-  sortDir=sortDir==='desc'?'asc':'desc';
-  const btn=document.getElementById('sort-toggle');
-  if(btn)btn.textContent=sortDir==='desc'?'\u21C5 NEW \u2192 OLD':'\u21C5 OLD \u2192 NEW';
-  renderAll();
-}
-
-function openForm(id){
-  editId=id||null;
-  const panel=document.getElementById('form-panel');
-  document.getElementById('form-title').textContent=id?'EDIT PAIRING':'NEW PAIRING';
-  panel.style.display='block';
-  panel.scrollIntoView({behavior:'smooth',block:'start'});
-  if(id){
-    const p=load().find(x=>x.id===id);
-    if(!p)return;
-    document.getElementById('fp-pairing').value=p.pairing||'';
-    document.getElementById('fp-notes').value=p.notes||'';
-    document.getElementById('fp-ca').value=p.ca||'';
-    document.getElementById('fp-fo').value=p.fo||'';
-    document.getElementById('fp-iro1').value=p.iro1||'';
-    document.getElementById('fp-iro2').value=p.iro2||'';
-    document.getElementById('fp-lcp').value=p.lcp||'';
-    if(document.getElementById('leg-body'))document.getElementById('leg-body').innerHTML='';
-    (p.legs||[]).forEach(l=>addLegRow(l));
-  }else{
-    clearFormFields();
-  }
-}
-
-function closeForm(){
-  document.getElementById('form-panel').style.display='none';
-  clearFormFields();
-  editId=null;
-}
-
-function clearFormFields(){
-  ['fp-pairing','fp-notes','fp-ca','fp-fo','fp-iro1','fp-iro2','fp-lcp']
-    .forEach(id=>{document.getElementById(id).value='';});
-  if(document.getElementById('leg-body'))document.getElementById('leg-body').innerHTML='';
-}
-
-function addLegRow(l){
-  l=l||{};
-  const tb=document.getElementById('leg-body');if(!tb)return;
-  const tr=document.createElement('tr');
-  const v=k=>l[k]||'';
-  tr.innerHTML=
-    '<td><input type="date" value="'+v('date')+'" style="width:120px"/></td>'+
-    '<td><input value="'+v('dep')+'" placeholder="KLAX" maxlength="5" style="width:52px;text-transform:uppercase"/></td>'+
-    '<td><input value="'+v('arr')+'" placeholder="RJAA" maxlength="5" style="width:52px;text-transform:uppercase"/></td>'+
-    '<td><input value="'+v('fltno')+'" placeholder="UA835" style="width:62px"/></td>'+
-    '<td><input type="time" value="'+v('to')+'" style="width:82px"/></td>'+
-    '<td><input type="time" value="'+v('land')+'" style="width:82px"/></td>'+
-    '<td><input value="'+v('block')+'" placeholder="8:45" style="width:52px"/></td>'+
-    '<td><input type="number" value="'+v('miles')+'" placeholder="5470" style="width:58px"/></td>'+
-    '<td><input type="number" value="'+v('sob')+'" placeholder="296" style="width:52px"/></td>'+
-    '<td><input value="'+v('aircraft')+'" placeholder="787-9" style="width:62px"/></td>'+
-    '<td><button class="del-btn" onclick="this.closest(\'tr\').remove()">X</button></td>';
-  tb.appendChild(tr);
-}
-
-function getLegs(){
-  return Array.from(document.getElementById('leg-body').querySelectorAll('tr')).map(tr=>{
-    const ins=tr.querySelectorAll('input');
-    return{date:ins[0].value,dep:ins[1].value.toUpperCase(),arr:ins[2].value.toUpperCase(),
-      fltno:ins[3].value,to:ins[4].value,land:ins[5].value,block:ins[6].value,
-      miles:ins[7].value,sob:ins[8].value,aircraft:ins[9].value};
-  });
-}
-
+// ── HELPERS ──
+const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
 function parseMins(s){
   if(!s)return 0;
   const m=s.match(/^(\d+):(\d{2})$/);
-  if(m)return parseInt(m[1])*60+parseInt(m[2]);
+  if(m)return+m[1]*60+ +m[2];
   const n=parseFloat(s);
-  if(!isNaN(n))return Math.round(n*60);
-  return 0;
+  return isNaN(n)?0:Math.round(n*60);
 }
-
-function toDecimal(m){
-  if(!m)return'0.0';
-  return(m/60).toFixed(1);
-}
-
-function savePairing(){
-  const legs=getLegs();
-  const totalMins=legs.reduce((a,l)=>a+parseMins(l.block),0);
-  const totalMiles=legs.reduce((a,l)=>a+(parseInt(l.miles)||0),0);
-  const p={
-    id:editId||'p_'+Date.now(),
-    pairing:document.getElementById('fp-pairing').value.trim(),
-    notes:document.getElementById('fp-notes').value.trim(),
-    ca:document.getElementById('fp-ca').value.trim(),
-    fo:document.getElementById('fp-fo').value.trim(),
-    iro1:document.getElementById('fp-iro1').value.trim(),
-    iro2:document.getElementById('fp-iro2').value.trim(),
-    lcp:document.getElementById('fp-lcp').value.trim(),
-    legs,totalMins,totalMiles
-  };
-  let data=load();
-  if(editId){data=data.map(x=>x.id===editId?p:x);}else{data.unshift(p);}
-  store(data);closeForm();renderAll();
-}
-
-function deletePairing(id){
-  if(!confirm('Delete this pairing? This cannot be undone.'))return;
-  store(load().filter(x=>x.id!==id));renderAll();
-}
-
-function clearAll(){
-  if(!confirm('Clear ALL logbook data?'))return;
-  store([]);renderAll();
-}
-
-function clearFilters(){
-  if(document.getElementById('f-search'))document.getElementById('f-search').value='';
-  if(document.getElementById('f-month'))document.getElementById('f-month').value='';
-  renderAll();
-}
-
-function toggleLandYear(hdr){
-  const body=hdr.nextElementSibling;
-  const chevron=hdr.querySelector('.landing-year-chevron');
-  const isOpen=body.style.display==='block';
-  body.style.display=isOpen?'none':'block';
-  chevron.classList.toggle('open',!isOpen);
-}
-
-function renderAll(){
-  const all=load();
-  const search=((document.getElementById('f-search')||{}).value||'').toLowerCase();
-  const month=(document.getElementById('f-month')||{}).value||'';
-  const filtered=all.filter(p=>{
-    let ok=true;
-    if(search){
-      // Search across all leg-level crew fields and route info
-      const hay=(p.legs||[]).map(l=>[
-        l.dep,l.arr,l.fltno,l.aircraft,
-        l.ca,l.fo,l.iro1,l.iro2,l.lcp,
-        l.caNotes,l.foNotes,l.iro1Notes,l.iro2Notes,l.notes
-      ].join(' ')).join(' ').toLowerCase();
-      ok=ok&&hay.includes(search);
-    }
-    if(month&&p.legs&&p.legs.length){
-      ok=ok&&p.legs.some(l=>l.date&&l.date.startsWith(month));
-    }
-    return ok;
-  });
-
-  // Sort by first leg date — use parseDate() for reliable cross-format parsing
-  filtered.sort((a,b)=>{
-    const da=parseDate(a.legs&&a.legs[0]?a.legs[0].date:'');
-    const db=parseDate(b.legs&&b.legs[0]?b.legs[0].date:'');
-    return sortDir==='desc'?db-da:da-db;
-  });
-
-  const tMins=filtered.reduce((a,p)=>a+p.totalMins,0);
-  const tMiles=filtered.reduce((a,p)=>a+p.totalMiles,0);
-  const tLegs=filtered.reduce((a,p)=>a+(p.legs||[]).length,0);
-  document.getElementById('s-pairings').textContent=filtered.length;
-  document.getElementById('s-legs').textContent=tLegs;
-  document.getElementById('s-block').textContent=toDecimal(tMins);
-  document.getElementById('s-miles').textContent=tMiles.toLocaleString();
-
-  // ── METRICS COMPUTATION ──
-  const BASE_AIRPORTS=new Set(['LAX','SNA','ONT','EWR','SFO','ORD','IAH','IAD','DEN']);
-  const acType=ac=>{
-    if(!ac)return'other';
-    if(ac.includes('787'))return'787';
-    if(ac.includes('737'))return'737';
-    return'other';
-  };
-
-  // Block hours + SOB by aircraft type
-  const block787m=[];const sob787=[];
-  const block737m=[];const sob737=[];
-  // Destination visit counts (count each arrival)
-  const destCount={};
-  // Block by year
-  const yearBlock={};
-
-  filtered.forEach(p=>{
-    (p.legs||[]).forEach(l=>{
-      const type=acType(l.aircraft||'');
-      const bm=parseMins(l.block);
-      const sob=parseInt(l.sob)||0;
-      if(type==='787'){block787m.push(bm);if(sob)sob787.push(sob);}
-      else if(type==='737'){block737m.push(bm);if(sob)sob737.push(sob);}
-
-      // Destination: count arrival airport on 787 legs only, exclude base airports
-      const arr=(l.arr||'').trim().toUpperCase();
-      if(arr&&!BASE_AIRPORTS.has(arr)&&type==='787'){
-        destCount[arr]=(destCount[arr]||0)+1;
-      }
-
-      // Year from leg date
-      const yr=parseYearFromDate(l.date);
-      if(yr){
-        yearBlock[yr]=(yearBlock[yr]||0)+bm;
-      }
-    });
-  });
-
-  // Aircraft block + SOB
-  const sum=arr=>arr.reduce((a,b)=>a+b,0);
-  document.getElementById('m-block-787').textContent=toDecimal(sum(block787m));
-  document.getElementById('m-block-737').textContent=toDecimal(sum(block737m));
-  document.getElementById('m-sob-787').textContent=sob787.length?Math.round(sum(sob787)/sob787.length).toLocaleString():'—';
-  document.getElementById('m-sob-737').textContent=sob737.length?Math.round(sum(sob737)/sob737.length).toLocaleString():'—';
-
-  // Extremes — longest and shortest by block hours across all flights
-  let longestLeg=null,shortestLeg=null;
-  filtered.forEach(p=>{
-    (p.legs||[]).forEach(l=>{
-      const bm=parseMins(l.block);
-      if(!bm)return;
-      if(!longestLeg||bm>parseMins(longestLeg.block))longestLeg=l;
-      if(!shortestLeg||bm<parseMins(shortestLeg.block))shortestLeg=l;
-    });
-  });
-  if(longestLeg){
-    document.getElementById('m-longest-hrs').textContent=toDecimal(parseMins(longestLeg.block))+' hrs';
-    document.getElementById('m-longest-route').textContent=(longestLeg.dep||'?')+'-'+(longestLeg.arr||'?');
-    document.getElementById('m-longest-date').textContent=longestLeg.date||'';
-  }else{
-    document.getElementById('m-longest-hrs').textContent='\u2014';
-    document.getElementById('m-longest-route').textContent='\u2014';
-    document.getElementById('m-longest-date').textContent='';
-  }
-  if(shortestLeg){
-    document.getElementById('m-shortest-hrs').textContent=toDecimal(parseMins(shortestLeg.block))+' hrs';
-    document.getElementById('m-shortest-route').textContent=(shortestLeg.dep||'?')+'-'+(shortestLeg.arr||'?');
-    document.getElementById('m-shortest-date').textContent=shortestLeg.date||'';
-  }else{
-    document.getElementById('m-shortest-hrs').textContent='\u2014';
-    document.getElementById('m-shortest-route').textContent='\u2014';
-    document.getElementById('m-shortest-date').textContent='';
-  }
-
-  // Top 10 destinations - bar chart
-  const destSorted=Object.entries(destCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const destEl=document.getElementById('m-destinations');
-  if(!destSorted.length){
-    destEl.innerHTML='<div style="font-family:var(--font-mono);font-size:13px;color:var(--text4);padding:12px 0">No data</div>';
-  }else{
-    const maxCount=destSorted[0][1];
-    destEl.innerHTML=destSorted.map((d,i)=>{
-      const pct=Math.round((d[1]/maxCount)*100);
-      return '<div class="t-dest-row">'+
-        '<span class="t-iata">'+d[0]+'</span>'+
-        '<div class="t-bar-track"><div class="t-bar-fill" style="width:'+pct+'%"></div></div>'+
-        '<span class="t-bar-count">'+d[1]+'</span>'+
-      '</div>';
-    }).join('');
-  }
-
-  // Hours by year
-  const yearSorted=Object.entries(yearBlock).sort((a,b)=>parseInt(b[0])-parseInt(a[0]));
-  const yearTbl=document.querySelector('#m-years tbody');
-  yearTbl.innerHTML=yearSorted.length
-    ?yearSorted.map(y=>'<tr><td>'+y[0]+'</td><td>'+toDecimal(y[1])+'</td></tr>').join('')
-    :'<tr><td colspan="2" style="color:var(--text3);text-align:center">No data</td></tr>';
-
-  // 787 Landings
-  const landingLegs=[];
-  filtered.forEach(p=>{
-    (p.legs||[]).forEach(l=>{
-      if(l.landed&&acType(l.aircraft||'')==='787'){
-        landingLegs.push(l);
-      }
-    });
-  });
-  // Sort by date ascending so sequential numbering is chronological
-  landingLegs.sort((a,b)=>{
-    const da=new Date(a.date||'1970-01-01');
-    const db=new Date(b.date||'1970-01-01');
-    return da-db;
-  });
-  const totalLandings=landingLegs.length;
-  document.getElementById('m-land-total').textContent=totalLandings||'—';
-
-  // By year
-  const landByYear={};
-  landingLegs.forEach((l,i)=>{
-    const yr=parseYearFromDate(l.date)||'?';
-    if(!landByYear[yr])landByYear[yr]=[];
-    landByYear[yr].push({...l,seqNum:i+1});
-  });
-  const landYearSorted=Object.keys(landByYear).sort((a,b)=>parseInt(b)-parseInt(a));
-  const landYearTbl=document.querySelector('#m-land-year-tbl tbody');
-  landYearTbl.innerHTML=landYearSorted.length
-    ?landYearSorted.map(yr=>'<tr><td>'+yr+'</td><td>'+landByYear[yr].length+'</td></tr>').join('')
-    :'<tr><td colspan="2" style="color:var(--text3);text-align:center">No data</td></tr>';
-
-  // Landing log collapsible by year (newest year first, legs newest first within year)
-  const landLog=document.getElementById('m-land-log');
-  if(!landYearSorted.length){
-    landLog.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;padding:12px 0">No 787 landings recorded. Add a "Landings" column to your spreadsheet with "Yes" on applicable legs.</div>';
-  }else{
-    landLog.innerHTML=landYearSorted.map((yr,yi)=>{
-      const legs=[...landByYear[yr]].reverse(); // newest first
-      const rows=legs.map(l=>{
-        const route=(l.dep||'?')+'-'+(l.arr||'?');
-        const dateDisp=fmtDisplayDate(l.date);
-        return '<tr>'+
-          '<td class="ld-num">#'+l.seqNum+'</td>'+
-          '<td>'+dateDisp+'</td>'+
-          '<td class="ld-arr">'+(l.arr||'—')+'</td>'+
-          '<td>'+route+'</td>'+
-          '</tr>';
-      }).join('');
-      const openClass=yi===0?' open':'';
-      return '<div class="landing-year-block">'+
-        '<div class="landing-year-hdr" onclick="toggleLandYear(this)">'+
-          '<span class="landing-year-label">'+yr+'</span>'+
-          '<span class="landing-year-count">'+landByYear[yr].length+' landing'+(landByYear[yr].length!==1?'s':'')+'</span>'+
-          '<span class="landing-year-chevron'+openClass+'">▼</span>'+
-        '</div>'+
-        '<div style="display:'+(yi===0?'block':'none')+'">'+
-          '<table class="landing-log-tbl">'+
-            '<thead><tr><th>#</th><th>Date</th><th>Arr</th><th>Route</th></tr></thead>'+
-            '<tbody>'+rows+'</tbody>'+
-          '</table>'+
-        '</div>'+
-      '</div>';
-    }).join('');
-  }
-
-  const list=document.getElementById('pairings-list');
-  if(!list)return;
-  if(!filtered.length){
-    list.innerHTML='<div class="empty-state"><span class="empty-icon">&#x2708;</span>No pairings found.</div>';
-    return;
-  }
-
-  // First pass — find global max block and miles across all visible legs
-  let maxBlock=0,maxMiles=0;
-  filtered.forEach(p=>(p.legs||[]).forEach(l=>{
-    const b=parseMins(l.block);
-    const m=parseInt(l.miles)||0;
-    if(b>maxBlock)maxBlock=b;
-    if(m>maxMiles)maxMiles=m;
-  }));
-
-  list.innerHTML=filtered.map(p=>{
-    // Aggregate unique crew across all legs
-    const crewRoles={CA:new Set(),FO:new Set(),IRO1:new Set(),IRO2:new Set(),LCP:new Set()};
-    (p.legs||[]).forEach(l=>{
-      if(l.ca)crewRoles.CA.add(l.ca);
-      if(l.fo)crewRoles.FO.add(l.fo);
-      if(l.iro1)crewRoles.IRO1.add(l.iro1);
-      if(l.iro2)crewRoles.IRO2.add(l.iro2);
-      if(l.lcp)crewRoles.LCP.add(l.lcp);
-    });
-    const crewPills=Object.entries(crewRoles).flatMap(([role,names])=>
-      [...names].map(n=>'<span class="crew-pill"><span class="crew-pill-role">'+role+' </span><span class="crew-pill-name">'+n+'</span></span>')
-    ).join('');
-
-    const legRows=(p.legs||[]).map(l=>{
-      const bMins=parseMins(l.block);
-      const mVal=parseInt(l.miles)||0;
-      const bClass=(maxBlock>0&&bMins===maxBlock)?' class="max-val"':'';
-      const mClass=(maxMiles>0&&mVal===maxMiles)?' class="max-val"':'';
-      return '<tr>'+
-      '<td>'+( l.date||'&#x2014;')+'</td>'+
-      '<td class="iata">'+(l.dep||'&#x2014;')+'</td>'+
-      '<td class="iata">'+(l.arr||'&#x2014;')+'</td>'+
-      '<td class="fltno">'+(l.fltno||'&#x2014;')+'</td>'+
-      '<td>'+(l.to||'&#x2014;')+'</td>'+
-      '<td>'+(l.land||'&#x2014;')+'</td>'+
-      '<td'+bClass+' style="color:'+(bClass?'var(--red)':'var(--gold)')+'">'+( l.block||'&#x2014;')+'</td>'+
-      '<td'+mClass+'>'+(l.miles?parseInt(l.miles).toLocaleString():'&#x2014;')+'</td>'+
-      '<td>'+(l.sob||'&#x2014;')+'</td>'+
-      '</tr>';
-    }).join('');
-
-    // Build route glance and date range
-    const dates=(p.legs||[]).map(l=>l.date).filter(Boolean);
-    const firstDate=dates.length?fmtDisplayDate(dates[dates.length-1]):'—';
-    const lastDate=dates.length>1?fmtDisplayDate(dates[0]):'';
-    const dateRange=lastDate&&lastDate!==firstDate?firstDate+' → '+lastDate:firstDate;
-    const stops=(p.legs&&p.legs[0]?[p.legs[0].dep]:[]).concat((p.legs||[]).map(l=>l.arr)).filter(Boolean);
-    const routeGlance=stops.join('-');
-    const isManual=p.id&&p.id.startsWith('p_')&&!p.id.startsWith('p_imp');
-    const manualBadge=isManual?'<span class="manual-trip-badge">⚑ FIELD ENTRY</span>':'';
-
-    return '<div class="pcard">'+
-      '<div class="pcard-header">'+
-        '<div>'+
-          '<div class="pcard-pairing">'+routeGlance+manualBadge+'</div>'+
-          '<div class="pcard-aircraft">'+dateRange+(p.notes?' · '+p.notes:'')+'</div>'+
-        '</div>'+
-        '<div class="pcard-totals">'+
-          '<div class="pcard-total"><div class="pcard-total-val" style="color:var(--gold)">'+toDecimal(p.totalMins)+'</div><div class="pcard-total-lbl">Block</div></div>'+
-          '<div class="pcard-total"><div class="pcard-total-val">'+p.totalMiles.toLocaleString()+'</div><div class="pcard-total-lbl">Miles</div></div>'+
-          '<div class="pcard-total"><div class="pcard-total-val" style="color:var(--accent2)">'+(p.legs||[]).length+'</div><div class="pcard-total-lbl">Legs</div></div>'+
-          '<div class="pcard-actions">'+
-            '<button class="edit-btn" onclick="openForm(\''+p.id+'\')">EDIT</button>'+
-            '<button class="del-btn" onclick="deletePairing(\''+p.id+'\')">DEL</button>'+
-          '</div>'+
-        '</div>'+
-      '</div>'+
-      (crewPills?'<div class="pcard-crew">'+crewPills+'</div>':'')+
-      '<div class="pcard-legs" style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+
-        '<table class="legs-tbl">'+
-          '<thead><tr><th>Date</th><th>Dep</th><th>Arr</th><th>Flt #</th><th>T/O</th><th>Land</th><th>Block</th><th>Miles</th><th>SOB</th></tr></thead>'+
-          '<tbody>'+legRows+'</tbody>'+
-        '</table>'+
-      '</div>'+
-    '</div>';
-  }).join('');
-}
-
-function importXLSX(input){
-  const file=input.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const wb=XLSX.read(e.target.result,{type:'binary'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-      if(rows.length<3){alert('No data rows found in file.');return;}
-
-      // Ian's spreadsheet has 2 header rows — row 1 is group labels (merged),
-      // row 2 is actual column names. Data starts row 3 (index 2).
-      // Row 2 columns: Date, Dep, Arr, Flight #, Local T/O, Local Land, Total, Pairing,
-      //   CA, CA Notes, FO, FO Notes, IRO 1, IRO 1 Notes, IRO 2, IRO 2 Notes,
-      //   Check Airman, Check Airman Notes, Miles, Aircraft, SOB, Notes
-      const header=rows[1].map(h=>String(h).trim().toLowerCase());
-      const idx={
-        date:    findCol(header,['date']),
-        dep:     findCol(header,['dep']),
-        arr:     findCol(header,['arr']),
-        fltno:   findCol(header,['flight #','flight#']),
-        to:      findCol(header,['local t/o']),
-        land:    findCol(header,['local land']),
-        block:   findCol(header,['total']),
-        pairing: findCol(header,['pairing']),
-        ca:      findCol(header,['ca']),
-        caNotes: findCol(header,['ca notes']),
-        fo:      findCol(header,['fo']),
-        foNotes: findCol(header,['fo notes']),
-        iro1:    findCol(header,['iro 1']),
-        iro1Notes:findCol(header,['iro 1 notes']),
-        iro2:    findCol(header,['iro 2']),
-        iro2Notes:findCol(header,['iro 2 notes']),
-        lcp:     findCol(header,['check airman']),
-        miles:   findCol(header,['miles']),
-        aircraft:findCol(header,['aircraft']),
-        sob:     findCol(header,['sob']),
-        notes:   findCol(header,['notes']),
-        landed:  findCol(header,['landings','landed'])
-      };
-
-      // Process row by row. Each row is one leg.
-      // Store ALL crew fields per leg. Group into trips by pairing# + base-departure split.
-      const BASE_APTS=new Set(['LAX','SNA','ONT']);
-      const trips=[]; // final list of trip objects
-      let currentTrip=null;
-
-      for(let i=2;i<rows.length;i++){
-        const r=rows[i];
-        if(r.every(c=>String(c).trim()===''))continue;
-        const pairingNum=String(r[idx.pairing]||'').trim()||('imported_'+i);
-        const dep=String(r[idx.dep]||'').trim().toUpperCase();
-        const leg={
-          date:fmtDate(r[idx.date]),
-          dep:dep,
-          arr:String(r[idx.arr]||'').trim().toUpperCase(),
-          fltno:String(r[idx.fltno]||'').trim(),
-          to:String(r[idx.to]||'').trim(),
-          land:String(r[idx.land]||'').trim(),
-          block:String(r[idx.block]||'').trim(),
-          miles:String(r[idx.miles]||'').trim(),
-          sob:String(r[idx.sob]||'').trim(),
-          aircraft:String(r[idx.aircraft]||'').trim(),
-          ca:String(r[idx.ca]||'').trim(),
-          caNotes:String(r[idx.caNotes]||'').trim(),
-          fo:String(r[idx.fo]||'').trim(),
-          foNotes:String(r[idx.foNotes]||'').trim(),
-          iro1:String(r[idx.iro1]||'').trim(),
-          iro1Notes:String(r[idx.iro1Notes]||'').trim(),
-          iro2:String(r[idx.iro2]||'').trim(),
-          iro2Notes:String(r[idx.iro2Notes]||'').trim(),
-          lcp:String(r[idx.lcp]||'').trim(),
-          notes:String(r[idx.notes]||'').trim(),
-          landed:String(r[idx.landed]||'').trim().toLowerCase()==='yes'
-        };
-        // Start new trip if: no current trip, OR pairing# changed, OR dep is a base airport (new trip starting)
-        const isNewTrip=!currentTrip
-          || currentTrip.pairing!==pairingNum
-          || (currentTrip.legs.length>0 && BASE_APTS.has(dep));
-        if(isNewTrip){
-          currentTrip={
-            id:'p_imp_'+Date.now()+'_'+i+'_'+Math.random().toString(36).slice(2),
-            pairing:pairingNum,
-            legs:[],totalMins:0,totalMiles:0
-          };
-          trips.push(currentTrip);
-        }
-        currentTrip.legs.push(leg);
-        currentTrip.totalMins+=parseMins(leg.block);
-        currentTrip.totalMiles+=parseInt(leg.miles)||0;
-      }
-
-      const imported=trips;
-      const existing=load();
-      // Composite key: pairing# + first leg date — same pairing# in different weeks is a different trip
-      const existingKeys=new Set(existing.map(p=>p.pairing+'||'+(p.legs[0]?.date||'')));
-      const newOnes=imported.filter(p=>!existingKeys.has(p.pairing+'||'+(p.legs[0]?.date||'')));
-      const dupes=imported.length-newOnes.length;
-      store([...newOnes,...existing]);
-      renderAll();
-      input.value='';
-      let msg='Imported '+newOnes.length+' pairing'+(newOnes.length!==1?'s':'')+'.';
-      if(dupes>0)msg+='\n'+dupes+' pairing'+(dupes!==1?'s':'')+' skipped (already imported — same pairing # and start date).';
-      alert(msg);
-    }catch(err){
-      alert('Import failed: '+err.message);
-      console.error(err);
-    }
-  };
-  reader.readAsBinaryString(file);
-}
-
-function parseYearFromDate(val){
-  if(!val)return null;
-  if(/^\d{4}-\d{2}-\d{2}$/.test(String(val)))return String(val).slice(0,4);
-  // DD Mon YY or DD Mon YYYY
-  const dmy=String(val).match(/^(\d{1,2})\s+[A-Za-z]{3}\s+(\d{2,4})$/);
-  if(dmy){
-    const yr=dmy[2].length===2?'20'+dmy[2]:dmy[2];
-    return yr;
-  }
-  // MM/DD/YYYY
-  const mdy=String(val).match(/^\d{1,2}\/\d{1,2}\/(\d{2,4})$/);
-  if(mdy)return mdy[1].length===2?'20'+mdy[1]:mdy[1];
-  // Excel serial
-  if(typeof val==='number'){
-    return String(new Date(Math.round((val-25569)*86400*1000)).getFullYear());
-  }
-  return null;
-}
-
-function fmtDisplayDate(val){
-  if(!val)return'—';
-  // YYYY-MM-DD → DD Mon YY
-  if(/^\d{4}-\d{2}-\d{2}$/.test(val)){
-    const d=new Date(val+'T12:00:00');
-    return d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'});
-  }
-  return val;
-}
-
-function findCol(header,candidates){
-  // Exact match first
-  for(const c of candidates){
-    const i=header.findIndex(h=>h===c);
-    if(i!==-1)return i;
-  }
-  // Then startsWith
-  for(const c of candidates){
-    const i=header.findIndex(h=>h.startsWith(c));
-    if(i!==-1)return i;
-  }
-  return 99;
-}
-
-const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
-
+const toDecimal=m=>m?(m/60).toFixed(1):'0.0';
 function parseDate(val){
   if(!val)return 0;
-  // Excel serial
-  if(typeof val==='number') return new Date(Math.round((val-25569)*86400*1000)).getTime();
+  if(typeof val==='number')return new Date(Math.round((val-25569)*86400*1000)).getTime();
   const s=String(val).trim();
-  // YYYY-MM-DD
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s+'T12:00:00').getTime();
-  // DD Mon YY or DD Mon YYYY (e.g. "07 Dec 21", "1 Jul 2022")
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T12:00:00').getTime();
   const dmy=s.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{2,4})$/);
-  if(dmy){
-    const mo=MONTHS[dmy[2].toLowerCase()];
-    const yr=dmy[3].length===2?2000+parseInt(dmy[3]):parseInt(dmy[3]);
-    return new Date(yr,mo,parseInt(dmy[1]),12).getTime();
-  }
-  // MM/DD/YYYY
+  if(dmy){const mo=MONTHS[dmy[2].toLowerCase()];const yr=dmy[3].length===2?2000+parseInt(dmy[3]):+dmy[3];return new Date(yr,mo,+dmy[1],12).getTime();}
   const mdy=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if(mdy){
-    const yr=mdy[3].length===2?2000+parseInt(mdy[3]):parseInt(mdy[3]);
-    return new Date(yr,parseInt(mdy[1])-1,parseInt(mdy[2]),12).getTime();
-  }
-  // fallback
-  const d=new Date(s);
-  return isNaN(d)?0:d.getTime();
+  if(mdy){const yr=mdy[3].length===2?2000+parseInt(mdy[3]):+mdy[3];return new Date(yr,+mdy[1]-1,+mdy[2],12).getTime();}
+  const d=new Date(s);return isNaN(d)?0:d.getTime();
 }
-
 function fmtDate(val){
   if(!val)return'';
-  // Excel serial number
-  if(typeof val==='number'){
-    const d=new Date(Math.round((val-25569)*86400*1000));
-    return d.toISOString().slice(0,10);
-  }
+  if(typeof val==='number')return new Date(Math.round((val-25569)*86400*1000)).toISOString().slice(0,10);
   const s=String(val).trim();
-  // Already YYYY-MM-DD
   if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
-  // MM/DD/YYYY or M/D/YY
   const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if(m){
-    const yr=m[3].length===2?'20'+m[3]:m[3];
-    return yr+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0');
-  }
+  if(m){const yr=m[3].length===2?'20'+m[3]:m[3];return yr+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0');}
   return s;
+}
+function fmtDisp(val){
+  if(!val)return'—';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(val))return new Date(val+'T12:00:00').toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'});
+  return val;
+}
+function yearOf(val){
+  if(!val)return null;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(String(val)))return String(val).slice(0,4);
+  const dmy=String(val).match(/^\d{1,2}\s+[A-Za-z]{3}\s+(\d{2,4})$/);
+  if(dmy)return dmy[1].length===2?'20'+dmy[1]:dmy[1];
+  const mdy=String(val).match(/^\d{1,2}\/\d{1,2}\/(\d{2,4})$/);
+  if(mdy)return mdy[1].length===2?'20'+mdy[1]:mdy[1];
+  if(typeof val==='number')return String(new Date(Math.round((val-25569)*86400*1000)).getFullYear());
+  return null;
+}
+function findCol(hdr,candidates){
+  for(const c of candidates){const i=hdr.findIndex(h=>h===c);if(i!==-1)return i;}
+  for(const c of candidates){const i=hdr.findIndex(h=>h.startsWith(c));if(i!==-1)return i;}
+  return 99;
+}
+const acType=ac=>!ac?'other':ac.includes('787')?'787':ac.includes('737')?'737':'other';
+const BASE=new Set(['LAX','SNA','ONT','EWR','SFO','ORD','IAH','IAD','DEN']);
+const sum=arr=>arr.reduce((a,b)=>a+b,0);
+const avg=arr=>arr.length?Math.round(sum(arr)/arr.length):0;
+const containsAvoid=t=>/avoid/i.test(t.replace(/[^a-zA-Z0-9]/g,' '));
+const MY_NAMES=new Set(['ian irvine','irvine']);
+
+// ── METRICS ──
+function renderMetrics(){
+  const data=load();
+  const allLegs=data.flatMap(p=>p.legs||[]);
+  const b787=[],b737=[],sob787=[],destCount={},yearBlock={},landLegs=[];
+  let longest=null,shortest=null;
+
+  allLegs.forEach(l=>{
+    const bm=parseMins(l.block);
+    const type=acType(l.aircraft||'');
+    if(type==='787'){b787.push(bm);if(l.sob)sob787.push(+l.sob||0);}
+    if(type==='737')b737.push(bm);
+    const arr=(l.arr||'').toUpperCase();
+    if(arr&&!BASE.has(arr)&&type==='787')destCount[arr]=(destCount[arr]||0)+1;
+    const yr=yearOf(l.date);
+    if(yr)yearBlock[yr]=(yearBlock[yr]||0)+bm;
+    if(bm){
+      if(!longest||bm>parseMins(longest.block))longest=l;
+      if(!shortest||bm<parseMins(shortest.block))shortest=l;
+    }
+    if(l.landed&&type==='787')landLegs.push(l);
+  });
+
+  const tBlock=sum(b787)+sum(b737);
+  setText('m-total-block',toDecimal(tBlock));
+  setText('m-block-787',toDecimal(sum(b787)));
+  setText('m-block-737',toDecimal(sum(b737)));
+  setText('m-pairings',data.length||'—');
+  setText('m-sob-787',sob787.length?avg(sob787).toLocaleString():'—');
+
+  // Landings
+  landLegs.sort((a,b)=>parseDate(a.date)-parseDate(b.date));
+  const landCount=landLegs.length;
+  setText('m-land-total',landCount||'—');
+  setText('m-land-total2',landCount||'—');
+  const landByYr={};
+  landLegs.forEach((l,i)=>{const yr=yearOf(l.date)||'?';if(!landByYr[yr])landByYr[yr]=[];landByYr[yr].push({...l,seq:i+1});});
+  const landYrs=Object.keys(landByYr).sort((a,b)=>+b-+a);
+  document.querySelector('#m-land-yr-tbl tbody').innerHTML=landYrs.length
+    ?landYrs.map(yr=>`<tr><td>${yr}</td><td class="val">${landByYr[yr].length}</td></tr>`).join('')
+    :'<tr><td colspan="2" class="empty" style="text-align:center">—</td></tr>';
+  document.getElementById('m-land-log').innerHTML=landYrs.length
+    ?landYrs.map((yr,yi)=>{
+      const legs=[...landByYr[yr]].reverse();
+      const rows=legs.map(l=>`<tr><td class="lnum">#${l.seq}</td><td>${fmtDisp(l.date)}</td><td class="larr">${l.arr||'—'}</td><td>${(l.dep||'?')+'-'+(l.arr||'?')}</td></tr>`).join('');
+      return`<div class="lyb"><div class="lyh" onclick="toggleLY(this)"><span class="lyl">${yr}</span><span class="lyc">${landByYr[yr].length} landing${landByYr[yr].length!==1?'s':''}</span><span class="lychv${yi===0?' open':''}">▼</span></div><div style="display:${yi===0?'block':'none'}"><table class="llt"><thead><tr><th>#</th><th>Date</th><th>Arr</th><th>Route</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    }).join('')
+    :'<div class="empty">No 787 landings recorded. Add a "Landings" column with "Yes" on applicable legs.</div>';
+
+  // Destinations bar chart
+  const dests=Object.entries(destCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxD=dests[0]?.[1]||1;
+  document.getElementById('m-dests').innerHTML=dests.length
+    ?dests.map(([iata,n])=>`<div class="br"><span class="bi">${iata}</span><div class="bt"><div class="bf" style="width:${Math.round(n/maxD*100)}%"></div></div><span class="bn">${n}</span></div>`).join('')
+    :'<div class="empty">No data</div>';
+
+  // Years table
+  const yrs=Object.entries(yearBlock).sort((a,b)=>+b[0]-+a[0]);
+  document.querySelector('#m-years-tbl tbody').innerHTML=yrs.length
+    ?yrs.map(([yr,m])=>`<tr><td>${yr}</td><td class="val">${toDecimal(m)}</td></tr>`).join('')
+    :'<tr><td colspan="2" class="empty" style="text-align:center">—</td></tr>';
+
+  // Extremes
+  if(longest){setText('m-long-hrs',toDecimal(parseMins(longest.block))+' hrs');setText('m-long-route',(longest.dep||'?')+'-'+(longest.arr||'?'));setText('m-long-date',longest.date||'');}
+  else{setText('m-long-hrs','—');setText('m-long-route','—');setText('m-long-date','');}
+  if(shortest){setText('m-short-hrs',toDecimal(parseMins(shortest.block))+' hrs');setText('m-short-route',(shortest.dep||'?')+'-'+(shortest.arr||'?'));setText('m-short-date',shortest.date||'');}
+  else{setText('m-short-hrs','—');setText('m-short-route','—');setText('m-short-date','');}
+}
+
+function toggleLY(hdr){
+  const body=hdr.nextElementSibling,cv=hdr.querySelector('.lychv');
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  cv.classList.toggle('open',!open);
+}
+const setText=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+
+// ── IMPORT XLSX ──
+function importXLSX(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+
+      // ── Sheet 1: Flight Log ──
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(rows.length>=3){
+        const hdr=rows[1].map(h=>String(h).trim().toLowerCase());
+        const idx={
+          date:findCol(hdr,['date']),dep:findCol(hdr,['dep']),arr:findCol(hdr,['arr']),
+          fltno:findCol(hdr,['flight #','flight#']),to:findCol(hdr,['local t/o']),
+          land:findCol(hdr,['local land']),block:findCol(hdr,['total']),
+          pairing:findCol(hdr,['pairing']),ca:findCol(hdr,['ca']),
+          caNotes:findCol(hdr,['ca notes']),fo:findCol(hdr,['fo']),
+          foNotes:findCol(hdr,['fo notes']),iro1:findCol(hdr,['iro 1']),
+          iro1Notes:findCol(hdr,['iro 1 notes']),iro2:findCol(hdr,['iro 2']),
+          iro2Notes:findCol(hdr,['iro 2 notes']),lcp:findCol(hdr,['check airman']),
+          miles:findCol(hdr,['miles']),aircraft:findCol(hdr,['aircraft']),
+          sob:findCol(hdr,['sob']),notes:findCol(hdr,['notes']),
+          landed:findCol(hdr,['landings','landed'])
+        };
+        const BASE_D=new Set(['LAX','SNA','ONT']);
+        const trips=[];let cur=null;
+        const str=k=>String(rows[0]?.[k]||'').trim(); // unused but safe
+        for(let i=2;i<rows.length;i++){
+          const r=rows[i];
+          if(r.every(c=>String(c).trim()===''))continue;
+          const pNum=String(r[idx.pairing]||'').trim()||('imp_'+i);
+          const dep=String(r[idx.dep]||'').trim().toUpperCase();
+          const leg={
+            date:fmtDate(r[idx.date]),dep,arr:String(r[idx.arr]||'').trim().toUpperCase(),
+            fltno:String(r[idx.fltno]||'').trim(),to:String(r[idx.to]||'').trim(),
+            land:String(r[idx.land]||'').trim(),block:String(r[idx.block]||'').trim(),
+            miles:String(r[idx.miles]||'').trim(),sob:String(r[idx.sob]||'').trim(),
+            aircraft:String(r[idx.aircraft]||'').trim(),ca:String(r[idx.ca]||'').trim(),
+            caNotes:String(r[idx.caNotes]||'').trim(),fo:String(r[idx.fo]||'').trim(),
+            foNotes:String(r[idx.foNotes]||'').trim(),iro1:String(r[idx.iro1]||'').trim(),
+            iro1Notes:String(r[idx.iro1Notes]||'').trim(),iro2:String(r[idx.iro2]||'').trim(),
+            iro2Notes:String(r[idx.iro2Notes]||'').trim(),lcp:String(r[idx.lcp]||'').trim(),
+            notes:String(r[idx.notes]||'').trim(),
+            landed:String(r[idx.landed]||'').trim().toLowerCase()==='yes'
+          };
+          const newTrip=!cur||cur.pairing!==pNum||(cur.legs.length>0&&BASE_D.has(dep));
+          if(newTrip){cur={id:'pi_'+Date.now()+'_'+i,pairing:pNum,legs:[],totalMins:0,totalMiles:0};trips.push(cur);}
+          cur.legs.push(leg);
+          cur.totalMins+=parseMins(leg.block);
+          cur.totalMiles+=parseInt(leg.miles)||0;
+        }
+        const existing=load();
+        const eKeys=new Set(existing.map(p=>p.pairing+'||'+(p.legs[0]?.date||'')));
+        const newOnes=trips.filter(p=>!eKeys.has(p.pairing+'||'+(p.legs[0]?.date||'')));
+        store([...newOnes,...existing]);
+        let msg=`Imported ${newOnes.length} pairing${newOnes.length!==1?'s':''}.`;
+        const dupes=trips.length-newOnes.length;
+        if(dupes>0)msg+=`\n${dupes} skipped (duplicate).`;
+        alert(msg);
+      }
+
+      // ── Sheet 3: Seniority ──
+      if(wb.SheetNames.length>=3){
+        const ws3=wb.Sheets[wb.SheetNames[2]];
+        const srows=XLSX.utils.sheet_to_json(ws3,{header:1,defval:''});
+        const senData=[];
+        for(let i=1;i<srows.length;i++){
+          const r=srows[i];
+          if(!r[0])continue;
+          senData.push({
+            date:fmtDate(r[0]),
+            sysSen:String(r[1]||'').trim(),
+            catSen:String(r[2]||'').trim(),
+            total:String(r[3]||'').trim(),
+            gline:String(r[4]||'').trim(),
+            catPct:String(r[5]||'').trim(),
+            gpct:String(r[6]||'').trim()
+          });
+        }
+        if(senData.length){saveSen(senData);}
+      }
+
+      renderMetrics();
+      renderSeniority();
+      input.value='';
+    }catch(err){alert('Import failed: '+err.message);console.error(err);}
+  };
+  reader.readAsBinaryString(file);
 }
 
 function exportXLSX(){
   const data=load();
   const rows=[['Date','Dep','Arr','Flight #','Local T/O','Local Land','Total','Pairing','CA','FO','IRO1','IRO2','LCP','Miles','Aircraft','SOB','Notes']];
-  data.forEach(p=>{
-    (p.legs||[]).forEach(l=>{
-      rows.push([l.date||'',l.dep||'',l.arr||'',l.fltno||'',l.to||'',l.land||'',
-        l.block||'',p.pairing||'',p.ca||'',p.fo||'',p.iro1||'',p.iro2||'',
-        p.lcp||'',l.miles||'',l.aircraft||'',l.sob||'',p.notes||'']);
-    });
-  });
+  data.forEach(p=>{(p.legs||[]).forEach(l=>rows.push([l.date,l.dep,l.arr,l.fltno,l.to,l.land,l.block,p.pairing,p.ca||'',p.fo||'',p.iro1||'',p.iro2||'',p.lcp||'',l.miles,l.aircraft,l.sob,p.notes||'']));}); 
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[10,6,6,9,9,9,7,12,10,10,10,10,10,7,10,6,20].map(w=>({wch:w}));
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Logbook',ws);
   XLSX.writeFile(wb,'IanLogbook_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
-// ── TRIPS TAB ──
-
-const HOTEL_COORDS={
-  NRT:{lat:35.6683,lon:139.7408,name:'ANA InterContinental Tokyo',maps:'https://maps.google.com/?q=ANA+InterContinental+Tokyo+Minato'},
-  HND:{lat:35.6683,lon:139.7408,name:'ANA InterContinental Tokyo',maps:'https://maps.google.com/?q=ANA+InterContinental+Tokyo+Minato'},
-  HKG:{lat:22.2767,lon:114.1654,name:'Conrad Hong Kong',maps:'https://maps.google.com/?q=Conrad+Hong+Kong+Admiralty'},
-  PEK:{lat:39.9139,lon:116.4582,name:'Kerry Hotel Beijing',maps:'https://maps.google.com/?q=Kerry+Hotel+Beijing'},
-  PVG:{lat:31.2091,lon:121.5182,name:'Sheraton Grand Shanghai Pudong',maps:'https://maps.google.com/?q=Sheraton+Grand+Shanghai+Pudong+Hotel'},
-  BKK:{lat:13.7346,lon:100.5646,name:'Carlton Hotel Bangkok Sukhumvit',maps:'https://maps.google.com/?q=Carlton+Hotel+Bangkok+Sukhumvit'},
-  SYD:{lat:-33.8654,lon:151.2089,name:'Paradox Sydney',maps:'https://maps.google.com/?q=Paradox+Hotel+Sydney'},
-  MEL:{lat:-37.8251,lon:144.9510,name:'Pan Pacific Melbourne',maps:'https://maps.google.com/?q=Pan+Pacific+Melbourne'},
-  LHR:{lat:51.5010,lon:-0.1169,name:'Park Plaza London Westminster Bridge',maps:'https://maps.google.com/?q=Park+Plaza+London+Westminster+Bridge'},
-  SGN:{lat:10.7786,lon:106.7068,name:'Lotte Hotel Saigon',maps:'https://maps.google.com/?q=Lotte+Hotel+Saigon+Ho+Chi+Minh'}
-};
-
-const AIRPORT_COORDS={
-  LAX:{lat:33.9425,lon:-118.4081},SNA:{lat:33.6757,lon:-117.8676},
-  ONT:{lat:34.0560,lon:-117.6012},SFO:{lat:37.6213,lon:-122.3790},
-  ORD:{lat:41.9742,lon:-87.9073},EWR:{lat:40.6895,lon:-74.1745},
-  JFK:{lat:40.6413,lon:-73.7781},IAH:{lat:29.9902,lon:-95.3368},
-  IAD:{lat:38.9531,lon:-77.4565},DEN:{lat:39.8561,lon:-104.6737},
-  NRT:{lat:35.7720,lon:140.3929},HND:{lat:35.5494,lon:139.7798},
-  HKG:{lat:22.3080,lon:113.9185},PEK:{lat:40.0799,lon:116.6031},
-  PVG:{lat:31.1443,lon:121.8083},BKK:{lat:13.6900,lon:100.7501},
-  SYD:{lat:-33.9399,lon:151.1753},MEL:{lat:-37.6690,lon:144.8410},
-  LHR:{lat:51.4700,lon:-0.4543},SGN:{lat:10.8188,lon:106.6520},
-  ICN:{lat:37.4602,lon:126.4407},SIN:{lat:1.3644,lon:103.9915},
-  DXB:{lat:25.2532,lon:55.3657},CDG:{lat:49.0097,lon:2.5479},
-  AMS:{lat:52.3105,lon:4.7683},FCO:{lat:41.8003,lon:12.2389}
-};
-
-const WMO_ICONS={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'🌨',75:'🌨',80:'🌦',81:'🌧',82:'🌧',95:'⛈',96:'⛈',99:'⛈'};
-const WMO_DESC={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Heavy showers',82:'Violent showers',95:'Thunderstorm',96:'Thunderstorm w/ hail',99:'Thunderstorm w/ hail'};
-
-function getCoords(iata){return HOTEL_COORDS[iata]||AIRPORT_COORDS[iata]||null;}
-function getLocationName(iata){
-  const h=HOTEL_COORDS[iata];
-  if(h)return`<a href="${h.maps}" target="_blank" style="color:var(--accent2);text-decoration:none;border-bottom:1px dotted var(--border)">${h.name}</a>`;
-  return iata+' Airport';
+function clearAll(){
+  if(!confirm('Clear ALL logbook data?'))return;
+  store([]);renderMetrics();
 }
-function getWxLink(iata){
-  const c=getCoords(iata);
-  if(!c)return'https://open-meteo.com';
-  return`https://open-meteo.com/en/docs#latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit`;
-}
-
-async function fetchCurrentWx(iata){
-  const c=getCoords(iata);if(!c)return null;
-  try{
-    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`);
-    if(!r.ok)return null;
-    const d=await r.json();
-    if(!d.daily)return null;
-    return{hi:Math.round(d.daily.temperature_2m_max[0]),lo:Math.round(d.daily.temperature_2m_min[0]),code:d.daily.weather_code[0],icon:WMO_ICONS[d.daily.weather_code[0]]||'🌡',desc:WMO_DESC[d.daily.weather_code[0]]||'Unknown'};
-  }catch(e){return null;}
-}
-
-async function fetchForecastWx(iata,days){
-  const c=getCoords(iata);if(!c)return null;
-  try{
-    const url=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat}&longitude=${c.lon}&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=auto&forecast_days=${days}`;
-    const r=await fetch(url);
-    if(!r.ok)return null;
-    const d=await r.json();
-    if(!d.daily)return null;
-    return d.daily.time.map((t,i)=>({date:t,hi:Math.round(d.daily.temperature_2m_max[i]),lo:Math.round(d.daily.temperature_2m_min[i]),icon:WMO_ICONS[d.daily.weather_code[i]]||'🌡'}));
-  }catch(e){console.log('FC CATCH',e.message);return null;}
-}
-
-function fmtTripDate(d){if(!d)return'—';return new Date(parseDate(d)).toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'});}
-
-function buildCrewPills(p){
-  return[
-    p.ca?`<span class="t-crew-pill"><span class="t-crew-role">CA </span><span class="t-crew-name">${p.ca}</span></span>`:'',
-    p.fo?`<span class="t-crew-pill"><span class="t-crew-role">FO </span><span class="t-crew-name">${p.fo}</span></span>`:'',
-    p.iro1?`<span class="t-crew-pill"><span class="t-crew-role">IRO1 </span><span class="t-crew-name">${p.iro1}</span></span>`:'',
-    p.iro2?`<span class="t-crew-pill"><span class="t-crew-role">IRO2 </span><span class="t-crew-name">${p.iro2}</span></span>`:'',
-    p.lcp?`<span class="t-crew-pill"><span class="t-crew-role">LCP </span><span class="t-crew-name">${p.lcp}</span></span>`:''
-  ].filter(Boolean).join('');
-}
-
-function buildLegCard(l,p,type){
-  const mi=(x,lbl,val)=>val?`<div class="t-mi"><div class="t-ml">${lbl}</div><div class="t-mv">${val}</div></div>`:'';
-  const blockHrs=l.block?toDecimal(parseMins(l.block))+' hrs':'—';
-  const miles=l.miles?parseInt(l.miles).toLocaleString():'';
-  const pax=l.sob||'';
-  const aircraft=l.aircraft||'';
-  const crew=type!=='next'?buildCrewPills(p):'';
-
-  let meta='';
-  if(type==='last'||type==='current'){
-    meta=`
-      ${mi('','Date',fmtTripDate(l.date))}
-      ${mi('','Aircraft',aircraft)}
-      ${mi('','Block',blockHrs)}
-      ${miles?mi('','Miles',miles):''}
-      ${pax?mi('','PAX',pax):''}
-    `;
-  } else {
-    // next — date only, no crew/pax
-    meta=`
-      ${mi('','Date',fmtTripDate(l.date))}
-      ${aircraft?mi('','Aircraft',aircraft):''}
-      ${mi('','Block',blockHrs)}
-    `;
-  }
-
-  return `
-    <div class="t-leg-card ${type}-card">
-      <div class="t-leg-card-hdr">
-        <span class="t-leg-route">${l.dep||'—'}<span class="t-leg-route-sep">-</span>${l.arr||'—'}</span>
-        <span class="t-leg-fltno">${l.fltno||''}</span>
-      </div>
-      <div class="t-leg-card-body">
-        <div class="t-meta">${meta}</div>
-        ${crew?`<div class="t-crew">${crew}</div>`:''}
-      </div>
-    </div>`;
-}
-
-function getUniqueHotelDests(p){
-  const base=new Set(['LAX','SNA','ONT']);
-  const seen=new Set();
-  const result=[];
-  for(const l of(p.legs||[])){
-    const arr=(l.arr||'').toUpperCase();
-    if(arr&&!base.has(arr)&&!seen.has(arr)){
-      seen.add(arr);
-      result.push(arr);
-    }
-  }
-  return result;
-}
-
-function daysUntil(p){
-  const fl=p.legs&&p.legs[0];if(!fl||!fl.date)return null;
-  const today=new Date();today.setHours(0,0,0,0);
-  const trip=new Date(parseDate(fl.date));trip.setHours(0,0,0,0);
-  return Math.round((trip-today)/(1000*60*60*24));
-}
-
-function buildWxTile(iata,idSuffix){
-  const locName=getLocationName(iata);
-  const wxLink=getWxLink(iata);
-  return`<div class="t-wx" id="wx-${idSuffix}">
-    <div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
-    <div class="t-wx-loading">FETCHING...</div>
-  </div>`;
-}
-
-function buildFcTile(iata,idSuffix){
-  const locName=getLocationName(iata);
-  const wxLink=getWxLink(iata);
-  return`<div class="t-wx" id="fc-${idSuffix}">
-    <div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
-    <div class="t-wx-loading">FETCHING...</div>
-  </div>`;
-}
-
-async function renderTripsTab(){
-  const all=load();
-  if(!all.length){
-    ['last','current','next'].forEach(t=>{document.getElementById('ts-'+t).innerHTML='<div class="t-empty">No logbook data</div>';});
-    return;
-  }
-  const today=new Date();today.setHours(0,0,0,0);
-  function fld(p){return p.legs&&p.legs[0]?new Date(parseDate(p.legs[0].date)):new Date(0);}
-  function lld(p){const l=p.legs;return l&&l.length?new Date(parseDate(l[l.length-1].date)):new Date(0);}
-
-  const currentP=all.find(p=>{
-    const s=fld(p);s.setHours(0,0,0,0);
-    const e=lld(p);e.setHours(0,0,0,0);
-    return today>=s&&today<=e;
-  });
-  const past=all.filter(p=>{const e=lld(p);e.setHours(0,0,0,0);return e<today&&p!==currentP;}).sort((a,b)=>lld(b)-lld(a));
-  const future=all.filter(p=>{const s=fld(p);s.setHours(0,0,0,0);return s>today&&p!==currentP;}).sort((a,b)=>fld(a)-fld(b));
-  const lastP=past[0]||null;
-  const nextP=future[0]||null;
-
-  // ── LAST TRIP ──
-  if(lastP){
-    const cards=(lastP.legs||[]).map(l=>buildLegCard(l,lastP,'last')).join('');
-    document.getElementById('ts-last').innerHTML=cards||'<div class="t-empty">No legs</div>';
-  }else{
-    document.getElementById('ts-last').innerHTML='<div class="t-empty">No completed trips</div>';
-  }
-
-  // ── CURRENT TRIP ──
-  if(currentP){
-    const cards=(currentP.legs||[]).map(l=>buildLegCard(l,currentP,'current')).join('');
-    const dests=getUniqueHotelDests(currentP);
-    const wxTiles=dests.map((iata,i)=>buildWxTile(iata,`cur_${i}`)).join('');
-    document.getElementById('ts-current').innerHTML=
-      cards+
-      (dests.length?`<div class="t-wx-section">${wxTiles}</div>`:'');
-    dests.forEach((iata,i)=>{
-      fetchCurrentWx(iata).then(wx=>{
-        const el=document.getElementById(`wx-cur_${i}`);if(!el)return;
-        const locName=getLocationName(iata);const wxLink=getWxLink(iata);
-        if(!wx){el.innerHTML=`<div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div><div class="t-wx-loading">UNAVAILABLE</div>`;return;}
-        el.innerHTML=`
-          <div class="t-wx-hdr">${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
-          <div class="t-wx-main"><div class="t-wx-icon">${wx.icon}</div><div><div class="t-wx-desc">${wx.desc}</div><div class="t-wx-temps"><span class="t-wx-hi">H: ${wx.hi}°F</span>&nbsp;&nbsp;<span class="t-wx-lo">L: ${wx.lo}°F</span></div></div></div>`;
-      });
-    });
-  }else{
-    document.getElementById('ts-current').innerHTML='<div class="t-empty" style="padding:40px 20px"><div style="font-size:28px;margin-bottom:8px;opacity:0.3">🏠</div>OFF DUTY</div>';
-  }
-
-  // ── NEXT TRIP ──
-  if(nextP){
-    const daysAway=daysUntil(nextP);
-    const daysBlock=daysAway!==null?`<div class="t-days-block" style="width:100%"><div class="t-days">${daysAway}</div><div class="t-days-lbl">Days until departure</div></div>`:'';
-    const cards=(nextP.legs||[]).map(l=>buildLegCard(l,nextP,'next')).join('');
-    const dests=getUniqueHotelDests(nextP);
-    const fcTiles=dests.map((iata,i)=>buildFcTile(iata,`nxt_${i}`)).join('');
-    document.getElementById('ts-next').innerHTML=
-      daysBlock+
-      cards+
-      (dests.length?`<div class="t-wx-section">${fcTiles}</div>`:'');
-    dests.forEach((iata,i)=>{
-      fetchForecastWx(iata,10).then(fc=>{
-        const el=document.getElementById(`fc-nxt_${i}`);if(!el)return;
-        const locName=getLocationName(iata);const wxLink=getWxLink(iata);
-        if(!fc){el.innerHTML=`<div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div><div class="t-wx-loading">UNAVAILABLE</div>`;return;}
-        const mkDay=d=>{const dt=new Date(d.date+'T12:00:00');const lbl=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});return`<div class="t-fc-day"><div class="t-fc-date">${lbl}</div><div class="t-fc-icon">${d.icon}</div><div class="t-fc-hi">${d.hi}°</div><div class="t-fc-lo">${d.lo}°</div></div>`;};
-        el.innerHTML=`
-          <div class="t-wx-hdr">10-DAY · ${locName} <a href="${wxLink}" target="_blank" style="color:var(--text3);font-size:9px;text-decoration:none;margin-left:6px;border-bottom:1px dotted var(--border)">open-meteo</a></div>
-          <div class="t-fc-grid">${fc.slice(0,5).map(mkDay).join('')}</div>
-          <div class="t-fc-grid" style="margin-top:4px">${fc.slice(5,10).map(mkDay).join('')}</div>`;
-      });
-    });
-  }else{
-    document.getElementById('ts-next').innerHTML='<div class="t-empty">No upcoming trips in logbook</div>';
-  }
-}
-
 
 // ── CREW NOTES ──
 let cnRole='all';
-
-function setCnRole(role){
+function setCnRole(role,btn){
   cnRole=role;
-  document.querySelectorAll('.cn-role-btn').forEach(b=>{
-    b.classList.toggle('active',b.dataset.role===role);
-  });
-  renderCrewNotes();
+  document.querySelectorAll('.cn-role-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderCrew();
 }
 
-function containsAvoid(text){
-  return /avoid/i.test(text.replace(/[^a-zA-Z0-9]/g,' '));
-}
-
-function renderCrewNotes(){
-  const all=load();
+function renderCrew(){
+  const data=load();
   const search=(document.getElementById('cn-search')?.value||'').toLowerCase();
-  const MY_NAMES=new Set(['ian irvine','irvine']); // exclude self
-
   const today=new Date();today.setHours(0,0,0,0);
-  const personMap={};
+  const pm={};
 
-  all.forEach(trip=>{
+  data.forEach(trip=>{
     (trip.legs||[]).forEach(l=>{
-      const legDate=l.date;
-      const legDateTs=parseDate(legDate);
-      // Only past legs
-      if(legDateTs>today.getTime())return;
-      const firstLegRoute=(l.dep||'')+'→'+(l.arr||'');
-
-      const addPerson=(name,role,note)=>{
-        if(!name||!name.trim())return;
-        if(MY_NAMES.has(name.trim().toLowerCase()))return;
+      if(parseDate(l.date)>today.getTime())return;
+      const route=(l.dep||'')+'→'+(l.arr||'');
+      const add=(name,role,note)=>{
+        if(!name?.trim()||MY_NAMES.has(name.trim().toLowerCase()))return;
         const key=name.trim().toLowerCase();
-        if(!personMap[key]){
-          personMap[key]={name:name.trim(),roles:{},entries:[],airports:new Set(),lastDate:''};
-        }
-        const person=personMap[key];
-        person.roles[role]=(person.roles[role]||0)+1;
-        if(l.arr)person.airports.add(l.arr);
-        // Only add note if non-empty and not already recorded for this exact date+role
-        const noteText=(note||'').trim();
-        const isDupe=person.entries.some(e=>e.date===legDate&&e.role===role&&e.note===noteText);
-        if(!isDupe){
-          person.entries.push({date:legDate,role,note:noteText,route:firstLegRoute});
-        }
-        if(!person.lastDate||legDateTs>parseDate(person.lastDate))person.lastDate=legDate;
+        if(!pm[key])pm[key]={name:name.trim(),roles:{},entries:[],airports:new Set(),lastDate:''};
+        const p=pm[key];
+        p.roles[role]=(p.roles[role]||0)+1;
+        if(l.arr)p.airports.add(l.arr);
+        const nt=(note||'').trim();
+        if(!p.entries.some(e=>e.date===l.date&&e.role===role&&e.note===nt))
+          p.entries.push({date:l.date,role,note:nt,route});
+        if(!p.lastDate||parseDate(l.date)>parseDate(p.lastDate))p.lastDate=l.date;
       };
-
-      addPerson(l.ca,'CA',l.caNotes||'');
-      addPerson(l.fo,'FO',l.foNotes||'');
-      addPerson(l.iro1,'IRO1',l.iro1Notes||'');
-      addPerson(l.iro2,'IRO2',l.iro2Notes||'');
-      addPerson(l.lcp,'LCP','');
+      add(l.ca,'CA',l.caNotes);add(l.fo,'FO',l.foNotes);
+      add(l.iro1,'IRO1',l.iro1Notes);add(l.iro2,'IRO2',l.iro2Notes);
+      add(l.lcp,'LCP','');
     });
   });
 
-  // Sort each person's entries newest first
-  Object.values(personMap).forEach(p=>{
-    p.entries.sort((a,b)=>parseDate(b.date)-parseDate(a.date));
-  });
+  Object.values(pm).forEach(p=>p.entries.sort((a,b)=>parseDate(b.date)-parseDate(a.date)));
+  let people=Object.values(pm).sort((a,b)=>parseDate(b.lastDate)-parseDate(a.lastDate));
 
-  // Sort people by most recent past trip, newest first
-  const people=Object.values(personMap).sort((a,b)=>parseDate(b.lastDate)-parseDate(a.lastDate));
-
-  // Update stats
-  const caCount=people.filter(p=>p.roles['CA']>0).length;
-  const foCount=people.filter(p=>p.roles['FO']>0).length;
-  const caEl=document.getElementById('cn-ca-count');
-  const foEl=document.getElementById('cn-fo-count');
-  if(caEl)caEl.textContent=caCount;
-  if(foEl)foEl.textContent=foCount;
-
-  // Filter
-  const filtered=people.filter(p=>{
-    const allNotesText=p.entries.map(e=>e.note).join(' ');
-    const nameMatch=p.name.toLowerCase().includes(search);
-    const noteMatch=allNotesText.toLowerCase().includes(search);
-    if(search&&!nameMatch&&!noteMatch)return false;
+  people=people.filter(p=>{
+    const allNotes=p.entries.map(e=>e.note).join(' ');
+    if(search&&!p.name.toLowerCase().includes(search)&&!allNotes.toLowerCase().includes(search))return false;
     if(cnRole==='ca'&&!p.roles['CA'])return false;
     if(cnRole==='fo'&&!p.roles['FO'])return false;
     if(cnRole==='iro'&&!p.roles['IRO1']&&!p.roles['IRO2'])return false;
     if(cnRole==='lcp'&&!p.roles['LCP'])return false;
-    if(cnRole==='avoid'&&!containsAvoid(allNotesText))return false;
+    if(cnRole==='avoid'&&!containsAvoid(p.entries.map(e=>e.note).join(' ')))return false;
     return true;
   });
 
   const list=document.getElementById('cn-list');
-  if(!list)return;
-  if(!filtered.length){list.innerHTML='<div class="t-empty">No crew notes found</div>';return;}
+  if(!people.length){list.innerHTML='<div class="empty">No crew notes found</div>';return;}
 
-  list.innerHTML=filtered.map(p=>{
-    const allNotesText=p.entries.map(e=>e.note).join(' ');
-    const isAvoid=containsAvoid(allNotesText);
-    const cardClass=isAvoid?'cn-card avoid-card':'cn-card';
-
-    // Role pills — merge IRO1+IRO2 into IRO
-    const roleDisplay={};
-    Object.entries(p.roles).forEach(([role,count])=>{
-      const label=(role==='IRO1'||role==='IRO2')?'IRO':role;
-      roleDisplay[label]=(roleDisplay[label]||0)+count;
-    });
-    const pillClass={CA:'ca',FO:'fo',IRO:'iro',LCP:'lcp'};
-    const rolePills=Object.entries(roleDisplay).map(([role,count])=>
-      `<span class="cn-pill ${pillClass[role]||'lcp'}">${role} ×${count}</span>`
-    ).join('');
-    const avoidBadge=isAvoid?'<span class="cn-pill avoid">⚠ AVOID</span>':'';
-
-    const totalTrips=Object.values(p.roles).reduce((a,b)=>a+b,0);
-    const lastFmt=p.lastDate?fmtTripDate(p.lastDate):'';
-
-    const noteRows=p.entries.map(e=>`
-      <div class="cn-note-entry">
-        <div class="cn-entry-top">
-          <span class="cn-entry-date">${fmtTripDate(e.date)}</span>
-          <span class="cn-entry-role">${e.role}</span>
-          <span class="cn-entry-route">${e.route}</span>
-        </div>
-        <div class="cn-note-text${e.note?'':' empty'}">${e.note||'No notes'}</div>
-      </div>`).join('');
-
+  const pillCls={CA:'ca',FO:'fo',IRO:'iro',LCP:'lcp'};
+  list.innerHTML=people.map(p=>{
+    const allNotes=p.entries.map(e=>e.note).join(' ');
+    const isAv=containsAvoid(allNotes);
+    const roleDisp={};
+    Object.entries(p.roles).forEach(([r,c])=>{const lbl=(r==='IRO1'||r==='IRO2')?'IRO':r;roleDisp[lbl]=(roleDisp[lbl]||0)+c;});
+    const pills=Object.entries(roleDisp).map(([r,c])=>`<span class="cnp ${pillCls[r]||'lcp'}">${r} ×${c}</span>`).join('');
+    const avBadge=isAv?'<span class="cnp av">⚠ Avoid</span>':'';
+    const total=Object.values(p.roles).reduce((a,b)=>a+b,0);
+    const key=p.name.toLowerCase().replace(/[^a-z0-9]/g,'_');
+    const fns=loadFN()[key]||[];
+    const fnRows=fns.map(fn=>`<div class="fn-entry"><div style="display:flex;align-items:center"><span class="fn-badge">⚑ Field note</span><span class="fn-date">${fn.date}</span><button class="fn-del" onclick="delFN('${key}','${fn.id}')">✕</button></div><div class="fn-text">${fn.text}</div></div>`).join('');
+    const noteRows=p.entries.map(e=>`<div class="cn-entry"><div class="cn-etop"><span class="cn-edate">${fmtDisp(e.date)}</span><span class="cn-erole">${e.role}</span><span class="cn-eroute">${e.route}</span></div><div class="cn-note${e.note?'':' empty'}">${e.note||'No notes'}</div></div>`).join('');
     const tags=[...p.airports].slice(0,10).map(a=>`<span class="cn-tag">${a}</span>`).join('');
-
-    // Load field notes for this person
-    const allFieldNotes=loadFieldNotes();
-    const personKey=p.name.toLowerCase().replace(/[^a-z0-9]/g,'_');
-    const fieldNotes=allFieldNotes[personKey]||[];
-    const fieldNoteRows=fieldNotes.map(fn=>`
-      <div class="field-note-entry">
-        <div style="display:flex;align-items:center">
-          <span class="field-note-badge">⚑ Field note</span>
-          <span class="field-note-date">${fn.date}</span>
-          <button class="field-note-del" onclick="deleteFieldNote('${personKey}','${fn.id}')">✕ delete</button>
-        </div>
-        <div class="field-note-text">${fn.text}</div>
-        <div class="field-note-hint">Not yet transferred to spreadsheet</div>
-      </div>`).join('');
-
-    const fnForm=`
-      <div class="fn-form" id="fn-form-${personKey}" style="display:none">
-        <div class="fn-form-hint">⚑ Field note — transfer to spreadsheet when home</div>
-        <textarea id="fn-ta-${personKey}" placeholder="Type your note here…"></textarea>
-        <div class="fn-form-actions">
-          <button class="fn-cancel" onclick="toggleFnForm('${personKey}')">Cancel</button>
-          <button class="fn-save" onclick="addFieldNote('${personKey}')">Save Note</button>
-        </div>
-      </div>`;
-
-    return`
-      <div class="${cardClass}">
-        <div class="cn-hdr">
-          <span class="cn-name">${p.name}</span>
-          <div class="cn-role-pills">${rolePills}${avoidBadge}</div>
-          <span class="cn-meta">${totalTrips} trip${totalTrips!==1?'s':''} · Last: ${lastFmt}</span>
-          <button class="add-note-btn" onclick="toggleFnForm('${personKey}')">+ NOTE</button>
-        </div>
-        <div class="cn-body">
-          ${fnForm}
-          ${fieldNoteRows}
-          ${noteRows}
-        </div>
-        ${tags?`<div class="cn-tags">${tags}</div>`:''}
-      </div>`;
+    return`<div class="cn-card${isAv?' av':''}"><div class="cn-hdr"><span class="cn-name">${p.name}</span><div class="cn-pills">${pills}${avBadge}</div><span class="cn-meta">${total} trip${total!==1?'s':''} · Last: ${fmtDisp(p.lastDate)}</span><button class="add-note-btn" onclick="toggleFN('${key}')">+ Note</button></div><div class="fn-form" id="fn-${key}"><textarea id="fn-ta-${key}" placeholder="Type note…"></textarea><div class="fn-form-act"><button class="btn btn-g" onclick="toggleFN('${key}')">Cancel</button><button class="btn btn-p" onclick="saveFN('${key}')">Save</button></div></div><div class="cn-body">${fnRows}${noteRows}</div>${tags?`<div class="cn-tags">${tags}</div>`:''}</div>`;
   }).join('');
 }
 
-// renderCrewNotes called directly from nav button
-
-
-// ── FIELD NOTES ──
-const FN_KEY='ianFieldNotes_v1';
-function loadFieldNotes(){try{return JSON.parse(localStorage.getItem(FN_KEY))||{};}catch{return{};}}
-function saveFieldNotes(d){localStorage.setItem(FN_KEY,JSON.stringify(d));}
-
-function addFieldNote(personKey){
-  const ta=document.getElementById('fn-ta-'+personKey);
-  if(!ta||!ta.value.trim())return;
-  const notes=loadFieldNotes();
-  if(!notes[personKey])notes[personKey]=[];
-  notes[personKey].push({
-    id:'fn_'+Date.now(),
-    date:new Date().toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'}),
-    text:ta.value.trim()
-  });
-  saveFieldNotes(notes);
-  renderCrewNotes();
+function toggleFN(key){
+  const f=document.getElementById('fn-'+key);if(!f)return;
+  const open=f.style.display==='block';
+  f.style.display=open?'none':'block';
+  if(!open){const ta=document.getElementById('fn-ta-'+key);if(ta){ta.value='';ta.focus();}}
+}
+function saveFN(key){
+  const ta=document.getElementById('fn-ta-'+key);if(!ta||!ta.value.trim())return;
+  const d=loadFN();if(!d[key])d[key]=[];
+  d[key].push({id:'fn_'+Date.now(),date:new Date().toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'}),text:ta.value.trim()});
+  storeFN(d);renderCrew();
+}
+function delFN(key,id){
+  const d=loadFN();if(d[key])d[key]=d[key].filter(n=>n.id!==id);storeFN(d);renderCrew();
 }
 
-function deleteFieldNote(personKey,noteId){
-  const notes=loadFieldNotes();
-  if(notes[personKey])notes[personKey]=notes[personKey].filter(n=>n.id!==noteId);
-  saveFieldNotes(notes);
-  renderCrewNotes();
-}
-
-function toggleFnForm(personKey){
-  const form=document.getElementById('fn-form-'+personKey);
-  if(!form)return;
-  form.style.display=form.style.display==='none'?'block':'none';
-  if(form.style.display==='block'){
-    const ta=document.getElementById('fn-ta-'+personKey);
-    if(ta){ta.value='';ta.focus();}
-  }
-}
-
-
-// ── LOGBOOK SCRATCHPAD ──
-const SP_KEY='ianScratchpad_v1';
-function loadSP(){try{return JSON.parse(localStorage.getItem(SP_KEY))||[];}catch{return[];}}
-function saveSP(d){localStorage.setItem(SP_KEY,JSON.stringify(d));}
-
+// ── SCRATCHPAD ──
 let spEditId=null;
-
 function openLegForm(id){
   spEditId=id||null;
-  const panel=document.getElementById('leg-form-panel');
-  if(!panel)return;
-  document.getElementById('leg-form-title').textContent=id?'EDIT LEG':'ADD LEG';
-  panel.style.display='block';
-  panel.scrollIntoView({behavior:'smooth',block:'start'});
+  const panel=document.getElementById('leg-form');
+  document.getElementById('leg-form-title').textContent=id?'Edit Leg':'Add Leg';
+  panel.style.display='block';panel.scrollIntoView({behavior:'smooth',block:'start'});
+  const fields=['lf-date','lf-fltno','lf-dep','lf-arr','lf-to','lf-land','lf-block','lf-miles','lf-pax','lf-tail','lf-notes'];
   if(id){
-    const leg=loadSP().find(l=>l.id===id);
-    if(!leg)return;
-    document.getElementById('lf-date').value=leg.date||'';
-    document.getElementById('lf-fltno').value=leg.fltno||'';
-    document.getElementById('lf-dep').value=leg.dep||'';
-    document.getElementById('lf-arr').value=leg.arr||'';
-    document.getElementById('lf-to').value=leg.to||'';
-    document.getElementById('lf-land').value=leg.land||'';
-    document.getElementById('lf-block').value=leg.block||'';
-    document.getElementById('lf-miles').value=leg.miles||'';
-    document.getElementById('lf-pax').value=leg.pax||'';
-    document.getElementById('lf-tail').value=leg.tail||'';
-    document.getElementById('lf-notes').value=leg.notes||'';
-  }else{
-    ['lf-date','lf-fltno','lf-dep','lf-arr','lf-to','lf-land','lf-block','lf-miles','lf-pax','lf-tail','lf-notes']
-      .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  }
+    const leg=loadSPD().find(l=>l.id===id)||{};
+    fields.forEach(f=>{const el=document.getElementById(f);if(el)el.value=leg[f.replace('lf-','')]||'';});
+  }else{fields.forEach(f=>{const el=document.getElementById(f);if(el)el.value='';}); }
 }
-
-function closeLegForm(){
-  const panel=document.getElementById('leg-form-panel');
-  if(panel)panel.style.display='none';
-  spEditId=null;
-}
-
+function closeLegForm(){document.getElementById('leg-form').style.display='none';spEditId=null;}
 function saveLeg(){
-  const g=id=>(document.getElementById(id)||{}).value||'';
-  const leg={
-    id:spEditId||'sp_'+Date.now(),
-    date:g('lf-date'),fltno:g('lf-fltno'),
-    dep:g('lf-dep').toUpperCase(),arr:g('lf-arr').toUpperCase(),
-    to:g('lf-to'),land:g('lf-land'),
-    block:g('lf-block'),miles:g('lf-miles'),
-    pax:g('lf-pax'),tail:g('lf-tail'),notes:g('lf-notes')
-  };
-  let data=loadSP();
-  if(spEditId){data=data.map(l=>l.id===spEditId?leg:l);}
-  else{data.push(leg);}
-  saveSP(data);
-  closeLegForm();
-  renderScratchpad();
+  const g=id=>document.getElementById(id)?.value||'';
+  const leg={id:spEditId||'sp_'+Date.now(),date:g('lf-date'),fltno:g('lf-fltno'),dep:g('lf-dep').toUpperCase(),arr:g('lf-arr').toUpperCase(),to:g('lf-to'),land:g('lf-land'),block:g('lf-block'),miles:g('lf-miles'),pax:g('lf-pax'),tail:g('lf-tail'),notes:g('lf-notes')};
+  let d=loadSPD();
+  d=spEditId?d.map(l=>l.id===spEditId?leg:l):[...d,leg];
+  saveSPD(d);closeLegForm();renderSP();
 }
-
-function deleteLeg(id){
-  if(!confirm('Delete this leg?'))return;
-  saveSP(loadSP().filter(l=>l.id!==id));
-  renderScratchpad();
+function delLeg(id){if(!confirm('Delete this leg?'))return;saveSPD(loadSPD().filter(l=>l.id!==id));renderSP();}
+function clearSP(){if(!confirm('Clear all scratchpad entries?'))return;saveSPD([]);renderSP();}
+function legStatus(l){
+  if(!l.date||!l.dep||!l.arr)return'pending';
+  const filled=[l.to,l.land,l.block,l.miles,l.pax,l.tail].filter(Boolean).length;
+  return filled===6?'complete':filled>0?'partial':'pending';
 }
-
-function clearScratchpad(){
-  if(!confirm('Clear all scratchpad entries?'))return;
-  saveSP([]);
-  renderScratchpad();
-}
-
-function legStatus(leg){
-  const skeleton=leg.date&&leg.dep&&leg.arr;
-  if(!skeleton)return'pending';
-  const actuals=[leg.to,leg.land,leg.block,leg.miles,leg.pax,leg.tail];
-  const filled=actuals.filter(Boolean).length;
-  if(filled===0)return'pending';
-  if(filled===actuals.length)return'complete';
-  return'partial';
-}
-
-function renderScratchpad(){
-  const list=document.getElementById('scratchpad-list');
-  if(!list)return;
-  const data=loadSP();
-  if(!data.length){
-    list.innerHTML='<div class="t-empty" style="padding:40px 12px">No legs entered yet.<br>Tap + ADD LEG to start.</div>';
-    return;
-  }
-  const fmtV=(v,cls='')=>v?`<div class="sp-val ${cls}">${v}</div>`:`<div class="sp-val empty">—</div>`;
-  list.innerHTML=data.map(leg=>{
-    const status=legStatus(leg);
-    const dateStr=leg.date?new Date(leg.date+'T12:00:00').toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'}):'—';
-    return`
-      <div class="sp-card ${status}">
-        <div class="sp-hdr">
-          <div class="sp-route">${leg.dep||'?'}<span class="sp-sep">-</span>${leg.arr||'?'}</div>
-          <div class="sp-flt">${leg.fltno||''} · ${dateStr}</div>
-          <span class="sp-status ${status}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>
-        </div>
-        <div class="sp-body">
-          <div class="sp-grid">
-            <div class="sp-field"><div class="sp-lbl">T/O</div>${fmtV(leg.to)}</div>
-            <div class="sp-field"><div class="sp-lbl">Land</div>${fmtV(leg.land)}</div>
-            <div class="sp-field"><div class="sp-lbl">Block</div>${leg.block?`<div class="sp-val gold">${leg.block} hrs</div>`:'<div class="sp-val empty">—</div>'}</div>
-            <div class="sp-field"><div class="sp-lbl">Miles</div>${fmtV(leg.miles?parseInt(leg.miles).toLocaleString():'')}</div>
-            <div class="sp-field"><div class="sp-lbl">PAX</div>${fmtV(leg.pax)}</div>
-            <div class="sp-field"><div class="sp-lbl">Tail #</div>${fmtV(leg.tail)}</div>
-          </div>
-          ${leg.notes?`<div class="sp-notes"><div class="sp-lbl">Notes</div><div class="sp-val" style="font-family:var(--font-body);font-size:13px;color:var(--text2);margin-top:2px">${leg.notes}</div></div>`:''}
-        </div>
-        <div class="sp-actions">
-          <button class="edit-btn" onclick="openLegForm('${leg.id}')">EDIT</button>
-          <button class="del-btn" onclick="deleteLeg('${leg.id}')">DEL</button>
-        </div>
-      </div>`;
+function renderSP(){
+  const data=loadSPD();
+  const list=document.getElementById('sp-list');
+  if(!data.length){list.innerHTML='<div class="empty">No legs entered yet. Tap + Add Leg to start.</div>';return;}
+  const fv=(v,cls='')=>v?`<div class="sp-val ${cls}">${v}</div>`:'<div class="sp-val empty">—</div>';
+  list.innerHTML=data.map(l=>{
+    const st=legStatus(l);
+    const ds=l.date?new Date(l.date+'T12:00:00').toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+    return`<div class="spcard ${st}"><div class="sph"><div class="sp-route">${l.dep||'?'}-${l.arr||'?'}</div><div class="sp-flt">${l.fltno||''} · ${ds}</div><span class="sp-status ${st}">${st.charAt(0).toUpperCase()+st.slice(1)}</span></div><div class="spb"><div class="sp-grid"><div><div class="sp-lbl">T/O</div>${fv(l.to)}</div><div><div class="sp-lbl">Land</div>${fv(l.land)}</div><div><div class="sp-lbl">Block</div>${l.block?`<div class="sp-val gold">${l.block}</div>`:'<div class="sp-val empty">—</div>'}</div><div><div class="sp-lbl">Miles</div>${fv(l.miles?parseInt(l.miles).toLocaleString():'')}</div><div><div class="sp-lbl">PAX</div>${fv(l.pax)}</div><div><div class="sp-lbl">Tail</div>${fv(l.tail)}</div></div>${l.notes?`<div style="margin-top:8px"><div class="sp-lbl">Notes</div><div class="sp-val" style="font-size:14px;color:var(--t3)">${l.notes}</div></div>`:''}</div><div class="sp-act"><button class="eb" onclick="openLegForm('${l.id}')">Edit</button><button class="db" onclick="delLeg('${l.id}')">Del</button></div></div>`;
   }).join('');
 }
 
-renderAll();
+// ── SENIORITY ──
+function renderSeniority(){
+  const data=loadSen();
+  if(!data.length){
+    ['sen-sys','sen-cat','sen-total','sen-gline','sen-catpct','sen-gpct'].forEach(id=>setText(id,'—'));
+    ['sen-sys-chart','sen-cat-chart','sen-pct-chart','sen-tot-chart'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.innerHTML=`<text x="170" y="60" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="13" fill="#999">Import spreadsheet to see seniority data</text>`;
+    });
+    document.querySelector('#sen-tbl tbody').innerHTML='<tr><td colspan="7" class="empty" style="text-align:center">Import spreadsheet to see seniority data</td></tr>';
+    return;
+  }
+
+  // Sort by date ascending
+  const sorted=[...data].sort((a,b)=>parseDate(a.date)-parseDate(b.date));
+  const latest=sorted[sorted.length-1];
+
+  setText('sen-sys',latest.sysSen||'—');
+  setText('sen-cat',latest.catSen||'—');
+  setText('sen-total',latest.total||'—');
+  setText('sen-gline',latest.gline||'—');
+  setText('sen-catpct',latest.catPct?latest.catPct+'%':'—');
+  setText('sen-gpct',latest.gpct?latest.gpct+'%':'—');
+
+  // Table (newest first)
+  const tRows=[...sorted].reverse().map(r=>`<tr><td>${fmtDisp(r.date)}</td><td class="val">${r.sysSen}</td><td class="val">${r.catSen}</td><td>${r.total}</td><td>${r.gline}</td><td class="val">${r.catPct?r.catPct+'%':''}</td><td class="val">${r.gpct?r.gpct+'%':''}</td></tr>`).join('');
+  document.querySelector('#sen-tbl tbody').innerHTML=tRows;
+
+  // Charts
+  drawLineChart('sen-sys-chart',sorted,r=>+r.sysSen||0,'#0033A0',false);
+  drawLineChart('sen-cat-chart',sorted,r=>+r.catSen||0,'#2e7d32',false);
+  drawLineChart('sen-tot-chart',sorted,r=>+r.total||0,'#f57f17',true);
+
+  // Dual line chart for percentages
+  const pctVals1=sorted.map(r=>parseFloat(r.catPct)||0);
+  const pctVals2=sorted.map(r=>parseFloat(r.gpct)||0);
+  drawDualChart('sen-pct-chart',sorted,pctVals1,pctVals2,'#0033A0','#c0392b','Category %','G-Line %');
+}
+
+function drawLineChart(svgId,data,valFn,color,higher){
+  const el=document.getElementById(svgId);if(!el||!data.length)return;
+  const W=340,H=100,PAD={l:46,r:20,t:14,b:32};
+  const vals=data.map(valFn);
+  const minV=Math.min(...vals),maxV=Math.max(...vals);
+  const range=maxV-minV||1;
+  const px=i=>PAD.l+(i/(data.length-1||1))*(W-PAD.l-PAD.r);
+  const py=v=>PAD.t+(higher?(maxV-v)/range:(v-minV)/range)*(H-PAD.t-PAD.b);
+
+  const pts=data.map((r,i)=>`${px(i).toFixed(1)},${py(valFn(r)).toFixed(1)}`).join(' ');
+  const apts=`${pts} ${px(data.length-1).toFixed(1)},${H-PAD.b} ${px(0).toFixed(1)},${H-PAD.b}`;
+
+  // Date labels: first, middle, last
+  const dateLbls=[0,Math.floor(data.length/2),data.length-1].filter((v,i,a)=>a.indexOf(v)===i);
+  const dateLabels=dateLbls.map(i=>{
+    const d=new Date(parseDate(data[i].date));
+    const lbl=d.toLocaleDateString('en-US',{month:'short',year:'2-digit'});
+    return`<text x="${px(i).toFixed(1)}" y="${H-PAD.b+14}" text-anchor="middle" class="sal">${lbl}</text>`;
+  }).join('');
+
+  // Y axis labels
+  const yLbls=[minV,Math.round((minV+maxV)/2),maxV].map(v=>{
+    return`<text x="${PAD.l-4}" y="${py(v).toFixed(1)}" text-anchor="end" dominant-baseline="middle" class="sal">${Math.round(v)}</text>`;
+  }).join('');
+
+  const lastX=px(data.length-1),lastY=py(vals[vals.length-1]);
+
+  el.innerHTML=`
+    <line x1="${PAD.l}" y1="${PAD.t}" x2="${PAD.l}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
+    <line x1="${PAD.l}" y1="${H-PAD.b}" x2="${W-PAD.r}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
+    <line x1="${PAD.l}" y1="${py((minV+maxV)/2).toFixed(1)}" x2="${W-PAD.r}" y2="${py((minV+maxV)/2).toFixed(1)}" stroke="#f0f0f5" stroke-width="1" stroke-dasharray="4,3"/>
+    ${yLbls}${dateLabels}
+    <polygon points="${apts}" fill="${color}" fill-opacity="0.08"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="4" fill="${color}"/>
+    <text x="${lastX.toFixed(1)}" y="${(lastY-8).toFixed(1)}" text-anchor="middle" class="sal" fill="${color}" font-weight="700">${Math.round(vals[vals.length-1])}</text>
+  `;
+}
+
+function drawDualChart(svgId,data,vals1,vals2,color1,color2,lbl1,lbl2){
+  const el=document.getElementById(svgId);if(!el||!data.length)return;
+  const W=340,H=100,PAD={l:40,r:20,t:14,b:42};
+  const allV=[...vals1,...vals2];
+  const minV=Math.min(...allV),maxV=Math.max(...allV);
+  const range=maxV-minV||1;
+  const px=i=>PAD.l+(i/(data.length-1||1))*(W-PAD.l-PAD.r);
+  const py=v=>PAD.t+(maxV-v)/range*(H-PAD.t-PAD.b);
+  const pts1=data.map((_,i)=>`${px(i).toFixed(1)},${py(vals1[i]).toFixed(1)}`).join(' ');
+  const pts2=data.map((_,i)=>`${px(i).toFixed(1)},${py(vals2[i]).toFixed(1)}`).join(' ');
+  const dateLbls=[0,Math.floor(data.length/2),data.length-1].filter((v,i,a)=>a.indexOf(v)===i);
+  const dateLabels=dateLbls.map(i=>{const d=new Date(parseDate(data[i].date));return`<text x="${px(i).toFixed(1)}" y="${H-PAD.b+14}" text-anchor="middle" class="sal">${d.toLocaleDateString('en-US',{month:'short',year:'2-digit'})}</text>`;}).join('');
+  const lastX=px(data.length-1);
+  el.innerHTML=`
+    <line x1="${PAD.l}" y1="${PAD.t}" x2="${PAD.l}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
+    <line x1="${PAD.l}" y1="${H-PAD.b}" x2="${W-PAD.r}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
+    ${dateLabels}
+    <polyline points="${pts1}" fill="none" stroke="${color1}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="${pts2}" fill="none" stroke="${color2}" stroke-width="2" stroke-dasharray="6,3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${lastX.toFixed(1)}" cy="${py(vals1[vals1.length-1]).toFixed(1)}" r="4" fill="${color1}"/>
+    <circle cx="${lastX.toFixed(1)}" cy="${py(vals2[vals2.length-1]).toFixed(1)}" r="4" fill="${color2}"/>
+    <rect x="${PAD.l}" y="${H-PAD.b+20}" width="14" height="3" fill="${color1}" rx="1"/>
+    <text x="${PAD.l+18}" y="${H-PAD.b+24}" class="sal" fill="${color1}">${lbl1}</text>
+    <line x1="${PAD.l+90}" y1="${H-PAD.b+21}" x2="${PAD.l+104}" y2="${H-PAD.b+21}" stroke="${color2}" stroke-width="2" stroke-dasharray="4,2"/>
+    <text x="${PAD.l+108}" y="${H-PAD.b+24}" class="sal" fill="${color2}">${lbl2}</text>
+  `;
+}
+
+// ── INIT ──
+renderMetrics();
 </script>
 </body>
 </html>
