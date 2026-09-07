@@ -40,6 +40,12 @@ body{min-height:100vh}
 .sl:first-child{margin-top:0}
 .card{background:var(--s);border-radius:var(--r);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcard2{background:var(--s);border-radius:var(--r);padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.pcard2 .pv{font-size:19px;font-weight:900;color:var(--ua);line-height:1;margin-bottom:4px;letter-spacing:-.3px}
+.pcard2 .pl{font-family:var(--fm);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--t4);font-weight:600}
+.pcard3{background:var(--s2);border-radius:8px;padding:10px}
+.pcard3 .pv{font-size:16px;font-weight:900;color:var(--ua);line-height:1;margin-bottom:3px;letter-spacing:-.2px}
+.pcard3 .pl{font-family:var(--fm);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--t4);font-weight:600}
 .sv{font-size:30px;font-weight:900;color:var(--ua);line-height:1;margin-bottom:5px;letter-spacing:-.5px}
 .sv.b{color:var(--ua)}
 .slbl{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);font-weight:600}
@@ -199,7 +205,7 @@ body{min-height:100vh}
 <!-- HEADER -->
 <header class="hdr">
   <div class="hdr-l">
-    <img src="https://imirvine77.github.io/Ian-dashboard/united-logo.png" class="hdr-logo" alt="United"/>
+    <img src="https://imirvine77.github.io/Ian-dashboard/unitedlogo.png" class="hdr-logo" alt="United"/>
     <span class="hdr-title">Dashboard <span>/ Ian Irvine</span></span>
   </div>
   <span class="hdr-zulu" id="zulu">----Z</span>
@@ -209,6 +215,7 @@ body{min-height:100vh}
 <nav class="nav">
   <button class="nt on" onclick="showTab('metrics',this)">METRICS</button>
   <button class="nt" onclick="showTab('crew',this);renderCrew()">CREW NOTES</button>
+  <button class="nt" onclick="showTab('pay',this);renderPay()">PAY</button>
   <button class="nt" onclick="showTab('seniority',this);renderSeniority()">SENIORITY</button>
   <button class="nt" onclick="showTab('logbook',this);renderSP()">LOGBOOK</button>
 </nav>
@@ -276,6 +283,24 @@ body{min-height:100vh}
     <button class="cn-role-btn" data-role="avoid" onclick="setCnRole('avoid',this)">⚠ Avoid</button>
   </div>
   <div id="cn-list"><div class="empty">Import your spreadsheet to see crew notes</div></div>
+</div>
+
+<!-- TAB: PAY -->
+<div class="tab" id="tab-pay">
+  <div class="sl" style="margin-top:0">All time 787 monthly averages</div>
+  <div class="g2" id="pay-alltime-cards" style="margin-bottom:20px"><div class="empty">Use Import XLSX on the Metrics tab to load Pay Stats data</div></div>
+
+  <div class="sl">All time trend graphs</div>
+  <div id="pay-alltime-charts"></div>
+
+  <div class="sl">Monthly averages by year</div>
+  <div id="pay-year-cards"></div>
+
+  <div class="sl" style="margin-top:24px">Data</div>
+  <div style="font-family:var(--fm);font-size:12px;color:var(--t4);margin-bottom:10px">Pay data updates automatically when you use "Import XLSX" on the Metrics tab, as long as your exported spreadsheet includes a sheet named exactly "Pay Stats."</div>
+  <div class="abar">
+    <button class="btn btn-d" onclick="clearPay()">✕ Clear Pay Data</button>
+  </div>
 </div>
 
 <!-- TAB: LOGBOOK -->
@@ -365,9 +390,11 @@ function showTab(id,btn){
   btn.classList.add('on');
 }
 
-const LS='ianLogbook_v3',FNK='ianFieldNotes_v1',SPK='ianScratchpad_v1',SNK='ianSeniority_v1';
+const LS='ianLogbook_v3',FNK='ianFieldNotes_v1',SPK='ianScratchpad_v1',SNK='ianSeniority_v1',PYK='ianPay_v1';
 const load=()=>{try{return JSON.parse(localStorage.getItem(LS))||[];}catch{return[];}};
 const store=d=>localStorage.setItem(LS,JSON.stringify(d));
+const loadPay=()=>{try{return JSON.parse(localStorage.getItem(PYK))||[];}catch{return[];}};
+const storePay=d=>localStorage.setItem(PYK,JSON.stringify(d));
 const loadFN=()=>{try{return JSON.parse(localStorage.getItem(FNK))||{};}catch{return{};}};
 const storeFN=d=>localStorage.setItem(FNK,JSON.stringify(d));
 const loadSPD=()=>{try{return JSON.parse(localStorage.getItem(SPK))||[];}catch{return[];}};
@@ -430,6 +457,40 @@ const sum=arr=>arr.reduce((a,b)=>a+b,0);
 const avg=arr=>arr.length?Math.round(sum(arr)/arr.length):0;
 const containsAvoid=t=>/avoid/i.test(t.replace(/[^a-zA-Z0-9]/g,' '));
 const MY_NAMES=new Set(['ian irvine','irvine']);
+
+function parseDurationToMin(s){
+  s=String(s||'').trim();
+  if(!s)return 0;
+  const neg=s.trim().startsWith('-')?-1:1;
+  const d=s.match(/(\d+)\s*d/i),h=s.match(/(\d+)\s*h/i),m=s.match(/(\d+)\s*m/i);
+  let total=0;
+  if(d)total+=parseInt(d[1])*1440;
+  if(h)total+=parseInt(h[1])*60;
+  if(m)total+=parseInt(m[1]);
+  return total*neg;
+}
+function minToHM(mins){
+  const neg=mins<0?'-':'';mins=Math.round(Math.abs(mins));
+  return `${neg}${Math.floor(mins/60)}h ${mins%60}m`;
+}
+function minToDHM(mins){
+  const neg=mins<0?'-':'';mins=Math.round(Math.abs(mins));
+  const d=Math.floor(mins/1440),h=Math.floor((mins%1440)/60),m=mins%60;
+  return `${neg}${d}d ${h}h ${m}m`;
+}
+function parseCurrency(s){
+  return parseFloat(String(s||'').replace(/[$,]/g,''))||0;
+}
+function findExactCol(hdr,name){
+  const t=name.trim().toLowerCase();
+  return hdr.findIndex(h=>String(h).trim().toLowerCase()===t);
+}
+const MONTH_NAMES=['january','february','march','april','may','june','july','august','september','october','november','december'];
+function monthIndex(s){
+  const i=MONTH_NAMES.indexOf(String(s||'').trim().toLowerCase());
+  return i===-1?null:i+1;
+}
+function isYearRow(s){return /^(19|20)\d{2}$/.test(String(s||'').trim());}
 
 function renderMetrics(){
   const data=load();
@@ -501,7 +562,7 @@ function renderMetrics(){
       const large=slice>Math.PI?1:0;
       svg.innerHTML+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R},0,${large},1,${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${r},${r},0,${large},0,${x4.toFixed(2)},${y4.toFixed(2)} Z" fill="${color}" stroke="#fff" stroke-width="1"/>`;
       slices.push({iata,cnt,midAngle:angle+slice/2,pct:cnt/dtotal,color,arcLen:slice*((R+r)/2)});
-      const FLAGS={HND:'🇯🇵',NRT:'🇯🇵',HKG:'🇭🇰',PVG:'🇨🇳',PEK:'🇨🇳',SYD:'🇦🇺',MEL:'🇦🇺',LHR:'🇬🇧',BKK:'🇹🇭',SGN:'🇻🇳',AKL:'🇳🇿',BRU:'🇧🇪',ICN:'🇰🇷',SIN:'🇸🇬',DXB:'🇦🇪',CDG:'🇫🇷',AMS:'🇳🇱',FCO:'🇮🇹',LAX:'🇺🇸',SFO:'🇺🇸'};
+      const FLAGS={HND:'🇯🇵',NRT:'🇯🇵',HKG:'🇭🇰',PVG:'🇨🇳',PEK:'🇨🇳',SYD:'🇦🇺',MEL:'🇦🇺',BNE:'🇦🇺',LHR:'🇬🇧',BKK:'🇹🇭',SGN:'🇻🇳',AKL:'🇳🇿',BRU:'🇧🇪',ICN:'🇰🇷',SIN:'🇸🇬',DXB:'🇦🇪',CDG:'🇫🇷',AMS:'🇳🇱',FCO:'🇮🇹',LAX:'🇺🇸',SFO:'🇺🇸'};
       const flag=FLAGS[iata]||'';
       leg.innerHTML+=`<div class="dl-row"><div class="dl-dot" style="background:${color}"></div><span class="dl-iata">${iata}</span><span style="font-size:14px;margin-right:2px">${flag}</span><span class="dl-val">${cnt} · ${Math.round(cnt/dtotal*100)}%</span></div>`;
       angle+=slice+GAP;
@@ -616,12 +677,99 @@ function importXLSX(input){
         }
         if(senData.length){saveSen(senData);}
       }
+      const payMsg=importPaySheet(wb);
+      if(payMsg)alert(payMsg);
       renderMetrics();
       renderSeniority();
+      renderPay();
       input.value='';
     }catch(err){alert('Import failed: '+err.message);console.error(err);}
   };
   reader.readAsBinaryString(file);
+}
+
+function dayFracToMin(v){
+  const n=typeof v==='number'?v:parseFloat(v);
+  return isFinite(n)?Math.round(n*1440):0;
+}
+function toNum(v){
+  return typeof v==='number'?v:parseCurrency(v);
+}
+function labelYearOrMonth(v){
+  if(typeof v==='number'){
+    if(Number.isInteger(v)&&v>=1900&&v<=2099)return{year:v};
+    try{
+      const d=XLSX.SSF.parse_date_code(v);
+      if(d&&d.m)return{month:d.m};
+    }catch(e){}
+    return null;
+  }
+  const s=String(v||'').trim();
+  if(isYearRow(s))return{year:parseInt(s)};
+  const mi=monthIndex(s);
+  if(mi)return{month:mi};
+  return null;
+}
+
+function importPaySheet(wb){
+  const sheetName=wb.SheetNames.find(n=>n.trim().toLowerCase()==='pay stats');
+  if(!sheetName)return null;
+  const ws=wb.Sheets[sheetName];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  let hdrRowIdx=-1;
+  for(let i=0;i<rows.length;i++){
+    const cells=rows[i].map(c=>String(c).trim().toLowerCase());
+    if(cells.includes('block')&&cells.includes('pay time')&&cells.includes('gross')){hdrRowIdx=i;break;}
+  }
+  if(hdrRowIdx===-1)return 'Found a "Pay Stats" sheet but could not locate its column headers (looking for Block / Pay Time / Gross).';
+  const hdr=rows[hdrRowIdx].map(h=>String(h).trim());
+  const idx={
+    block:findExactCol(hdr,'Block'),payTime:findExactCol(hdr,'Pay Time'),
+    pay:findExactCol(hdr,'Pay $'),awayHrs:findExactCol(hdr,'Away Hrs'),
+    daysOff:findExactCol(hdr,'Days Off'),addPay:findExactCol(hdr,'Add Pay'),
+    legOvers:findExactCol(hdr,'Leg Overs'),gross:findExactCol(hdr,'Gross'),
+    grossBlockHr:findExactCol(hdr,'Gross/Block Hr'),grossAwayDay:findExactCol(hdr,'Gross/Away Day'),
+    perDiem:findExactCol(hdr,'Per Diem')
+  };
+  let curYear=null;
+  const parsed=[];
+  for(let i=hdrRowIdx+1;i<rows.length;i++){
+    const r=rows[i];
+    let labelResult=null;
+    for(let c=0;c<4;c++){
+      const res=labelYearOrMonth(r[c]);
+      if(res){labelResult=res;break;}
+    }
+    if(!labelResult)continue;
+    if(labelResult.year){curYear=labelResult.year;continue;}
+    if(labelResult.month&&curYear){
+      const rec={
+        year:curYear,month:labelResult.month,
+        blockMin:dayFracToMin(r[idx.block]),
+        payTimeMin:dayFracToMin(r[idx.payTime]),
+        pay:toNum(r[idx.pay]),
+        awayMin:dayFracToMin(r[idx.awayHrs]),
+        daysOff:toNum(r[idx.daysOff]),
+        addPay:toNum(r[idx.addPay]),
+        legOverMin:dayFracToMin(r[idx.legOvers]),
+        gross:toNum(r[idx.gross]),
+        grossBlockHr:toNum(r[idx.grossBlockHr]),
+        grossAwayDay:toNum(r[idx.grossAwayDay]),
+        perDiem:toNum(r[idx.perDiem])
+      };
+      const allZero=['blockMin','payTimeMin','pay','awayMin','daysOff','addPay','legOverMin','gross','grossBlockHr','grossAwayDay','perDiem'].every(k=>!rec[k]);
+      if(!allZero)parsed.push(rec);
+    }
+  }
+  if(!parsed.length)return 'Found a "Pay Stats" sheet but no monthly rows under a recognized year.';
+  const existing=loadPay();
+  const eKeys=new Set(existing.map(p=>p.year+'-'+p.month));
+  const newOnes=parsed.filter(p=>!eKeys.has(p.year+'-'+p.month));
+  storePay([...existing,...newOnes]);
+  let msg=`Pay Stats: imported ${newOnes.length} month${newOnes.length!==1?'s':''}.`;
+  const dupes=parsed.length-newOnes.length;
+  if(dupes>0)msg+=` ${dupes} skipped (already imported).`;
+  return msg;
 }
 
 function exportXLSX(){
@@ -632,6 +780,143 @@ function exportXLSX(){
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Logbook',ws);
   XLSX.writeFile(wb,'IanLogbook_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function clearPay(){
+  if(!confirm('Clear ALL pay data?'))return;
+  storePay([]);renderPay();
+}
+
+const PAY_METRICS=[
+  {key:'blockMin',label:'Avg Block',type:'duration',color:'#0033A0'},
+  {key:'payTimeMin',label:'Avg Pay Time',type:'duration',color:'#2e7d32'},
+  {key:'pay',label:'Avg Pay',type:'currency',color:'#f57f17'},
+  {key:'awayMin',label:'Avg Away',type:'durationD',color:'#0033A0'},
+  {key:'daysOff',label:'Avg Days Off',type:'plain1',color:'#2e7d32'},
+  {key:'addPay',label:'Avg Add Pay',type:'currency',color:'#f57f17'},
+  {key:'legOverMin',label:'Avg Leg Overs',type:'duration',color:'#0033A0'},
+  {key:'gross',label:'Avg Gross',type:'currency',color:'#2e7d32'},
+  {key:'grossBlockHr',label:'Avg Gross/Blk Hr',type:'currency',color:'#f57f17'},
+  {key:'grossAwayDay',label:'Avg Gross/Away Day',type:'currency',color:'#0033A0'},
+  {key:'perDiem',label:'Avg Per Diem',type:'currency',color:'#2e7d32'}
+];
+function fmtPayMetric(val,type){
+  if(type==='duration')return minToHM(val);
+  if(type==='durationD')return minToDHM(val);
+  if(type==='currency')return '$'+Math.round(val).toLocaleString();
+  if(type==='plain1')return val.toFixed(1);
+  return String(val);
+}
+function avgRaw(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
+const PAY_787_START={year:2023,month:12};
+function isPay787(d){return d.year>PAY_787_START.year||(d.year===PAY_787_START.year&&d.month>=PAY_787_START.month);}
+function fmtDaysHours(mins){
+  mins=Math.round(mins);
+  const neg=mins<0?'-':'';mins=Math.abs(mins);
+  return `${neg}${Math.floor(mins/1440)}d ${Math.floor((mins%1440)/60)}h`;
+}
+function linRegress(vals){
+  const n=vals.length;
+  const xMean=(n-1)/2;
+  const yMean=vals.reduce((a,b)=>a+b,0)/n;
+  let num=0,den=0;
+  for(let i=0;i<n;i++){num+=(i-xMean)*(vals[i]-yMean);den+=(i-xMean)*(i-xMean);}
+  const slope=den?num/den:0;
+  const intercept=yMean-slope*xMean;
+  return{slope,intercept};
+}
+
+function renderPay(){
+  const data=loadPay();
+  const atEl=document.getElementById('pay-alltime-cards');
+  const chartsEl=document.getElementById('pay-alltime-charts');
+  const yearEl=document.getElementById('pay-year-cards');
+  if(!atEl)return;
+  if(!data.length){
+    atEl.innerHTML='<div class="empty">Use Import XLSX on the Metrics tab to load Pay Stats data</div>';
+    chartsEl.innerHTML='';yearEl.innerHTML='';
+    return;
+  }
+  const sorted=[...data].sort((a,b)=>a.year-b.year||a.month-b.month);
+  const all787=sorted.filter(isPay787);
+
+  if(!all787.length){
+    atEl.innerHTML='<div class="empty">No Pay Stats months from Dec 2023 onward yet</div>';
+  }else{
+    atEl.innerHTML=PAY_METRICS.map(m=>{
+      const val=avgRaw(all787.map(d=>d[m.key]));
+      return `<div class="pcard2"><div class="pv">${fmtPayMetric(val,m.type)}</div><div class="pl">${m.label}</div></div>`;
+    }).join('');
+  }
+
+  chartsEl.innerHTML='';
+  let lastYear=null;
+  const chartLabels=sorted.map(d=>{
+    const isNew=d.year!==lastYear;
+    if(isNew)lastYear=d.year;
+    return isNew?String(d.year):'';
+  });
+  PAY_METRICS.filter(m=>m.key!=='legOverMin').forEach(m=>{
+    const wrap=document.createElement('div');
+    wrap.className='sen-chart';
+    wrap.innerHTML=`<div class="sen-chart-title">${m.label} — full history</div><svg style="width:100%;overflow:visible"></svg>`;
+    chartsEl.appendChild(wrap);
+    const svg=wrap.querySelector('svg');
+    const chartData=sorted.map((d,i)=>({v:d[m.key],label:chartLabels[i]}));
+    drawPayLineChart(svg,chartData,m.color,m.type);
+  });
+
+  const byYear={};
+  sorted.forEach(d=>{(byYear[d.year]=byYear[d.year]||[]).push(d);});
+  const years=Object.keys(byYear).map(Number).sort((a,b)=>b-a);
+  yearEl.innerHTML='';
+  years.forEach((yr,yi)=>{
+    const monthsArr=byYear[yr];
+    const cardsHtml=PAY_METRICS.map(m=>{
+      const val=avgRaw(monthsArr.map(d=>d[m.key]));
+      return `<div class="pcard3"><div class="pv">${fmtPayMetric(val,m.type)}</div><div class="pl">${m.label}</div></div>`;
+    }).join('');
+    const block=document.createElement('div');
+    block.className='lyb';
+    block.innerHTML=`<div class="lyh" onclick="toggleLY(this)"><span class="lyl">${yr}</span><span class="lyc">${monthsArr.length} month${monthsArr.length!==1?'s':''}</span><span class="lychv${yi===0?' open':''}">▼</span></div><div style="display:${yi===0?'block':'none'};padding:14px 16px"><div class="g2">${cardsHtml}</div></div>`;
+    yearEl.appendChild(block);
+  });
+}
+
+function drawPayLineChart(el,data,color,type){
+  const W=340,H=160,PAD={l:56,r:28,t:20,b:32};
+  const vals=data.map(d=>d.v);
+  const n=vals.length;
+  const {slope,intercept}=linRegress(vals);
+  const trendStart=intercept,trendEnd=slope*(n-1)+intercept;
+  const minV=Math.min(...vals,trendStart,trendEnd),maxV=Math.max(...vals,trendStart,trendEnd);
+  const range=(maxV-minV)||1;
+  const px=i=>PAD.l+(i/(n-1||1))*(W-PAD.l-PAD.r);
+  const py=v=>PAD.t+((maxV-v)/range)*(H-PAD.t-PAD.b);
+  const pts=vals.map((v,i)=>`${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+  const apts=`${pts} ${px(n-1).toFixed(1)},${H-PAD.b} ${px(0).toFixed(1)},${H-PAD.b}`;
+  const trendPts=`${px(0).toFixed(1)},${py(trendStart).toFixed(1)} ${px(n-1).toFixed(1)},${py(trendEnd).toFixed(1)}`;
+  let labeledIdxs=[];
+  data.forEach((d,i)=>{if(d.label)labeledIdxs.push(i);});
+  if(labeledIdxs.length>8){
+    const step=Math.ceil(labeledIdxs.length/8);
+    labeledIdxs=labeledIdxs.filter((_,k)=>k%step===0);
+  }
+  const dateLabels=labeledIdxs.map(i=>`<text x="${px(i).toFixed(1)}" y="${H-PAD.b+14}" text-anchor="${i===0?'start':i===n-1?'end':'middle'}" class="sal">${data[i].label}</text>`).join('');
+  const fmtTick=v=>type==='durationD'?fmtDaysHours(v):Math.round(v).toLocaleString();
+  const midV=(minV+maxV)/2;
+  const yAxis=`
+    <line x1="${PAD.l}" y1="${PAD.t}" x2="${PAD.l}" y2="${H-PAD.b}" stroke="var(--b)" stroke-width="1"/>
+    <text x="${PAD.l-5}" y="${py(maxV).toFixed(1)}" text-anchor="end" dominant-baseline="middle" class="sal">${fmtTick(maxV)}</text>
+    <text x="${PAD.l-5}" y="${py(midV).toFixed(1)}" text-anchor="end" dominant-baseline="middle" class="sal">${fmtTick(midV)}</text>
+    <text x="${PAD.l-5}" y="${py(minV).toFixed(1)}" text-anchor="end" dominant-baseline="middle" class="sal">${fmtTick(minV)}</text>
+    <line x1="${PAD.l}" y1="${py(midV).toFixed(1)}" x2="${W-PAD.r}" y2="${py(midV).toFixed(1)}" stroke="var(--b2)" stroke-width="1" stroke-dasharray="4,3"/>`;
+  const lastIdx=n-1;
+  const lx=px(lastIdx),ly=py(vals[lastIdx]);
+  const lastValText=fmtTick(vals[lastIdx]);
+  const lastLabel=`<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="${color}" stroke="#fff" stroke-width="1.5"/><text x="${(lx-8).toFixed(1)}" y="${(ly-11).toFixed(1)}" text-anchor="end" font-size="15" font-weight="700" fill="${color}" font-family="var(--fm)">${lastValText}</text>`;
+  el.setAttribute('viewBox',`0 0 ${W} ${H-PAD.b+24}`);
+  el.innerHTML=`${yAxis}<line x1="${PAD.l}" y1="${H-PAD.b}" x2="${W-PAD.r}" y2="${H-PAD.b}" stroke="var(--b)" stroke-width="1"/>${dateLabels}<polygon points="${apts}" fill="${color}" fill-opacity="0.08"/><polyline points="${trendPts}" fill="none" stroke="#9a9890" stroke-width="1.5" stroke-dasharray="5,4"/><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${lastLabel}`;
 }
 
 function clearAll(){
@@ -649,24 +934,45 @@ function setCnRole(role,btn){
 
 function renderCrew(){
   const data=load();
-  const caMap={};
+  const caMap={},foMap={};
   data.forEach(trip=>{
     (trip.legs||[]).forEach(l=>{
       if(acType(l.aircraft||'')!=='787')return;
-      const name=(l.ca||'').trim();
-      if(!name||MY_NAMES.has(name.toLowerCase()))return;
-      const key=name.toLowerCase();
-      if(!caMap[key])caMap[key]={name,legs:0,lastDate:''};
-      caMap[key].legs++;
-      if(!caMap[key].lastDate||parseDate(l.date)>parseDate(caMap[key].lastDate))caMap[key].lastDate=l.date;
+      const caName=(l.ca||'').trim();
+      if(caName&&!MY_NAMES.has(caName.toLowerCase())){
+        const key=caName.toLowerCase();
+        if(!caMap[key])caMap[key]={name:caName,legs:0,lastDate:''};
+        caMap[key].legs++;
+        if(!caMap[key].lastDate||parseDate(l.date)>parseDate(caMap[key].lastDate))caMap[key].lastDate=l.date;
+      }
+      const foName=(l.fo||'').trim();
+      if(foName&&!MY_NAMES.has(foName.toLowerCase())){
+        const key=foName.toLowerCase();
+        if(!foMap[key])foMap[key]={name:foName,legs:0,lastDate:''};
+        foMap[key].legs++;
+        if(!foMap[key].lastDate||parseDate(l.date)>parseDate(foMap[key].lastDate))foMap[key].lastDate=l.date;
+      }
     });
   });
-  const topCA=Object.values(caMap).sort((a,b)=>b.legs-a.legs)[0];
+  const caSorted=Object.values(caMap).sort((a,b)=>b.legs-a.legs);
+  const topCA=caSorted[0];
+  const caTieCount=topCA?caSorted.filter(f=>f.legs===topCA.legs).length:0;
+  const foSorted=Object.values(foMap).sort((a,b)=>b.legs-a.legs);
+  const topFO=foSorted[0];
+  const foTieCount=topFO?foSorted.filter(f=>f.legs===topFO.legs).length:0;
   const topCAEl=document.getElementById('cn-top-ca');
   if(topCAEl){
-    topCAEl.innerHTML=topCA
-      ?`<div class="cn-card" style="border-left:4px solid var(--blu,#0033A0)"><div class="cn-hdr"><span class="cn-name">CA ${topCA.name}</span><span class="cn-meta">Most legs flown · Last: ${fmtDisp(topCA.lastDate)}</span></div></div>`
+    const caCard=topCA
+      ?(caTieCount>1
+        ?`<div class="cn-card" style="border-left:4px solid var(--blu,#0033A0)"><div class="cn-hdr"><span class="cn-name">CA: ${caTieCount} pilots tied with ${topCA.legs} legs flown</span></div></div>`
+        :`<div class="cn-card" style="border-left:4px solid var(--blu,#0033A0)"><div class="cn-hdr"><span class="cn-name">CA ${topCA.name}</span><span class="cn-meta">Most legs flown: ${topCA.legs}<br/>Last: ${fmtDisp(topCA.lastDate)}</span></div></div>`)
       :'';
+    const foCard=topFO
+      ?(foTieCount>1
+        ?`<div class="cn-card" style="border-left:4px solid var(--amb,#f57f17)"><div class="cn-hdr"><span class="cn-name">FO: ${foTieCount} pilots tied with ${topFO.legs} legs flown</span></div></div>`
+        :`<div class="cn-card" style="border-left:4px solid var(--amb,#f57f17)"><div class="cn-hdr"><span class="cn-name">FO ${topFO.name}</span><span class="cn-meta">Most legs flown: ${topFO.legs}<br/>Last: ${fmtDisp(topFO.lastDate)}</span></div></div>`)
+      :'';
+    topCAEl.innerHTML=(caCard||foCard)?`<div style="display:flex;gap:10px">${caCard?`<div style="flex:1;min-width:0">${caCard}</div>`:''}${foCard?`<div style="flex:1;min-width:0">${foCard}</div>`:''}</div>`:'';
   }
   const search=(document.getElementById('cn-search')?.value||'').toLowerCase();
   const today=new Date();today.setHours(0,0,0,0);
