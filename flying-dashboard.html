@@ -226,22 +226,22 @@ body{min-height:100vh}
   <div class="sl">Top 787 destinations</div>
   <div id="m-dests">
     <div class="wrap-donut">
-      <svg id="m-dests-svg" viewBox="0 0 130 130" style="flex:1;min-width:0;height:auto;max-height:220px"></svg>
+      <svg id="m-dests-svg" viewBox="0 0 130 130" style="flex:1;min-width:0;height:auto;max-height:220px;aspect-ratio:1/1"></svg>
       <div id="m-dests-legend" class="donut-legend"></div>
     </div>
   </div>
   <div class="sl">Block Hours by Calendar Year</div>
   <div id="m-years-bars"><div class="empty">Import your spreadsheet to see data</div></div>
-  <div class="sl">Flight extremes</div>
+  <div class="sl">787 flight extremes</div>
   <div class="eg" style="margin-bottom:20px">
     <div class="ec" style="border-top:3px solid var(--red)">
-      <div class="el" style="color:var(--red)">Longest</div>
+      <div class="el" style="color:var(--red)">Longest Block</div>
       <div class="ev" id="m-long-hrs">—</div>
       <div class="er" id="m-long-route">—</div>
       <div class="ed" id="m-long-date"></div>
     </div>
     <div class="ec" style="border-top:3px solid var(--grn)">
-      <div class="el" style="color:var(--grn)">Shortest</div>
+      <div class="el" style="color:var(--grn)">Shortest Block</div>
       <div class="ev" id="m-short-hrs">—</div>
       <div class="er" id="m-short-route">—</div>
       <div class="ed" id="m-short-date"></div>
@@ -264,6 +264,7 @@ body{min-height:100vh}
 
 <!-- TAB: CREW NOTES -->
 <div class="tab" id="tab-crew">
+  <div id="cn-top-ca" style="margin-bottom:12px"></div>
   <input class="inp" id="cn-search" placeholder="Search by name or keyword…" oninput="renderCrew()" style="margin-bottom:12px"/>
   <div class="abar" style="margin-bottom:14px">
     <button class="cn-role-btn on" data-role="all" onclick="setCnRole('all',this)">All</button>
@@ -439,15 +440,22 @@ function renderMetrics(){
     const type=acType(l.aircraft||'');
     if(type==='787'){b787.push(bm);if(l.sob)sob787.push(+l.sob||0);}
     if(type==='737')b737.push(bm);
-    const arr=(l.arr||'').toUpperCase();
-    if(arr&&!BASE.has(arr)&&type==='787')destCount[arr]=(destCount[arr]||0)+1;
     const yr=yearOf(l.date);
     if(yr)yearBlock[yr]=(yearBlock[yr]||0)+bm;
-    if(bm){
+    if(bm&&type==='787'){
       if(!longest||bm>parseMins(longest.block))longest=l;
       if(!shortest||bm<parseMins(shortest.block))shortest=l;
     }
     if(l.landed&&type==='787')landLegs.push(l);
+  });
+  data.forEach(p=>{
+    const seen=new Set();
+    (p.legs||[]).forEach(l=>{
+      const type=acType(l.aircraft||'');
+      const arr=(l.arr||'').toUpperCase();
+      if(arr&&!BASE.has(arr)&&type==='787')seen.add(arr);
+    });
+    seen.forEach(a=>{destCount[a]=(destCount[a]||0)+1;});
   });
   const tBlock=sum(b787)+sum(b737);
   setText('m-total-block',toDecimal(tBlock));
@@ -481,25 +489,25 @@ function renderMetrics(){
     svg.innerHTML='';leg.innerHTML='';
     svg.innerHTML+=`<text x="${CX}" y="${CY+7}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="20" font-weight="900" fill="#0033A0">${dtotal}</text><text x="${CX}" y="${CY+18}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="7" fill="#999" letter-spacing="0.5">FLIGHTS</text>`;
     const n=dests.length;
+    const PALETTE=['#0B2E6B','#1450A6','#1C74D6','#1FA3C9','#3FBF95','#8FC93A','#E8B93A','#E8792E','#D3455B','#8E4B9E'];
     let angle=-Math.PI/2;
     const slices=[];
     dests.forEach(([iata,cnt],i)=>{
       const slice=(cnt/dtotal)*Math.PI*2-GAP;
-      const t=i/(n-1||1);
-      const rc=Math.round(0+t*153),gc=Math.round(51+t*133),bc=Math.round(160+t*64);
-      const color=`rgb(${rc},${gc},${bc})`;
+      const color=PALETTE[i%PALETTE.length];
       const [x1,y1]=polar(angle,R),[x2,y2]=polar(angle+slice,R);
       const [x3,y3]=polar(angle+slice,r),[x4,y4]=polar(angle,r);
       const large=slice>Math.PI?1:0;
-      svg.innerHTML+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R},0,${large},1,${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${r},${r},0,${large},0,${x4.toFixed(2)},${y4.toFixed(2)} Z" fill="${color}"/>`;
-      slices.push({iata,cnt,midAngle:angle+slice/2,pct:cnt/dtotal,color});
+      svg.innerHTML+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R},0,${large},1,${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${r},${r},0,${large},0,${x4.toFixed(2)},${y4.toFixed(2)} Z" fill="${color}" stroke="#fff" stroke-width="1"/>`;
+      slices.push({iata,cnt,midAngle:angle+slice/2,pct:cnt/dtotal,color,arcLen:slice*((R+r)/2)});
       const FLAGS={HND:'🇯🇵',NRT:'🇯🇵',HKG:'🇭🇰',PVG:'🇨🇳',PEK:'🇨🇳',SYD:'🇦🇺',MEL:'🇦🇺',LHR:'🇬🇧',BKK:'🇹🇭',SGN:'🇻🇳',AKL:'🇳🇿',BRU:'🇧🇪',ICN:'🇰🇷',SIN:'🇸🇬',DXB:'🇦🇪',CDG:'🇫🇷',AMS:'🇳🇱',FCO:'🇮🇹',LAX:'🇺🇸',SFO:'🇺🇸'};
       const flag=FLAGS[iata]||'';
       leg.innerHTML+=`<div class="dl-row"><div class="dl-dot" style="background:${color}"></div><span class="dl-iata">${iata}</span><span style="font-size:14px;margin-right:2px">${flag}</span><span class="dl-val">${cnt} · ${Math.round(cnt/dtotal*100)}%</span></div>`;
       angle+=slice+GAP;
     });
-    slices.forEach(({iata,pct,midAngle})=>{
-      if(pct>=0.08){
+    slices.forEach(({iata,pct,midAngle,arcLen})=>{
+      const needed=iata.length*4.2+3;
+      if(arcLen>=needed){
         const [lx,ly]=polar(midAngle,(R+r)/2);
         svg.innerHTML+=`<text x="${lx.toFixed(2)}" y="${(ly+2.5).toFixed(2)}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="7" font-weight="700" fill="#fff">${iata}</text>`;
       }
@@ -640,6 +648,25 @@ function setCnRole(role,btn){
 
 function renderCrew(){
   const data=load();
+  const caMap={};
+  data.forEach(trip=>{
+    (trip.legs||[]).forEach(l=>{
+      if(acType(l.aircraft||'')!=='787')return;
+      const name=(l.ca||'').trim();
+      if(!name||MY_NAMES.has(name.toLowerCase()))return;
+      const key=name.toLowerCase();
+      if(!caMap[key])caMap[key]={name,legs:0,lastDate:''};
+      caMap[key].legs++;
+      if(!caMap[key].lastDate||parseDate(l.date)>parseDate(caMap[key].lastDate))caMap[key].lastDate=l.date;
+    });
+  });
+  const topCA=Object.values(caMap).sort((a,b)=>b.legs-a.legs)[0];
+  const topCAEl=document.getElementById('cn-top-ca');
+  if(topCAEl){
+    topCAEl.innerHTML=topCA
+      ?`<div class="cn-card" style="border-left:4px solid var(--blu,#0033A0)"><div class="cn-hdr"><span class="cn-name">CA ${topCA.name}</span><span class="cn-meta">Most legs flown · Last: ${fmtDisp(topCA.lastDate)}</span></div></div>`
+      :'';
+  }
   const search=(document.getElementById('cn-search')?.value||'').toLowerCase();
   const today=new Date();today.setHours(0,0,0,0);
   const pm={};
@@ -790,7 +817,7 @@ function renderSeniority(){
 
 function drawLineChart(svgId,data,valFn,color){
   const el=document.getElementById(svgId);if(!el||!data.length)return;
-  const W=340,H=110,PAD={l:52,r:28,t:20,b:32};
+  const W=340,H=160,PAD={l:52,r:28,t:20,b:32};
   const vals=data.map(valFn);
   const minV=Math.min(...vals),maxV=Math.max(...vals);
   const range=maxV-minV||1;
@@ -816,15 +843,24 @@ function drawLineChart(svgId,data,valFn,color){
   const lastIdx=n-1;
   const labelSet=new Map();
   [[lastIdx,'current'],[maxIdx,'max'],[minIdx,'min']].forEach(([i,role])=>{if(!labelSet.has(i))labelSet.set(i,role);});
-  const dotLabels=[...labelSet.entries()].map(([i,role])=>{
+  const rawLabels=[...labelSet.entries()].map(([i,role])=>{
     const x=px(i),y=py(vals[i]),v=Math.round(vals[i]);
     const anchor=i===0?'start':i===lastIdx?'end':'middle';
-    const yOff=y<PAD.t+16?12:-9;
+    const baseOff=y<PAD.t+16?12:-9;
     const roleColor=role==='current'?color:role==='max'?'#c0392b':'#2e7d32';
+    return{i,x,y,v,anchor,roleColor,yOff:baseOff};
+  }).sort((a,b)=>a.x-b.x);
+  for(let k=1;k<rawLabels.length;k++){
+    const prev=rawLabels[k-1],cur=rawLabels[k];
+    if(Math.abs(cur.x-prev.x)<30&&Math.abs((cur.y+cur.yOff)-(prev.y+prev.yOff))<14){
+      cur.yOff+=cur.yOff>=0?14:-14;
+    }
+  }
+  const dotLabels=rawLabels.map(({x,y,v,anchor,roleColor,yOff})=>{
     return`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${roleColor}" stroke="#fff" stroke-width="1.5"/>
     <text x="${x.toFixed(1)}" y="${(y+yOff).toFixed(1)}" text-anchor="${anchor}" class="sal" fill="${roleColor}" font-weight="700">${v}</text>`;
   }).join('');
-  el.setAttribute('viewBox',`0 0 ${W} ${H+18}`);
+  el.setAttribute('viewBox',`0 0 ${W} ${H-PAD.b+24}`);
   el.innerHTML=`
     ${yAxis}
     <line x1="${PAD.l}" y1="${H-PAD.b}" x2="${W-PAD.r}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
@@ -837,7 +873,7 @@ function drawLineChart(svgId,data,valFn,color){
 
 function drawDualChart(svgId,data,vals1,vals2,color1,color2,lbl1,lbl2){
   const el=document.getElementById(svgId);if(!el||!data.length)return;
-  const W=340,H=110,PAD={l:44,r:28,t:20,b:44};
+  const W=340,H=160,PAD={l:44,r:28,t:20,b:44};
   const allV=[...vals1,...vals2];
   const minV=Math.min(...allV),maxV=Math.max(...allV);
   const range=maxV-minV||1;
@@ -873,7 +909,7 @@ function drawDualChart(svgId,data,vals1,vals2,color1,color2,lbl1,lbl2){
     <text x="${PAD.l+18}" y="${H-PAD.b+24}" class="sal" fill="${color1}">${lbl1}</text>
     <line x1="${PAD.l+90}" y1="${H-PAD.b+21}" x2="${PAD.l+104}" y2="${H-PAD.b+21}" stroke="${color2}" stroke-width="2" stroke-dasharray="4,2"/>
     <text x="${PAD.l+108}" y="${H-PAD.b+24}" class="sal" fill="${color2}">${lbl2}</text>`;
-  el.setAttribute('viewBox',`0 0 ${W} ${H+28}`);
+  el.setAttribute('viewBox',`0 0 ${W} ${H-PAD.b+40}`);
   el.innerHTML=`
     ${yAxis}
     <line x1="${PAD.l}" y1="${H-PAD.b}" x2="${W-PAD.r}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
