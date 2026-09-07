@@ -1,3 +1,4 @@
+<!-- Build: 2026-09-07 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,53 +22,43 @@
 }
 html{background:var(--bg);color:var(--t1);font-family:var(--f);font-size:16px}
 body{min-height:100vh}
-/* ── HEADER ── */
 .hdr{background:var(--ua);height:56px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .hdr-l{display:flex;align-items:center;gap:12px}
 .hdr-logo{height:34px;width:34px;border-radius:4px}
 .hdr-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px}
 .hdr-title span{color:rgba(255,255,255,.55);font-weight:400}
 .hdr-zulu{font-family:var(--fm);font-size:15px;color:rgba(255,255,255,.9);letter-spacing:.04em}
-/* ── NAV ── */
 .nav{background:#fff;border-bottom:2px solid var(--ua);padding:0 14px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
 .nt{font-family:var(--f);font-size:14px;font-weight:700;color:var(--t4);padding:13px 16px;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;flex-shrink:0;transition:color .15s}
 .nt:hover{color:var(--t2)}
 .nt.on{color:var(--ua);border-bottom-color:var(--ua)}
-/* ── TABS ── */
 .tab{display:none;padding:16px;max-width:860px;margin:0 auto}
 .tab.on{display:block}
-/* ── SECTION LABEL ── */
 .sl{font-family:var(--fm);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin:20px 0 12px;display:flex;align-items:center;gap:8px;font-weight:600}
 .sl::after{content:'';flex:1;height:1px;background:var(--b)}
 .sl:first-child{margin-top:0}
-/* ── CARDS ── */
 .card{background:var(--s);border-radius:var(--r);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-/* ── STAT ── */
 .sv{font-size:30px;font-weight:900;color:var(--ua);line-height:1;margin-bottom:5px;letter-spacing:-.5px}
 .sv.b{color:var(--ua)}
 .slbl{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);font-weight:600}
-/* ── BAR CHART ── */
 .br{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .bi{font-size:19px;font-weight:900;color:var(--t1);width:46px;letter-spacing:-.3px}
 .bt{flex:1;height:5px;background:var(--b);border-radius:3px}
 .bf{height:5px;background:var(--ua);border-radius:3px;transition:width .3s}
 .bn{font-size:15px;font-weight:700;color:var(--t3);width:28px;text-align:right}
-/* ── TABLES ── */
 .tbl{width:100%;border-collapse:collapse;font-size:15px}
 .tbl th{font-family:var(--fm);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);border-bottom:2px solid var(--b);padding:8px 10px;text-align:left}
 .tbl td{padding:10px 10px;border-bottom:1px solid var(--b2);color:var(--t2);font-weight:600}
 .tbl td.val{color:var(--ua);font-weight:700}
 .tbl tr:last-child td{border-bottom:none}
-/* ── EXTREMES ── */
 .eg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ec{background:var(--s);border-radius:var(--r);padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
 .el{font-family:var(--fm);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
 .ev{font-size:24px;font-weight:900;color:var(--t1);line-height:1;letter-spacing:-.3px}
 .er{font-size:15px;font-weight:700;color:var(--t3);margin-top:4px}
 .ed{font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:3px}
-/* ── LANDING LOG ── */
 .lyb{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
 .lyh{background:var(--s2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--b)}
 .lyh:hover{background:#e8e8ed}
@@ -81,7 +72,6 @@ body{min-height:100vh}
 .llt tr:last-child td{border-bottom:none}
 .llt .lnum{color:var(--ua);font-weight:700}
 .llt .larr{font-size:17px;font-weight:900;color:var(--t1)}
-/* ── BUTTONS ── */
 .btn{font-family:var(--f);font-size:14px;font-weight:700;padding:10px 18px;border-radius:9px;cursor:pointer;border:none;transition:all .15s}
 .btn-p{background:var(--ua);color:#fff}
 .btn-p:hover{background:var(--ua2)}
@@ -90,13 +80,10 @@ body{min-height:100vh}
 .btn-d{background:var(--s);color:var(--red);border:1px solid rgba(192,57,43,.25)}
 .btn-d:hover{background:rgba(192,57,43,.07)}
 .btn-x{background:var(--s);color:var(--amb);border:1px solid rgba(245,127,23,.3)}
-/* ── INPUTS ── */
 .inp{font-family:var(--f);font-size:15px;color:var(--t1);background:var(--s);border:1px solid var(--b);border-radius:9px;padding:10px 14px;outline:none;transition:border-color .15s;width:100%}
 .inp:focus{border-color:var(--ua)}
 .inp::placeholder{color:var(--t4)}
-/* ── ACTION BAR ── */
 .abar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-/* ── PCARD (trip cards in logbook) ── */
 .pcard{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .pcard-hdr{background:var(--s2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--b)}
 .pcard-route{font-size:18px;font-weight:900;color:var(--ua);letter-spacing:-.2px}
@@ -116,7 +103,6 @@ body{min-height:100vh}
 .legs-tbl td{font-size:14px;font-weight:600;color:var(--t2);padding:8px 12px;border-bottom:1px solid var(--b2)}
 .legs-tbl tr:last-child td{border-bottom:none}
 .iata{font-size:15px;font-weight:900;color:var(--t1)}
-/* ── SCRATCHPAD ── */
 .spcard{background:var(--s);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
 .spcard.complete{border-left:4px solid var(--grn);box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .spcard.partial{border-left:4px solid var(--amb);box-shadow:0 1px 3px rgba(0,0,0,.05)}
@@ -135,11 +121,9 @@ body{min-height:100vh}
 .sp-val.gold{color:var(--amb)}
 .sp-val.empty{color:var(--b);font-weight:400;font-size:14px}
 .sp-act{display:flex;gap:8px;padding:0 14px 12px;justify-content:flex-end}
-/* ── FORM PANEL ── */
 .form-panel{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .form-lbl{font-family:var(--fm);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);margin-bottom:4px;font-weight:600}
-/* ── CREW NOTES ── */
 .cn-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .cn-card.av{border-left:4px solid var(--red)}
 .cn-hdr{background:var(--s2);padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--b);flex-wrap:wrap}
@@ -169,7 +153,6 @@ body{min-height:100vh}
 .cn-role-btn[data-role="ca"].on{background:rgba(245,127,23,.1);color:var(--amb);border-color:rgba(245,127,23,.4)}
 .cn-role-btn[data-role="fo"].on{background:rgba(46,125,50,.1);color:var(--grn);border-color:rgba(46,125,50,.3)}
 .cn-role-btn[data-role="avoid"].on{background:rgba(192,57,43,.1);color:var(--red);border-color:var(--red)}
-/* ── FIELD NOTES ── */
 .fn-entry{background:rgba(245,127,23,.07);border-left:3px solid var(--amb);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px}
 .fn-badge{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--amb);border:1px solid rgba(245,127,23,.3);padding:2px 8px;border-radius:4px;margin-right:6px}
 .fn-date{font-family:var(--fm);font-size:12px;color:var(--t4)}
@@ -179,26 +162,20 @@ body{min-height:100vh}
 .fn-form textarea{width:100%;background:var(--s);border:1px solid var(--b);border-radius:8px;color:var(--t1);font-family:var(--f);font-size:15px;padding:10px 12px;resize:vertical;min-height:70px}
 .fn-form-act{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
 .add-note-btn{font-family:var(--fm);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--b);background:var(--s);color:var(--t4)}
-/* ── SENIORITY ── */
-.sen-chart{background:var(--s);border-radius:var(--r);padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:14px}
+.sen-chart{background:var(--s);border-radius:var(--r);padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:6px}
 .sen-chart-title{font-size:16px;font-weight:700;color:var(--t1);margin-bottom:3px}
-.sen-chart-sub{font-size:13px;color:var(--t4);margin-bottom:14px}
+.sen-chart-sub{font-size:13px;color:var(--t4);margin-bottom:10px}
 .sen-chart svg{width:100%;overflow:visible}
 .sal{font-family:var(--fm);font-size:11px;fill:var(--t4)}
-/* ── EMPTY STATE ── */
 .empty{font-family:var(--fm);font-size:13px;color:var(--t4);padding:32px 0;text-align:center;letter-spacing:.08em}
-/* ── EDIT/DEL BUTTONS ── */
 .eb{font-family:var(--fm);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;background:rgba(0,51,160,.07);color:var(--ua);border:1px solid rgba(0,51,160,.2)}
 .db{font-family:var(--fm);font-size:11px;padding:5px 11px;border-radius:6px;cursor:pointer;background:rgba(192,57,43,.07);color:var(--red);border:1px solid rgba(192,57,43,.2)}
-
-/* ── DONUT CHART ── */
 .wrap-donut{display:flex;align-items:center;gap:0}
 .donut-legend{display:flex;flex-direction:column;gap:6px;width:148px;flex-shrink:0;margin-left:auto}
 .dl-row{display:flex;align-items:center;gap:6px;min-width:0}
 .dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .dl-iata{font-size:13px;font-weight:900;color:var(--t1);width:30px;flex-shrink:0}
 .dl-val{font-size:12px;color:var(--t4);font-weight:600;white-space:nowrap}
-/* ── BAR CHART ── */
 .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .bar-row:last-child{margin-bottom:0}
 .bar-yr{font-size:14px;font-weight:700;color:var(--t1);width:34px;flex-shrink:0}
@@ -206,7 +183,6 @@ body{min-height:100vh}
 .bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
 .bar-lbl{font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
 .bar-lbl-out{font-size:12px;font-weight:700;white-space:nowrap;margin-left:6px}
-/* ── RESPONSIVE ── */
 @media(max-width:600px){
   .tab{padding:12px 10px}
   .hdr{padding:0 12px;height:52px}
@@ -223,7 +199,7 @@ body{min-height:100vh}
 <!-- HEADER -->
 <header class="hdr">
   <div class="hdr-l">
-    <img src="data:image/png;base64,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" class="hdr-logo" alt="United"/>
+    <img src="https://imirvine77.github.io/Ian-dashboard/united-logo.png" class="hdr-logo" alt="United"/>
     <span class="hdr-title">Dashboard <span>/ Ian Irvine</span></span>
   </div>
   <span class="hdr-zulu" id="zulu">----Z</span>
@@ -237,7 +213,7 @@ body{min-height:100vh}
   <button class="nt" onclick="showTab('logbook',this);renderSP()">LOGBOOK</button>
 </nav>
 
-<!-- ══ TAB: METRICS ══ -->
+<!-- TAB: METRICS -->
 <div class="tab on" id="tab-metrics">
   <div class="sl">Career totals</div>
   <div class="g2" style="margin-bottom:10px">
@@ -248,40 +224,35 @@ body{min-height:100vh}
     <div class="card" style="margin-top:0"><div class="sv" id="m-pairings">—</div><div class="slbl">Pairings</div></div>
     <div class="card" style="margin-top:0"><div class="sv" id="m-sob-787">—</div><div class="slbl">Avg SOB 787</div></div>
   </div>
-
   <div class="sl">Top 787 destinations</div>
   <div id="m-dests">
     <div class="wrap-donut">
-      <svg id="m-dests-svg" viewBox="0 0 130 130" style="flex:1;min-width:0;height:auto;max-height:220px"></svg>
+      <svg id="m-dests-svg" viewBox="0 0 130 130" style="flex:1;min-width:0;height:auto;max-height:220px;aspect-ratio:1/1"></svg>
       <div id="m-dests-legend" class="donut-legend"></div>
     </div>
   </div>
-
   <div class="sl">Block Hours by Calendar Year</div>
   <div id="m-years-bars"><div class="empty">Import your spreadsheet to see data</div></div>
-
-  <div class="sl">Flight extremes</div>
+  <div class="sl">787 flight extremes</div>
   <div class="eg" style="margin-bottom:20px">
     <div class="ec" style="border-top:3px solid var(--red)">
-      <div class="el" style="color:var(--red)">Longest</div>
+      <div class="el" style="color:var(--red)">Longest Block</div>
       <div class="ev" id="m-long-hrs">—</div>
       <div class="er" id="m-long-route">—</div>
       <div class="ed" id="m-long-date"></div>
     </div>
     <div class="ec" style="border-top:3px solid var(--grn)">
-      <div class="el" style="color:var(--grn)">Shortest</div>
+      <div class="el" style="color:var(--grn)">Shortest Block</div>
       <div class="ev" id="m-short-hrs">—</div>
       <div class="er" id="m-short-route">—</div>
       <div class="ed" id="m-short-date"></div>
     </div>
   </div>
-
   <div class="sl">787 landing log</div>
   <div style="margin-bottom:14px">
     <div class="card"><div class="sv b" id="m-land-total2">—</div><div class="slbl">Total 787 Landings</div></div>
   </div>
   <div id="m-land-log"></div>
-
   <div class="sl" style="margin-top:24px">Import / export</div>
   <div class="abar">
     <input type="file" id="import-file" accept=".xlsx,.xls" style="display:none" onchange="importXLSX(this)"/>
@@ -289,11 +260,12 @@ body{min-height:100vh}
     <button class="btn btn-x" onclick="exportXLSX()">↓ Export XLSX</button>
     <button class="btn btn-d" onclick="clearAll()">✕ Clear All</button>
   </div>
-  <div style="font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:6px">Build: 23 Jun 2026 · v1.18</div>
+  <div style="font-family:var(--fm);font-size:12px;color:var(--t4);margin-top:6px">Build: 29 Jun 2026 · v1.19</div>
 </div>
 
-<!-- ══ TAB: CREW NOTES ══ -->
+<!-- TAB: CREW NOTES -->
 <div class="tab" id="tab-crew">
+  <div id="cn-top-ca" style="margin-bottom:12px"></div>
   <input class="inp" id="cn-search" placeholder="Search by name or keyword…" oninput="renderCrew()" style="margin-bottom:12px"/>
   <div class="abar" style="margin-bottom:14px">
     <button class="cn-role-btn on" data-role="all" onclick="setCnRole('all',this)">All</button>
@@ -306,13 +278,12 @@ body{min-height:100vh}
   <div id="cn-list"><div class="empty">Import your spreadsheet to see crew notes</div></div>
 </div>
 
-<!-- ══ TAB: LOGBOOK ══ -->
+<!-- TAB: LOGBOOK -->
 <div class="tab" id="tab-logbook">
   <div class="abar">
     <button class="btn btn-p" onclick="openLegForm(null)">+ Add Leg</button>
     <button class="btn btn-g" onclick="clearSP()">Clear Scratchpad</button>
   </div>
-
   <div class="form-panel" id="leg-form" style="display:none">
     <div class="sl" id="leg-form-title" style="margin-top:0">Add Leg</div>
     <div class="form-row">
@@ -341,11 +312,10 @@ body{min-height:100vh}
       <button class="btn btn-g" onclick="closeLegForm()">Cancel</button>
     </div>
   </div>
-
   <div id="sp-list"><div class="empty">No legs entered yet. Tap + Add Leg to start.</div></div>
 </div>
 
-<!-- ══ TAB: SENIORITY ══ -->
+<!-- TAB: SENIORITY -->
 <div class="tab" id="tab-seniority">
   <div class="sl">Current snapshot <span id="sen-asof" style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--t4);font-family:var(--f);font-size:12px"></span></div>
   <div class="g2" style="margin-bottom:10px">
@@ -356,27 +326,22 @@ body{min-height:100vh}
     <div class="card" style="margin-top:0"><div class="sv b" id="sen-catpct">—</div><div class="slbl">Category %</div></div>
     <div class="card" style="margin-top:0"><div class="sv b" id="sen-gpct">—</div><div class="slbl">G-Line %</div></div>
   </div>
-
   <div class="sen-chart">
     <div class="sen-chart-title">System Seniority Number</div>
     <svg id="sen-sys-chart" viewBox="0 0 340 120"></svg>
   </div>
-
   <div class="sen-chart">
     <div class="sen-chart-title">Category Seniority Number</div>
     <svg id="sen-cat-chart" viewBox="0 0 340 120"></svg>
   </div>
-
   <div class="sen-chart">
     <div class="sen-chart-title">Category % &amp; G-Line %</div>
     <svg id="sen-pct-chart" viewBox="0 0 340 130"></svg>
   </div>
-
   <div class="sen-chart">
     <div class="sen-chart-title">Total Pilots in Category</div>
     <svg id="sen-tot-chart" viewBox="0 0 340 120"></svg>
   </div>
-
   <div class="sl">Seniority data table</div>
   <div style="overflow-x:auto">
     <table class="tbl" id="sen-tbl">
@@ -387,14 +352,12 @@ body{min-height:100vh}
 </div>
 
 <script>
-// ── CLOCK ──
 (function tick(){
   const z=new Date().toLocaleTimeString('en-US',{timeZone:'UTC',hour12:false,hour:'2-digit',minute:'2-digit'}).replace(':','')+'Z';
   document.getElementById('zulu').textContent=z;
   setTimeout(tick,10000);
 })();
 
-// ── TAB NAV ──
 function showTab(id,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.nt').forEach(b=>b.classList.remove('on'));
@@ -402,7 +365,6 @@ function showTab(id,btn){
   btn.classList.add('on');
 }
 
-// ── STORAGE ──
 const LS='ianLogbook_v3',FNK='ianFieldNotes_v1',SPK='ianScratchpad_v1',SNK='ianSeniority_v1';
 const load=()=>{try{return JSON.parse(localStorage.getItem(LS))||[];}catch{return[];}};
 const store=d=>localStorage.setItem(LS,JSON.stringify(d));
@@ -413,7 +375,6 @@ const saveSPD=d=>localStorage.setItem(SPK,JSON.stringify(d));
 const loadSen=()=>{try{return JSON.parse(localStorage.getItem(SNK))||[];}catch{return[];}};
 const saveSen=d=>localStorage.setItem(SNK,JSON.stringify(d));
 
-// ── HELPERS ──
 const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
 function parseMins(s){
   if(!s)return 0;
@@ -470,37 +431,39 @@ const avg=arr=>arr.length?Math.round(sum(arr)/arr.length):0;
 const containsAvoid=t=>/avoid/i.test(t.replace(/[^a-zA-Z0-9]/g,' '));
 const MY_NAMES=new Set(['ian irvine','irvine']);
 
-// ── METRICS ──
 function renderMetrics(){
   const data=load();
   const allLegs=data.flatMap(p=>p.legs||[]);
   const b787=[],b737=[],sob787=[],destCount={},yearBlock={},landLegs=[];
   let longest=null,shortest=null;
-
   allLegs.forEach(l=>{
     const bm=parseMins(l.block);
     const type=acType(l.aircraft||'');
     if(type==='787'){b787.push(bm);if(l.sob)sob787.push(+l.sob||0);}
     if(type==='737')b737.push(bm);
-    const arr=(l.arr||'').toUpperCase();
-    if(arr&&!BASE.has(arr)&&type==='787')destCount[arr]=(destCount[arr]||0)+1;
     const yr=yearOf(l.date);
     if(yr)yearBlock[yr]=(yearBlock[yr]||0)+bm;
-    if(bm){
+    if(bm&&type==='787'){
       if(!longest||bm>parseMins(longest.block))longest=l;
       if(!shortest||bm<parseMins(shortest.block))shortest=l;
     }
     if(l.landed&&type==='787')landLegs.push(l);
   });
-
+  data.forEach(p=>{
+    const seen=new Set();
+    (p.legs||[]).forEach(l=>{
+      const type=acType(l.aircraft||'');
+      const arr=(l.arr||'').toUpperCase();
+      if(arr&&!BASE.has(arr)&&type==='787')seen.add(arr);
+    });
+    seen.forEach(a=>{destCount[a]=(destCount[a]||0)+1;});
+  });
   const tBlock=sum(b787)+sum(b737);
   setText('m-total-block',toDecimal(tBlock));
   setText('m-block-787',toDecimal(sum(b787)));
   setText('m-block-737',toDecimal(sum(b737)));
   setText('m-pairings',data.length||'—');
   setText('m-sob-787',sob787.length?avg(sob787).toLocaleString():'—');
-
-  // Landings
   landLegs.sort((a,b)=>parseDate(a.date)-parseDate(b.date));
   const landCount=landLegs.length;
   setText('m-land-total',landCount||'—');
@@ -515,50 +478,42 @@ function renderMetrics(){
       return`<div class="lyb"><div class="lyh" onclick="toggleLY(this)"><span class="lyl">${yr}</span><span class="lyc">${landByYr[yr].length} landing${landByYr[yr].length!==1?'s':''}</span><span class="lychv${yi===0?' open':''}">▼</span></div><div style="display:${yi===0?'block':'none'}"><table class="llt"><thead><tr><th>#</th><th>Date</th><th>Arr</th><th>Route</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
     }).join('')
     :'<div class="empty">No 787 landings recorded. Add a "Landings" column with "Yes" on applicable legs.</div>';
-
-  // Destinations donut chart
   const dests=Object.entries(destCount).sort((a,b)=>b[1]-a[1]).slice(0,10);
   const svg=document.getElementById('m-dests-svg');
   const leg=document.getElementById('m-dests-legend');
   if(!svg||!leg){}
-  else if(!dests.length){
-    svg.innerHTML='';leg.innerHTML='<div class="empty">No data</div>';
-  }else{
+  else if(!dests.length){svg.innerHTML='';leg.innerHTML='<div class="empty">No data</div>';}
+  else{
     const dtotal=dests.reduce((a,b)=>a+b[1],0);
     const CX=65,CY=65,R=50,r=30,GAP=0.022;
     const polar=(a,rad)=>[CX+rad*Math.cos(a),CY+rad*Math.sin(a)];
     svg.innerHTML='';leg.innerHTML='';
-    // Center label
     svg.innerHTML+=`<text x="${CX}" y="${CY+7}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="20" font-weight="900" fill="#0033A0">${dtotal}</text><text x="${CX}" y="${CY+18}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="7" fill="#999" letter-spacing="0.5">FLIGHTS</text>`;
     const n=dests.length;
+    const PALETTE=['#0B2E6B','#1450A6','#1C74D6','#1FA3C9','#3FBF95','#8FC93A','#E8B93A','#E8792E','#D3455B','#8E4B9E'];
     let angle=-Math.PI/2;
     const slices=[];
     dests.forEach(([iata,cnt],i)=>{
       const slice=(cnt/dtotal)*Math.PI*2-GAP;
-      const t=i/(n-1||1);
-      const rc=Math.round(0+t*153),gc=Math.round(51+t*133),bc=Math.round(160+t*64);
-      const color=`rgb(${rc},${gc},${bc})`;
+      const color=PALETTE[i%PALETTE.length];
       const [x1,y1]=polar(angle,R),[x2,y2]=polar(angle+slice,R);
       const [x3,y3]=polar(angle+slice,r),[x4,y4]=polar(angle,r);
       const large=slice>Math.PI?1:0;
-      svg.innerHTML+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R},0,${large},1,${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${r},${r},0,${large},0,${x4.toFixed(2)},${y4.toFixed(2)} Z" fill="${color}"/>`;
-      slices.push({iata,cnt,midAngle:angle+slice/2,pct:cnt/dtotal,color});
-      // Legend row
+      svg.innerHTML+=`<path d="M${x1.toFixed(2)},${y1.toFixed(2)} A${R},${R},0,${large},1,${x2.toFixed(2)},${y2.toFixed(2)} L${x3.toFixed(2)},${y3.toFixed(2)} A${r},${r},0,${large},0,${x4.toFixed(2)},${y4.toFixed(2)} Z" fill="${color}" stroke="#fff" stroke-width="1"/>`;
+      slices.push({iata,cnt,midAngle:angle+slice/2,pct:cnt/dtotal,color,arcLen:slice*((R+r)/2)});
       const FLAGS={HND:'🇯🇵',NRT:'🇯🇵',HKG:'🇭🇰',PVG:'🇨🇳',PEK:'🇨🇳',SYD:'🇦🇺',MEL:'🇦🇺',LHR:'🇬🇧',BKK:'🇹🇭',SGN:'🇻🇳',AKL:'🇳🇿',BRU:'🇧🇪',ICN:'🇰🇷',SIN:'🇸🇬',DXB:'🇦🇪',CDG:'🇫🇷',AMS:'🇳🇱',FCO:'🇮🇹',LAX:'🇺🇸',SFO:'🇺🇸'};
       const flag=FLAGS[iata]||'';
       leg.innerHTML+=`<div class="dl-row"><div class="dl-dot" style="background:${color}"></div><span class="dl-iata">${iata}</span><span style="font-size:14px;margin-right:2px">${flag}</span><span class="dl-val">${cnt} · ${Math.round(cnt/dtotal*100)}%</span></div>`;
       angle+=slice+GAP;
     });
-    // Labels — inside only for slices >= 8%
-    slices.forEach(({iata,pct,midAngle})=>{
-      if(pct>=0.08){
+    slices.forEach(({iata,pct,midAngle,arcLen})=>{
+      const needed=iata.length*4.2+3;
+      if(arcLen>=needed){
         const [lx,ly]=polar(midAngle,(R+r)/2);
         svg.innerHTML+=`<text x="${lx.toFixed(2)}" y="${(ly+2.5).toFixed(2)}" text-anchor="middle" font-family="Helvetica Neue,sans-serif" font-size="7" font-weight="700" fill="#fff">${iata}</text>`;
       }
     });
   }
-
-  // Years bar chart (newest at top, oldest at bottom, newest=darkest)
   const yrs=Object.entries(yearBlock).sort((a,b)=>+b[0]-+a[0]);
   const barsEl=document.getElementById('m-years-bars');
   if(barsEl){
@@ -570,7 +525,7 @@ function renderMetrics(){
       barsEl.innerHTML=yrs.map(([yr,m],i)=>{
         const hrs=+(m/60).toFixed(1);
         const pct=Math.round(hrs/maxHrs*100);
-        const t=i/(ny-1||1); // 0=newest=darkest, 1=oldest=lightest
+        const t=i/(ny-1||1);
         const rc=Math.round(0+t*153),gc=Math.round(51+t*133),bc=Math.round(160+t*64);
         const color=`rgb(${rc},${gc},${bc})`;
         const inside=pct>=MIN_PCT;
@@ -578,8 +533,6 @@ function renderMetrics(){
       }).join('');
     }
   }
-
-  // Extremes
   if(longest){setText('m-long-hrs',toDecimal(parseMins(longest.block))+' hrs');setText('m-long-route',(longest.dep||'?')+'-'+(longest.arr||'?'));setText('m-long-date',longest.date||'');}
   else{setText('m-long-hrs','—');setText('m-long-route','—');setText('m-long-date','');}
   if(shortest){setText('m-short-hrs',toDecimal(parseMins(shortest.block))+' hrs');setText('m-short-route',(shortest.dep||'?')+'-'+(shortest.arr||'?'));setText('m-short-date',shortest.date||'');}
@@ -594,15 +547,12 @@ function toggleLY(hdr){
 }
 const setText=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
 
-// ── IMPORT XLSX ──
 function importXLSX(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=e=>{
     try{
       const wb=XLSX.read(e.target.result,{type:'binary'});
-
-      // ── Sheet 1: Flight Log ──
       const ws=wb.Sheets[wb.SheetNames[0]];
       const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
       if(rows.length>=3){
@@ -622,7 +572,6 @@ function importXLSX(input){
         };
         const BASE_D=new Set(['LAX','SNA','ONT']);
         const trips=[];let cur=null;
-        const str=k=>String(rows[0]?.[k]||'').trim(); // unused but safe
         for(let i=2;i<rows.length;i++){
           const r=rows[i];
           if(r.every(c=>String(c).trim()===''))continue;
@@ -656,8 +605,6 @@ function importXLSX(input){
         if(dupes>0)msg+=`\n${dupes} skipped (duplicate).`;
         alert(msg);
       }
-
-      // ── Sheet 3: Seniority ──
       if(wb.SheetNames.length>=3){
         const ws3=wb.Sheets[wb.SheetNames[2]];
         const srows=XLSX.utils.sheet_to_json(ws3,{header:1,defval:''});
@@ -665,19 +612,10 @@ function importXLSX(input){
         for(let i=1;i<srows.length;i++){
           const r=srows[i];
           if(!r[0])continue;
-          senData.push({
-            date:fmtDate(r[0]),
-            sysSen:String(r[1]||'').trim(),
-            catSen:String(r[2]||'').trim(),
-            total:String(r[3]||'').trim(),
-            gline:String(r[4]||'').trim(),
-            catPct:String(r[5]||'').trim(),
-            gpct:String(r[6]||'').trim()
-          });
+          senData.push({date:fmtDate(r[0]),sysSen:String(r[1]||'').trim(),catSen:String(r[2]||'').trim(),total:String(r[3]||'').trim(),gline:String(r[4]||'').trim(),catPct:String(r[5]||'').trim(),gpct:String(r[6]||'').trim()});
         }
         if(senData.length){saveSen(senData);}
       }
-
       renderMetrics();
       renderSeniority();
       input.value='';
@@ -689,7 +627,7 @@ function importXLSX(input){
 function exportXLSX(){
   const data=load();
   const rows=[['Date','Dep','Arr','Flight #','Local T/O','Local Land','Total','Pairing','CA','FO','IRO1','IRO2','LCP','Miles','Aircraft','SOB','Notes']];
-  data.forEach(p=>{(p.legs||[]).forEach(l=>rows.push([l.date,l.dep,l.arr,l.fltno,l.to,l.land,l.block,p.pairing,p.ca||'',p.fo||'',p.iro1||'',p.iro2||'',p.lcp||'',l.miles,l.aircraft,l.sob,p.notes||'']));}); 
+  data.forEach(p=>{(p.legs||[]).forEach(l=>rows.push([l.date,l.dep,l.arr,l.fltno,l.to,l.land,l.block,p.pairing,p.ca||'',p.fo||'',p.iro1||'',p.iro2||'',p.lcp||'',l.miles,l.aircraft,l.sob,p.notes||'']));});
   const ws=XLSX.utils.aoa_to_sheet(rows);
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,'Logbook',ws);
@@ -701,7 +639,6 @@ function clearAll(){
   store([]);renderMetrics();
 }
 
-// ── CREW NOTES ──
 let cnRole='all';
 function setCnRole(role,btn){
   cnRole=role;
@@ -712,6 +649,25 @@ function setCnRole(role,btn){
 
 function renderCrew(){
   const data=load();
+  const caMap={};
+  data.forEach(trip=>{
+    (trip.legs||[]).forEach(l=>{
+      if(acType(l.aircraft||'')!=='787')return;
+      const name=(l.ca||'').trim();
+      if(!name||MY_NAMES.has(name.toLowerCase()))return;
+      const key=name.toLowerCase();
+      if(!caMap[key])caMap[key]={name,legs:0,lastDate:''};
+      caMap[key].legs++;
+      if(!caMap[key].lastDate||parseDate(l.date)>parseDate(caMap[key].lastDate))caMap[key].lastDate=l.date;
+    });
+  });
+  const topCA=Object.values(caMap).sort((a,b)=>b.legs-a.legs)[0];
+  const topCAEl=document.getElementById('cn-top-ca');
+  if(topCAEl){
+    topCAEl.innerHTML=topCA
+      ?`<div class="cn-card" style="border-left:4px solid var(--blu,#0033A0)"><div class="cn-hdr"><span class="cn-name">CA ${topCA.name}</span><span class="cn-meta">Most legs flown · Last: ${fmtDisp(topCA.lastDate)}</span></div></div>`
+      :'';
+  }
   const search=(document.getElementById('cn-search')?.value||'').toLowerCase();
   const today=new Date();today.setHours(0,0,0,0);
   const pm={};
@@ -723,9 +679,10 @@ function renderCrew(){
       const add=(name,role,note)=>{
         if(!name?.trim()||MY_NAMES.has(name.trim().toLowerCase()))return;
         const key=name.trim().toLowerCase();
-        if(!pm[key])pm[key]={name:name.trim(),roles:{},entries:[],airports:new Set(),lastDate:''};
+        if(!pm[key])pm[key]={name:name.trim(),roles:{},entries:[],airports:new Set(),lastDate:'',tripPairings:new Set()};
         const p=pm[key];
         p.roles[role]=(p.roles[role]||0)+1;
+        p.tripPairings.add(trip.pairing);
         if(l.arr)p.airports.add(l.arr);
         const nt=(note||'').trim();
         if(!p.entries.some(e=>e.date===l.date&&e.role===role&&e.note===nt))
@@ -763,13 +720,14 @@ function renderCrew(){
     Object.entries(p.roles).forEach(([r,c])=>{const lbl=(r==='IRO1'||r==='IRO2')?'IRO':r;roleDisp[lbl]=(roleDisp[lbl]||0)+c;});
     const pills=Object.entries(roleDisp).map(([r,c])=>`<span class="cnp ${pillCls[r]||'lcp'}">${r} ×${c}</span>`).join('');
     const avBadge=isAv?'<span class="cnp av">⚠ Avoid</span>':'';
-    const total=Object.values(p.roles).reduce((a,b)=>a+b,0);
+    const legCount=Object.values(p.roles).reduce((a,b)=>a+b,0);
+    const tripCount=p.tripPairings.size;
     const key=p.name.toLowerCase().replace(/[^a-z0-9]/g,'_');
     const fns=loadFN()[key]||[];
     const fnRows=fns.map(fn=>`<div class="fn-entry"><div style="display:flex;align-items:center"><span class="fn-badge">⚑ Field note</span><span class="fn-date">${fn.date}</span><button class="fn-del" onclick="delFN('${key}','${fn.id}')">✕</button></div><div class="fn-text">${fn.text}</div></div>`).join('');
     const noteRows=p.entries.map(e=>`<div class="cn-entry"><div class="cn-etop"><span class="cn-edate">${fmtDisp(e.date)}</span><span class="cn-erole">${e.role}</span><span class="cn-eroute">${e.route}</span></div><div class="cn-note${e.note?'':' empty'}">${e.note||'No notes'}</div></div>`).join('');
     const tags=[...p.airports].slice(0,10).map(a=>`<span class="cn-tag">${a}</span>`).join('');
-    return`<div class="cn-card${isAv?' av':''}"><div class="cn-hdr"><span class="cn-name">${p.name}</span><div class="cn-pills">${pills}${avBadge}</div><span class="cn-meta">${total} trip${total!==1?'s':''} · Last: ${fmtDisp(p.lastDate)}</span><button class="add-note-btn" onclick="toggleFN('${key}')">+ Note</button></div><div class="fn-form" id="fn-${key}"><textarea id="fn-ta-${key}" placeholder="Type note…"></textarea><div class="fn-form-act"><button class="btn btn-g" onclick="toggleFN('${key}')">Cancel</button><button class="btn btn-p" onclick="saveFN('${key}')">Save</button></div></div><div class="cn-body">${fnRows}${noteRows}</div>${tags?`<div class="cn-tags">${tags}</div>`:''}</div>`;
+    return`<div class="cn-card${isAv?' av':''}"><div class="cn-hdr"><span class="cn-name">${p.name}</span><div class="cn-pills">${pills}${avBadge}</div><span class="cn-meta">${legCount} leg${legCount!==1?'s':''} · ${tripCount} trip${tripCount!==1?'s':''} · Last: ${fmtDisp(p.lastDate)}</span><button class="add-note-btn" onclick="toggleFN('${key}')">+ Note</button></div><div class="fn-form" id="fn-${key}"><textarea id="fn-ta-${key}" placeholder="Type note…"></textarea><div class="fn-form-act"><button class="btn btn-g" onclick="toggleFN('${key}')">Cancel</button><button class="btn btn-p" onclick="saveFN('${key}')">Save</button></div></div><div class="cn-body">${fnRows}${noteRows}</div>${tags?`<div class="cn-tags">${tags}</div>`:''}</div>`;
   }).join('');
 }
 
@@ -789,7 +747,6 @@ function delFN(key,id){
   const d=loadFN();if(d[key])d[key]=d[key].filter(n=>n.id!==id);storeFN(d);renderCrew();
 }
 
-// ── SCRATCHPAD ──
 let spEditId=null;
 function openLegForm(id){
   spEditId=id||null;
@@ -829,7 +786,6 @@ function renderSP(){
   }).join('');
 }
 
-// ── SENIORITY ──
 function renderSeniority(){
   const data=loadSen();
   if(!data.length){
@@ -841,11 +797,8 @@ function renderSeniority(){
     document.querySelector('#sen-tbl tbody').innerHTML='<tr><td colspan="7" class="empty" style="text-align:center">Import spreadsheet to see seniority data</td></tr>';
     return;
   }
-
-  // Sort by date ascending
   const sorted=[...data].sort((a,b)=>parseDate(a.date)-parseDate(b.date));
   const latest=sorted[sorted.length-1];
-
   setText('sen-asof',latest.date?'(as of '+fmtDisp(latest.date)+')':'');
   setText('sen-sys',latest.sysSen||'—');
   setText('sen-cat',latest.catSen||'—');
@@ -853,17 +806,11 @@ function renderSeniority(){
   setText('sen-gline',latest.gline||'—');
   setText('sen-catpct',latest.catPct?latest.catPct+'%':'—');
   setText('sen-gpct',latest.gpct?latest.gpct+'%':'—');
-
-  // Table (newest first)
   const tRows=[...sorted].reverse().map(r=>`<tr><td>${fmtDisp(r.date)}</td><td class="val">${r.sysSen}</td><td class="val">${r.catSen}</td><td>${r.total}</td><td>${r.gline}</td><td class="val">${r.catPct?r.catPct+'%':''}</td><td class="val">${r.gpct?r.gpct+'%':''}</td></tr>`).join('');
   document.querySelector('#sen-tbl tbody').innerHTML=tRows;
-
-  // Charts
   drawLineChart('sen-sys-chart',sorted,r=>+r.sysSen||0,'#0033A0');
   drawLineChart('sen-cat-chart',sorted,r=>+r.catSen||0,'#2e7d32');
   drawLineChart('sen-tot-chart',sorted,r=>+r.total||0,'#f57f17');
-
-  // Dual line chart for percentages
   const pctVals1=sorted.map(r=>parseFloat(r.catPct)||0);
   const pctVals2=sorted.map(r=>parseFloat(r.gpct)||0);
   drawDualChart('sen-pct-chart',sorted,pctVals1,pctVals2,'#0033A0','#c0392b','Category %','G-Line %');
@@ -871,25 +818,20 @@ function renderSeniority(){
 
 function drawLineChart(svgId,data,valFn,color){
   const el=document.getElementById(svgId);if(!el||!data.length)return;
-  const W=340,H=110,PAD={l:52,r:28,t:20,b:32};
+  const W=340,H=160,PAD={l:52,r:28,t:20,b:32};
   const vals=data.map(valFn);
   const minV=Math.min(...vals),maxV=Math.max(...vals);
   const range=maxV-minV||1;
   const n=data.length;
   const px=i=>PAD.l+(i/(n-1||1))*(W-PAD.l-PAD.r);
   const py=v=>PAD.t+((maxV-v)/range)*(H-PAD.t-PAD.b);
-
   const pts=vals.map((v,i)=>`${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
   const apts=`${pts} ${px(n-1).toFixed(1)},${H-PAD.b} ${px(0).toFixed(1)},${H-PAD.b}`;
-
-  // Date labels: first, middle, last
   const dateIdxs=[0,Math.floor(n/2),n-1].filter((v,i,a)=>a.indexOf(v)===i);
   const dateLabels=dateIdxs.map(i=>{
     const d=new Date(parseDate(data[i].date));
     return`<text x="${px(i).toFixed(1)}" y="${H-PAD.b+14}" text-anchor="${i===0?'start':i===n-1?'end':'middle'}" class="sal">${d.toLocaleDateString('en-US',{month:'short',year:'2-digit'})}</text>`;
   }).join('');
-
-  // Y axis: max at top, min at bottom, gridline at mid
   const midV=(minV+maxV)/2;
   const yAxis=`
     <line x1="${PAD.l}" y1="${PAD.t}" x2="${PAD.l}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
@@ -897,27 +839,29 @@ function drawLineChart(svgId,data,valFn,color){
     <text x="${PAD.l-5}" y="${py(midV).toFixed(1)}" text-anchor="end" dominant-baseline="middle" class="sal">${Math.round(midV)}</text>
     <text x="${PAD.l-5}" y="${py(minV).toFixed(1)}" text-anchor="end" dominant-baseline="middle" class="sal">${Math.round(minV)}</text>
     <line x1="${PAD.l}" y1="${py(midV).toFixed(1)}" x2="${W-PAD.r}" y2="${py(midV).toFixed(1)}" stroke="#f0f0f5" stroke-width="1" stroke-dasharray="4,3"/>`;
-
-  // Find min and max indices
   const minIdx=vals.indexOf(minV);
   const maxIdx=vals.indexOf(maxV);
   const lastIdx=n-1;
-
-  // Label current (last), max, min — deduplicated
   const labelSet=new Map();
-  [[lastIdx,'current'],[maxIdx,'max'],[minIdx,'min']].forEach(([i,role])=>{
-    if(!labelSet.has(i))labelSet.set(i,role);
-  });
-  const dotLabels=[...labelSet.entries()].map(([i,role])=>{
+  [[lastIdx,'current'],[maxIdx,'max'],[minIdx,'min']].forEach(([i,role])=>{if(!labelSet.has(i))labelSet.set(i,role);});
+  const rawLabels=[...labelSet.entries()].map(([i,role])=>{
     const x=px(i),y=py(vals[i]),v=Math.round(vals[i]);
     const anchor=i===0?'start':i===lastIdx?'end':'middle';
-    const yOff=y<PAD.t+16?12:-9;
+    const baseOff=y<PAD.t+16?12:-9;
     const roleColor=role==='current'?color:role==='max'?'#c0392b':'#2e7d32';
+    return{i,x,y,v,anchor,roleColor,yOff:baseOff};
+  }).sort((a,b)=>a.x-b.x);
+  for(let k=1;k<rawLabels.length;k++){
+    const prev=rawLabels[k-1],cur=rawLabels[k];
+    if(Math.abs(cur.x-prev.x)<30&&Math.abs((cur.y+cur.yOff)-(prev.y+prev.yOff))<14){
+      cur.yOff+=cur.yOff>=0?14:-14;
+    }
+  }
+  const dotLabels=rawLabels.map(({x,y,v,anchor,roleColor,yOff})=>{
     return`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${roleColor}" stroke="#fff" stroke-width="1.5"/>
     <text x="${x.toFixed(1)}" y="${(y+yOff).toFixed(1)}" text-anchor="${anchor}" class="sal" fill="${roleColor}" font-weight="700">${v}</text>`;
   }).join('');
-
-  el.setAttribute('viewBox',`0 0 ${W} ${H+18}`);
+  el.setAttribute('viewBox',`0 0 ${W} ${H-PAD.b+24}`);
   el.innerHTML=`
     ${yAxis}
     <line x1="${PAD.l}" y1="${H-PAD.b}" x2="${W-PAD.r}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
@@ -930,7 +874,7 @@ function drawLineChart(svgId,data,valFn,color){
 
 function drawDualChart(svgId,data,vals1,vals2,color1,color2,lbl1,lbl2){
   const el=document.getElementById(svgId);if(!el||!data.length)return;
-  const W=340,H=110,PAD={l:44,r:28,t:20,b:44};
+  const W=340,H=160,PAD={l:44,r:28,t:20,b:44};
   const allV=[...vals1,...vals2];
   const minV=Math.min(...allV),maxV=Math.max(...allV);
   const range=maxV-minV||1;
@@ -939,15 +883,11 @@ function drawDualChart(svgId,data,vals1,vals2,color1,color2,lbl1,lbl2){
   const py=v=>PAD.t+(maxV-v)/range*(H-PAD.t-PAD.b);
   const pts1=vals1.map((_,i)=>`${px(i).toFixed(1)},${py(vals1[i]).toFixed(1)}`).join(' ');
   const pts2=vals2.map((_,i)=>`${px(i).toFixed(1)},${py(vals2[i]).toFixed(1)}`).join(' ');
-
-  // Date labels
   const dateIdxs=[0,Math.floor(n/2),n-1].filter((v,i,a)=>a.indexOf(v)===i);
   const dateLabels=dateIdxs.map(i=>{
     const d=new Date(parseDate(data[i].date));
     return`<text x="${px(i).toFixed(1)}" y="${H-PAD.b+14}" text-anchor="${i===0?'start':i===n-1?'end':'middle'}" class="sal">${d.toLocaleDateString('en-US',{month:'short',year:'2-digit'})}</text>`;
   }).join('');
-
-  // Y axis labels
   const midV=(minV+maxV)/2;
   const yAxis=`
     <line x1="${PAD.l}" y1="${PAD.t}" x2="${PAD.l}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
@@ -955,8 +895,6 @@ function drawDualChart(svgId,data,vals1,vals2,color1,color2,lbl1,lbl2){
     <text x="${PAD.l-4}" y="${py(midV).toFixed(1)}" text-anchor="end" dominant-baseline="middle" class="sal">${midV.toFixed(1)}%</text>
     <text x="${PAD.l-4}" y="${py(minV).toFixed(1)}" text-anchor="end" dominant-baseline="middle" class="sal">${minV.toFixed(1)}%</text>
     <line x1="${PAD.l}" y1="${py(midV).toFixed(1)}" x2="${W-PAD.r}" y2="${py(midV).toFixed(1)}" stroke="#f0f0f5" stroke-width="1" stroke-dasharray="4,3"/>`;
-
-  // Most recent value labels for both lines
   const lastX=px(n-1);
   const lastY1=py(vals1[n-1]),lastY2=py(vals2[n-1]);
   const gap=Math.abs(lastY1-lastY2);
@@ -967,15 +905,12 @@ function drawDualChart(svgId,data,vals1,vals2,color1,color2,lbl1,lbl2){
     <text x="${lastX.toFixed(1)}" y="${(lastY1+off1).toFixed(1)}" text-anchor="end" class="sal" fill="${color1}" font-weight="700">${vals1[n-1].toFixed(1)}%</text>
     <circle cx="${lastX.toFixed(1)}" cy="${lastY2.toFixed(1)}" r="4" fill="${color2}" stroke="#fff" stroke-width="1.5"/>
     <text x="${lastX.toFixed(1)}" y="${(lastY2+off2).toFixed(1)}" text-anchor="end" class="sal" fill="${color2}" font-weight="700">${vals2[n-1].toFixed(1)}%</text>`;
-
-  // Legend
   const legend=`
     <rect x="${PAD.l}" y="${H-PAD.b+20}" width="14" height="3" fill="${color1}" rx="1"/>
     <text x="${PAD.l+18}" y="${H-PAD.b+24}" class="sal" fill="${color1}">${lbl1}</text>
     <line x1="${PAD.l+90}" y1="${H-PAD.b+21}" x2="${PAD.l+104}" y2="${H-PAD.b+21}" stroke="${color2}" stroke-width="2" stroke-dasharray="4,2"/>
     <text x="${PAD.l+108}" y="${H-PAD.b+24}" class="sal" fill="${color2}">${lbl2}</text>`;
-
-  el.setAttribute('viewBox',`0 0 ${W} ${H+28}`);
+  el.setAttribute('viewBox',`0 0 ${W} ${H-PAD.b+40}`);
   el.innerHTML=`
     ${yAxis}
     <line x1="${PAD.l}" y1="${H-PAD.b}" x2="${W-PAD.r}" y2="${H-PAD.b}" stroke="#e0e0e5" stroke-width="1"/>
@@ -986,7 +921,6 @@ function drawDualChart(svgId,data,vals1,vals2,color1,color2,lbl1,lbl2){
   `;
 }
 
-// ── INIT ──
 renderMetrics();
 </script>
 </body>
